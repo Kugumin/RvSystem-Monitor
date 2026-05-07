@@ -10,6 +10,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.rve.systemmonitor.RvSystemMonitorApp
 import com.rve.systemmonitor.ui.components.ScreenWrapper
+import com.rve.systemmonitor.ui.screens.AboutScreen
+import com.rve.systemmonitor.ui.screens.AppearanceSettingsScreen
+import com.rve.systemmonitor.ui.screens.MonitoringSettingsScreen
 import com.rve.systemmonitor.ui.screens.OverlaySettingsScreen
 import com.rve.systemmonitor.ui.screens.SettingsScreen
 import com.rve.systemmonitor.ui.screens.SetupScreen
@@ -79,7 +82,6 @@ fun AppNavigation(isSetupCompleted: Boolean) {
             ScreenWrapper(navController = navController) {
                 RvSystemMonitorApp(
                     onNavigateToSettings = { navController.navigateSafely(Route.Settings) },
-                    onNavigateToOverlaySettings = { navController.navigateSafely(Route.OverlaySettings) },
                 )
             }
         }
@@ -92,6 +94,49 @@ fun AppNavigation(isSetupCompleted: Boolean) {
         ) {
             ScreenWrapper(navController = navController) {
                 SettingsScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToAppearance = { navController.navigateSafely(Route.AppearanceSettings) },
+                    onNavigateToMonitoring = { navController.navigateSafely(Route.MonitoringSettings) },
+                    onNavigateToOverlay = { navController.navigateSafely(Route.OverlaySettings) },
+                    onNavigateToAbout = { navController.navigateSafely(Route.About) },
+                )
+            }
+        }
+
+        composable<Route.About>(
+            enterTransition = { enterTransition() },
+            exitTransition = { exitTransition() },
+            popEnterTransition = { popEnterTransition() },
+            popExitTransition = { popExitTransition() },
+        ) {
+            ScreenWrapper(navController = navController) {
+                AboutScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                )
+            }
+        }
+
+        composable<Route.AppearanceSettings>(
+            enterTransition = { enterTransition() },
+            exitTransition = { exitTransition() },
+            popEnterTransition = { popEnterTransition() },
+            popExitTransition = { popExitTransition() },
+        ) {
+            ScreenWrapper(navController = navController) {
+                AppearanceSettingsScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                )
+            }
+        }
+
+        composable<Route.MonitoringSettings>(
+            enterTransition = { enterTransition() },
+            exitTransition = { exitTransition() },
+            popEnterTransition = { popEnterTransition() },
+            popExitTransition = { popExitTransition() },
+        ) {
+            ScreenWrapper(navController = navController) {
+                MonitoringSettingsScreen(
                     onNavigateBack = { navController.popBackStack() },
                 )
             }

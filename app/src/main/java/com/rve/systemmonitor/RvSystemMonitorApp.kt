@@ -37,7 +37,7 @@ import com.rve.systemmonitor.ui.screens.MemoryScreen
 import kotlinx.coroutines.launch
 
 @Composable
-fun RvSystemMonitorApp(onNavigateToSettings: () -> Unit, onNavigateToOverlaySettings: () -> Unit) {
+fun RvSystemMonitorApp(onNavigateToSettings: () -> Unit) {
     val pagerState = rememberPagerState(pageCount = { 4 })
     val coroutineScope = rememberCoroutineScope()
 
@@ -91,7 +91,6 @@ fun RvSystemMonitorApp(onNavigateToSettings: () -> Unit, onNavigateToOverlaySett
                     else -> ""
                 },
                 onNavigateToSettings = onNavigateToSettings,
-                onNavigateToOverlaySettings = onNavigateToOverlaySettings,
             )
         },
         containerColor = backgroundColor,

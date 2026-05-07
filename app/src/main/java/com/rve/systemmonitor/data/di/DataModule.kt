@@ -1,11 +1,13 @@
 package com.rve.systemmonitor.data.di
 
+import com.rve.systemmonitor.data.repository.AboutRepositoryImpl
 import com.rve.systemmonitor.data.repository.BatteryRepositoryImpl
 import com.rve.systemmonitor.data.repository.CpuRepositoryImpl
 import com.rve.systemmonitor.data.repository.HardwareRepositoryImpl
 import com.rve.systemmonitor.data.repository.MemoryRepositoryImpl
 import com.rve.systemmonitor.data.repository.OverlayRepositoryImpl
 import com.rve.systemmonitor.data.repository.SettingsRepositoryImpl
+import com.rve.systemmonitor.domain.repository.AboutRepository
 import com.rve.systemmonitor.domain.repository.BatteryRepository
 import com.rve.systemmonitor.domain.repository.CpuRepository
 import com.rve.systemmonitor.domain.repository.HardwareRepository
@@ -45,4 +47,8 @@ abstract class DataModule {
     @Binds
     @Singleton
     abstract fun bindOverlayRepository(overlayRepositoryImpl: OverlayRepositoryImpl): OverlayRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindAboutRepository(aboutRepositoryImpl: AboutRepositoryImpl): AboutRepository
 }
