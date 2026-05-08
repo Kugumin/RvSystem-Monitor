@@ -7,6 +7,7 @@ import com.rve.systemmonitor.data.repository.HardwareRepositoryImpl
 import com.rve.systemmonitor.data.repository.MemoryRepositoryImpl
 import com.rve.systemmonitor.data.repository.OverlayRepositoryImpl
 import com.rve.systemmonitor.data.repository.SettingsRepositoryImpl
+import com.rve.systemmonitor.data.repository.UpdateRepositoryImpl
 import com.rve.systemmonitor.domain.repository.AboutRepository
 import com.rve.systemmonitor.domain.repository.BatteryRepository
 import com.rve.systemmonitor.domain.repository.CpuRepository
@@ -14,6 +15,7 @@ import com.rve.systemmonitor.domain.repository.HardwareRepository
 import com.rve.systemmonitor.domain.repository.MemoryRepository
 import com.rve.systemmonitor.domain.repository.OverlayRepository
 import com.rve.systemmonitor.domain.repository.SettingsRepository
+import com.rve.systemmonitor.domain.repository.UpdateRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -51,4 +53,8 @@ abstract class DataModule {
     @Binds
     @Singleton
     abstract fun bindAboutRepository(aboutRepositoryImpl: AboutRepositoryImpl): AboutRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindUpdateRepository(updateRepositoryImpl: UpdateRepositoryImpl): UpdateRepository
 }

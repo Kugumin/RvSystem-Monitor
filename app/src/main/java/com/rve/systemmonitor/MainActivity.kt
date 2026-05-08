@@ -10,10 +10,12 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.rve.systemmonitor.ui.components.UpdateDialog
 import com.rve.systemmonitor.ui.navigation.AppNavigation
 import com.rve.systemmonitor.ui.theme.RvSystemMonitorTheme
 import com.rve.systemmonitor.ui.viewmodel.MainUiState
 import com.rve.systemmonitor.ui.viewmodel.MainViewModel
+import com.rve.systemmonitor.ui.viewmodel.UpdateViewModel
 import com.rve.systemmonitor.utils.ThemeMode
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -21,12 +23,15 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val viewModel: MainViewModel by viewModels()
+    private val updateViewModel: UpdateViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         window.isNavigationBarContrastEnforced = false
+
+        updateViewModel.checkForUpdates()
 
         splashScreen.setKeepOnScreenCondition {
             viewModel.uiState.value is MainUiState.Loading
@@ -52,6 +57,14 @@ class MainActivity : ComponentActivity() {
                 }
 
                 RvSystemMonitorTheme(darkTheme, hapticEnabled, vibrationIntensity) {
+                    val updateUiState by updateViewModel.uiState.collectAsStateWithLifecycle()
+
+                    UpdateDialog(
+                        uiState = updateUiState,
+                        onDownload = { updateViewModel.downloadAndInstall(it) },
+                        onDismiss = { updateViewModel.resetState() },
+                    )
+
                     AppNavigation(isSetupCompleted)
                 }
             }
