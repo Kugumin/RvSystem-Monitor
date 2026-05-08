@@ -21,3 +21,7 @@ local.properties
 R8_Configuration_Analysis.md
 signing.properties
 /*.jks
+
+# Gemini CLI
+.skills/
+GEMINI.md
