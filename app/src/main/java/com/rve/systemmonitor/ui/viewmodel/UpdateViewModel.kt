@@ -10,6 +10,7 @@ import com.rve.systemmonitor.utils.VersionUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.File
 import javax.inject.Inject
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,6 +21,7 @@ class UpdateViewModel @Inject constructor(private val updateRepository: UpdateRe
 
     private val _uiState = MutableStateFlow<UpdateUiState>(UpdateUiState.Idle)
     val uiState: StateFlow<UpdateUiState> = _uiState.asStateFlow()
+    private var downloadJob: Job? = null
 
     fun checkForUpdates() {
         if (_uiState.value is UpdateUiState.Checking || _uiState.value is UpdateUiState.Downloading) return
@@ -41,8 +43,8 @@ class UpdateViewModel @Inject constructor(private val updateRepository: UpdateRe
     }
 
     fun downloadAndInstall(release: GitHubRelease) {
-        // Specifically look for "app-release.apk" first, fallback to any .apk
-        val apkAsset = release.assets.find { it.name == "app-release.apk" }
+        val targetApkName = if (BuildConfig.DEBUG) "app-debug.apk" else "app-release.apk"
+        val apkAsset = release.assets.find { it.name == targetApkName }
             ?: release.assets.find { it.name.endsWith(".apk") }
 
         if (apkAsset == null) {
@@ -50,7 +52,8 @@ class UpdateViewModel @Inject constructor(private val updateRepository: UpdateRe
             return
         }
 
-        viewModelScope.launch {
+        downloadJob?.cancel()
+        downloadJob = viewModelScope.launch {
             updateRepository.downloadApk(apkAsset.browserDownloadUrl).collect { status ->
                 when (status) {
                     is DownloadStatus.Downloading -> {
@@ -69,6 +72,12 @@ class UpdateViewModel @Inject constructor(private val updateRepository: UpdateRe
                 }
             }
         }
+    }
+
+    fun cancelDownload() {
+        downloadJob?.cancel()
+        downloadJob = null
+        _uiState.value = UpdateUiState.Idle
     }
 
     fun resetState() {

@@ -1,5 +1,6 @@
 package com.rve.systemmonitor.data.remote
 
+import com.rve.systemmonitor.domain.model.GitHubContent
 import com.rve.systemmonitor.domain.model.GitHubContributor
 import com.rve.systemmonitor.domain.model.GitHubRelease
 import com.rve.systemmonitor.domain.model.GitHubUser
@@ -19,6 +20,13 @@ interface GitHubService {
 
     @GET("repos/{owner}/{repo}/releases/latest")
     suspend fun getLatestRelease(@Path("owner") owner: String, @Path("repo") repo: String): GitHubRelease
+
+    @GET("repos/{owner}/{repo}/contents/{path}")
+    suspend fun getRepositoryContents(
+        @Path("owner") owner: String,
+        @Path("repo") repo: String,
+        @Path(value = "path", encoded = true) path: String,
+    ): List<GitHubContent>
 
     @Streaming
     @GET

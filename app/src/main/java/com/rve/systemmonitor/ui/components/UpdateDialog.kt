@@ -2,119 +2,456 @@ package com.rve.systemmonitor.ui.components
 
 import android.content.Context
 import android.content.Intent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.FileProvider
+import com.rve.systemmonitor.BuildConfig
+import com.rve.systemmonitor.R
 import com.rve.systemmonitor.domain.model.GitHubRelease
+import com.rve.systemmonitor.ui.components.haptic.rememberHapticOnClick
 import com.rve.systemmonitor.ui.viewmodel.UpdateUiState
 import java.io.File
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun UpdateDialog(uiState: UpdateUiState, onDownload: (GitHubRelease) -> Unit, onDismiss: () -> Unit) {
+fun UpdateDialog(uiState: UpdateUiState, onDownload: (GitHubRelease) -> Unit, onCancelDownload: () -> Unit, onDismiss: () -> Unit) {
     val context = LocalContext.current
 
     when (uiState) {
         is UpdateUiState.UpdateAvailable -> {
-            AlertDialog(
-                onDismissRequest = onDismiss,
-                title = { Text("New Version Available") },
-                text = {
-                    Text(
-                        text = "Version: ${uiState.release.tagName}",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Bold,
-                    )
+            UpdateDialogSurface(
+                iconRes = R.drawable.update_rounded,
+                title = "Update available",
+                subtitle = uiState.release.name.ifBlank { uiState.release.tagName },
+                onDismiss = onDismiss,
+                secondaryAction = {
+                    OutlinedButton(
+                        onClick = rememberHapticOnClick(onDismiss),
+                        modifier = Modifier.weight(1f),
+                        shapes = ButtonDefaults.shapes(),
+                    ) {
+                        Text("Later")
+                    }
                 },
-                confirmButton = {
-                    Button(onClick = { onDownload(uiState.release) }) {
+                primaryAction = {
+                    Button(
+                        onClick = rememberHapticOnClick { onDownload(uiState.release) },
+                        modifier = Modifier.weight(1f),
+                        shapes = ButtonDefaults.shapes(),
+                    ) {
                         Text("Download")
                     }
                 },
-                dismissButton = {
-                    TextButton(onClick = onDismiss) {
-                        Text("Later")
-                    }
-                },
-            )
+            ) {
+                ReleaseSummary(release = uiState.release)
+            }
         }
 
         is UpdateUiState.Downloading -> {
-            AlertDialog(
-                onDismissRequest = {}, // Disallow dismiss while downloading for simplicity, or add cancel logic
-                title = { Text("Downloading Update") },
-                text = {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        LinearProgressIndicator(
-                            progress = { uiState.progress },
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "${(uiState.progress * 100).toInt()}%",
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
+            val progress = uiState.progress.coerceIn(0f, 1f)
+            var showCancelConfirmation by remember { mutableStateOf(false) }
+
+            UpdateDialogSurface(
+                iconRes = R.drawable.update_rounded,
+                title = "Downloading update",
+                subtitle = "Keep the app open until the APK is ready.",
+                canDismiss = false,
+                onBlockedDismiss = { showCancelConfirmation = true },
+                primaryAction = {
+                    OutlinedButton(
+                        onClick = rememberHapticOnClick { showCancelConfirmation = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        shapes = ButtonDefaults.shapes(),
+                    ) {
+                        Text("Cancel")
                     }
                 },
-                confirmButton = {},
-            )
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    LinearWavyProgressIndicator(
+                        progress = { progress },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(8.dp),
+                        color = MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = "Download progress",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Text(
+                            text = "${(progress * 100).toInt()}%",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                }
+            }
+
+            if (showCancelConfirmation) {
+                CancelDownloadConfirmationDialog(
+                    onDismiss = { showCancelConfirmation = false },
+                    onConfirm = {
+                        showCancelConfirmation = false
+                        onCancelDownload()
+                    },
+                )
+            }
         }
 
         is UpdateUiState.ReadyToInstall -> {
-            // Automatically trigger install or show a button
-            AlertDialog(
-                onDismissRequest = onDismiss,
-                title = { Text("Update Ready") },
-                text = { Text("The update has been downloaded and is ready to install.") },
-                confirmButton = {
-                    Button(onClick = {
-                        installApk(context, uiState.file)
-                        onDismiss()
-                    }) {
-                        Text("Install")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = onDismiss) {
+            UpdateDialogSurface(
+                iconRes = R.drawable.check_rounded,
+                title = "Update ready",
+                subtitle = "The APK has been downloaded and can be installed now.",
+                onDismiss = onDismiss,
+                secondaryAction = {
+                    OutlinedButton(
+                        onClick = rememberHapticOnClick(onDismiss),
+                        modifier = Modifier.weight(1f),
+                        shapes = ButtonDefaults.shapes(),
+                    ) {
                         Text("Later")
                     }
                 },
-            )
+                primaryAction = {
+                    Button(
+                        onClick = rememberHapticOnClick {
+                            installApk(context, uiState.file)
+                            onDismiss()
+                        },
+                        modifier = Modifier.weight(1f),
+                        shapes = ButtonDefaults.shapes(),
+                    ) {
+                        Text("Install")
+                    }
+                },
+            ) {
+                StatusMessage(
+                    title = uiState.file.name,
+                    description = "Android will open the package installer for this file.",
+                )
+            }
         }
 
         is UpdateUiState.Error -> {
-            AlertDialog(
-                onDismissRequest = onDismiss,
-                title = { Text("Update Error") },
-                text = { Text(uiState.message) },
-                confirmButton = {
-                    Button(onClick = onDismiss) {
-                        Text("OK")
+            UpdateDialogSurface(
+                iconRes = R.drawable.close_rounded,
+                title = "Update failed",
+                subtitle = "The update could not be completed.",
+                onDismiss = onDismiss,
+                primaryAction = {
+                    FilledTonalButton(
+                        onClick = rememberHapticOnClick(onDismiss),
+                        modifier = Modifier.fillMaxWidth(),
+                        shapes = ButtonDefaults.shapes(),
+                    ) {
+                        Text("Close")
                     }
                 },
-            )
+            ) {
+                StatusMessage(
+                    title = "Error details",
+                    description = uiState.message,
+                    isError = true,
+                )
+            }
         }
 
         else -> {}
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun UpdateDialogSurface(
+    iconRes: Int,
+    title: String,
+    subtitle: String,
+    canDismiss: Boolean = true,
+    onDismiss: () -> Unit = {},
+    onBlockedDismiss: () -> Unit = {},
+    secondaryAction: (@Composable RowScope.() -> Unit)? = null,
+    primaryAction: (@Composable RowScope.() -> Unit)? = null,
+    content: @Composable () -> Unit,
+) {
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true,
+        confirmValueChange = { sheetValue ->
+            if (sheetValue == SheetValue.Hidden && !canDismiss) {
+                onBlockedDismiss()
+                false
+            } else {
+                true
+            }
+        },
+    )
+
+    ModalBottomSheet(
+        onDismissRequest = {
+            if (canDismiss) {
+                onDismiss()
+            } else {
+                onBlockedDismiss()
+            }
+        },
+        sheetState = sheetState,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 24.dp, end = 24.dp, bottom = 32.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(MaterialTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        painter = painterResource(iconRes),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(30.dp),
+                    )
+                }
+
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+
+            content()
+
+            if (primaryAction != null || secondaryAction != null) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    secondaryAction?.invoke(this)
+                    primaryAction?.invoke(this)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CancelDownloadConfirmationDialog(onDismiss: () -> Unit, onConfirm: () -> Unit) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true,
+        ),
+    ) {
+        Surface(
+            shape = RoundedCornerShape(28.dp),
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            tonalElevation = 6.dp,
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp),
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "Cancel download?",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        text = "The update download is still running. If you cancel now, you will need to start it again later.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    OutlinedButton(
+                        onClick = rememberHapticOnClick(onDismiss),
+                        modifier = Modifier.weight(1f),
+                        shapes = ButtonDefaults.shapes(),
+                    ) {
+                        Text("Keep")
+                    }
+                    Button(
+                        onClick = rememberHapticOnClick(onConfirm),
+                        modifier = Modifier.weight(1f),
+                        shapes = ButtonDefaults.shapes(),
+                    ) {
+                        Text("Cancel")
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReleaseSummary(release: GitHubRelease) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            VersionPill(text = release.tagName)
+            selectedApkName(release)?.let { VersionPill(text = it) }
+        }
+
+        val releaseNotes = release.body.trim()
+        if (releaseNotes.isNotEmpty()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(
+                    text = "What's new",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = releaseNotes,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .heightIn(max = 180.dp)
+                        .verticalScroll(rememberScrollState()),
+                )
+            }
+        } else {
+            StatusMessage(
+                title = "What's new",
+                description = "No changelog was provided for this version.",
+            )
+        }
+    }
+}
+
+@Composable
+private fun VersionPill(text: String) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(10.dp))
+            .background(MaterialTheme.colorScheme.secondaryContainer)
+            .padding(horizontal = 12.dp, vertical = 7.dp),
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSecondaryContainer,
+        )
+    }
+}
+
+@Composable
+private fun StatusMessage(title: String, description: String, isError: Boolean = false) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .background(
+                if (isError) MaterialTheme.colorScheme.errorContainer
+                else MaterialTheme.colorScheme.surfaceContainer,
+            )
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold,
+            color = if (isError) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurface,
+        )
+        Text(
+            text = description,
+            style = MaterialTheme.typography.bodyMedium,
+            color = if (isError) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+private fun selectedApkName(release: GitHubRelease): String? {
+    val targetApkName = if (BuildConfig.DEBUG) "app-debug.apk" else "app-release.apk"
+    return release.assets.find { it.name == targetApkName }?.name
+        ?: release.assets.find { it.name.endsWith(".apk") }?.name
 }
 
 fun installApk(context: Context, file: File) {

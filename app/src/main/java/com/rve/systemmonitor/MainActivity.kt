@@ -68,6 +68,7 @@ class MainActivity : ComponentActivity() {
                     UpdateDialog(
                         uiState = updateUiState,
                         onDownload = { updateViewModel.downloadAndInstall(it) },
+                        onCancelDownload = { updateViewModel.cancelDownload() },
                         onDismiss = { updateViewModel.resetState() },
                     )
 
