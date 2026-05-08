@@ -13,6 +13,10 @@ sealed interface Route {
     data object MonitoringSettings : Route
     @Serializable
     data object OverlaySettings : Route
+
+    @Serializable
+    data object AppSettings : Route
+
     @Serializable
     data object About : Route
     @Serializable

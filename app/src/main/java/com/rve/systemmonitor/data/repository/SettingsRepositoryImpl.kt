@@ -30,6 +30,8 @@ class SettingsRepositoryImpl @Inject constructor(application: Application) : Set
 
     override val batteryGraphHistorySeconds: Flow<Int> = settingsPreferences.batteryGraphHistorySecondsFlow
 
+    override val autoUpdateEnabled: Flow<Boolean> = settingsPreferences.autoUpdateEnabledFlow
+
     override suspend fun setThemeMode(mode: ThemeMode) {
         settingsPreferences.saveThemeMode(mode)
     }
@@ -60,5 +62,9 @@ class SettingsRepositoryImpl @Inject constructor(application: Application) : Set
 
     override suspend fun setBatteryGraphHistorySeconds(seconds: Int) {
         settingsPreferences.saveBatteryGraphHistorySeconds(seconds)
+    }
+
+    override suspend fun setAutoUpdateEnabled(enabled: Boolean) {
+        settingsPreferences.saveAutoUpdateEnabled(enabled)
     }
 }

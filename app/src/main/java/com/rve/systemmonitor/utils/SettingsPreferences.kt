@@ -24,7 +24,13 @@ class SettingsPreferences(private val context: Context) {
         val BATTERY_GRAPH_HISTORY_KEY = intPreferencesKey("battery_graph_history")
         val HAPTIC_FEEDBACK_ENABLED_KEY = booleanPreferencesKey("haptic_feedback_enabled")
         val VIBRATION_INTENSITY_KEY = stringPreferencesKey("vibration_intensity")
+        val AUTO_UPDATE_ENABLED_KEY = booleanPreferencesKey("auto_update_enabled")
     }
+
+    val autoUpdateEnabledFlow: Flow<Boolean> = context.dataStore.data
+        .map { preferences ->
+            preferences[AUTO_UPDATE_ENABLED_KEY] ?: true
+        }
 
     val themeModeFlow: Flow<ThemeMode> = context.dataStore.data
         .map { preferences ->
@@ -113,6 +119,12 @@ class SettingsPreferences(private val context: Context) {
     suspend fun saveVibrationIntensity(intensity: VibrationIntensity) {
         context.dataStore.edit { preferences ->
             preferences[VIBRATION_INTENSITY_KEY] = intensity.name
+        }
+    }
+
+    suspend fun saveAutoUpdateEnabled(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[AUTO_UPDATE_ENABLED_KEY] = enabled
         }
     }
 }

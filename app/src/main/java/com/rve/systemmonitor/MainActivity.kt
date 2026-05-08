@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -31,8 +32,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         window.isNavigationBarContrastEnforced = false
 
-        updateViewModel.checkForUpdates()
-
         splashScreen.setKeepOnScreenCondition {
             viewModel.uiState.value is MainUiState.Loading
         }
@@ -46,6 +45,13 @@ class MainActivity : ComponentActivity() {
 
             if (uiState is MainUiState.Success) {
                 val successState = uiState as MainUiState.Success
+
+                LaunchedEffect(Unit) {
+                    if (successState.autoUpdateEnabled) {
+                        updateViewModel.checkForUpdates()
+                    }
+                }
+
                 val themeMode = successState.themeMode
                 val isSetupCompleted = successState.isSetupCompleted
                 val hapticEnabled = successState.hapticFeedbackEnabled

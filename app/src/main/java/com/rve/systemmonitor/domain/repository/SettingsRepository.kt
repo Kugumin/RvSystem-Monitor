@@ -13,6 +13,7 @@ interface SettingsRepository {
     val memoryRefreshDelay: Flow<Long>
     val batteryRefreshDelay: Flow<Long>
     val batteryGraphHistorySeconds: Flow<Int>
+    val autoUpdateEnabled: Flow<Boolean>
     suspend fun setThemeMode(mode: ThemeMode)
     suspend fun setHapticFeedbackEnabled(enabled: Boolean)
     suspend fun setVibrationIntensity(intensity: VibrationIntensity)
@@ -21,4 +22,5 @@ interface SettingsRepository {
     suspend fun setMemoryRefreshDelay(delayMillis: Long)
     suspend fun setBatteryRefreshDelay(delayMillis: Long)
     suspend fun setBatteryGraphHistorySeconds(seconds: Int)
+    suspend fun setAutoUpdateEnabled(enabled: Boolean)
 }

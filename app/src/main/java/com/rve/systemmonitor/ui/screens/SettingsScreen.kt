@@ -38,6 +38,7 @@ import com.rve.systemmonitor.ui.components.haptic.hapticClickable
 @Composable
 fun SettingsScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToApp: () -> Unit,
     onNavigateToAppearance: () -> Unit,
     onNavigateToMonitoring: () -> Unit,
     onNavigateToOverlay: () -> Unit,
@@ -66,6 +67,14 @@ fun SettingsScreen(
             ),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            item {
+                SettingsMenuItem(
+                    title = "App",
+                    subtitle = "General application settings",
+                    icon = painterResource(R.drawable.android_filled),
+                    onClick = onNavigateToApp,
+                )
+            }
             item {
                 SettingsMenuItem(
                     title = "Appearance",

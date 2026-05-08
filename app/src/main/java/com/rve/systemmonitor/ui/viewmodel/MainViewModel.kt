@@ -19,8 +19,9 @@ class MainViewModel @Inject constructor(settingsRepository: SettingsRepository) 
         settingsRepository.isSetupCompleted,
         settingsRepository.hapticFeedbackEnabled,
         settingsRepository.vibrationIntensity,
-    ) { theme, setupCompleted, hapticEnabled, vibrationIntensity ->
-        MainUiState.Success(theme, setupCompleted, hapticEnabled, vibrationIntensity)
+        settingsRepository.autoUpdateEnabled,
+    ) { theme, setupCompleted, hapticEnabled, vibrationIntensity, autoUpdateEnabled ->
+        MainUiState.Success(theme, setupCompleted, hapticEnabled, vibrationIntensity, autoUpdateEnabled)
     }.stateIn(
         scope = viewModelScope,
         initialValue = MainUiState.Loading,
@@ -35,5 +36,6 @@ sealed interface MainUiState {
         val isSetupCompleted: Boolean,
         val hapticFeedbackEnabled: Boolean,
         val vibrationIntensity: VibrationIntensity,
+        val autoUpdateEnabled: Boolean,
     ) : MainUiState
 }

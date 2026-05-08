@@ -18,13 +18,10 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -43,7 +40,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -58,37 +54,22 @@ import com.rve.systemmonitor.BuildConfig
 import com.rve.systemmonitor.R
 import com.rve.systemmonitor.domain.model.GitHubContributor
 import com.rve.systemmonitor.ui.components.ExitUntilCollapsedMediumTopAppBar
-import com.rve.systemmonitor.ui.components.UpdateDialog
-import com.rve.systemmonitor.ui.components.chip.BadgeChip
 import com.rve.systemmonitor.ui.components.haptic.hapticClickable
 import com.rve.systemmonitor.ui.viewmodel.AboutViewModel
-import com.rve.systemmonitor.ui.viewmodel.UpdateUiState
-import com.rve.systemmonitor.ui.viewmodel.UpdateViewModel
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun AboutScreen(
-    viewModel: AboutViewModel = hiltViewModel(),
-    updateViewModel: UpdateViewModel = hiltViewModel(),
-    onNavigateBack: () -> Unit,
-) {
+fun AboutScreen(viewModel: AboutViewModel = hiltViewModel(), onNavigateBack: () -> Unit) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val contributors by viewModel.contributors.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
-    val updateUiState by updateViewModel.uiState.collectAsStateWithLifecycle()
 
     val openUrl = { url: String ->
         val intent = Intent(Intent.ACTION_VIEW, url.toUri())
         context.startActivity(intent)
     }
-
-    UpdateDialog(
-        uiState = updateUiState,
-        onDownload = { updateViewModel.downloadAndInstall(it) },
-        onDismiss = { updateViewModel.resetState() },
-    )
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -112,7 +93,7 @@ fun AboutScreen(
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             item {
-                HeroCard(onCheckUpdates = { updateViewModel.checkForUpdates() })
+                HeroCard()
             }
             item {
                 Column {
@@ -315,7 +296,7 @@ fun ContributorSkeleton(shape: RoundedCornerShape) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun HeroCard(onCheckUpdates: () -> Unit) {
+fun HeroCard() {
     val badgeItem = listOf(
         "Free",
         "Open Source",
@@ -379,24 +360,6 @@ fun HeroCard(onCheckUpdates: () -> Unit) {
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onPrimary,
                 )
-            }
-
-            Button(
-                onClick = onCheckUpdates,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                ),
-                shape = RoundedCornerShape(16.dp),
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.bolt_filled),
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp),
-                )
-                Spacer(Modifier.width(8.dp))
-                Text("Check for Updates")
             }
 
             FlowRow(

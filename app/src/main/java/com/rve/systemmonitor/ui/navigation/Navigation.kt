@@ -11,6 +11,7 @@ import androidx.navigation.compose.rememberNavController
 import com.rve.systemmonitor.RvSystemMonitorApp
 import com.rve.systemmonitor.ui.components.ScreenWrapper
 import com.rve.systemmonitor.ui.screens.AboutScreen
+import com.rve.systemmonitor.ui.screens.AppSettingsScreen
 import com.rve.systemmonitor.ui.screens.AppearanceSettingsScreen
 import com.rve.systemmonitor.ui.screens.MonitoringSettingsScreen
 import com.rve.systemmonitor.ui.screens.OverlaySettingsScreen
@@ -95,10 +96,24 @@ fun AppNavigation(isSetupCompleted: Boolean) {
             ScreenWrapper(navController = navController) {
                 SettingsScreen(
                     onNavigateBack = { navController.popBackStack() },
+                    onNavigateToApp = { navController.navigateSafely(Route.AppSettings) },
                     onNavigateToAppearance = { navController.navigateSafely(Route.AppearanceSettings) },
                     onNavigateToMonitoring = { navController.navigateSafely(Route.MonitoringSettings) },
                     onNavigateToOverlay = { navController.navigateSafely(Route.OverlaySettings) },
                     onNavigateToAbout = { navController.navigateSafely(Route.About) },
+                )
+            }
+        }
+
+        composable<Route.AppSettings>(
+            enterTransition = { enterTransition() },
+            exitTransition = { exitTransition() },
+            popEnterTransition = { popEnterTransition() },
+            popExitTransition = { popExitTransition() },
+        ) {
+            ScreenWrapper(navController = navController) {
+                AppSettingsScreen(
+                    onNavigateBack = { navController.popBackStack() },
                 )
             }
         }
