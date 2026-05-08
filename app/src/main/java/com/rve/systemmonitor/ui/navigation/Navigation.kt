@@ -37,12 +37,7 @@ fun AppNavigation(isSetupCompleted: Boolean) {
             popExitTransition = { popExitTransition() },
         ) {
             SetupScreen(
-                onPermissionGranted = {
-                    navController.navigateSafely(Route.Main) {
-                        popUpTo(Route.Setup) { inclusive = true }
-                    }
-                },
-                onSkip = {
+                onSetupCompleted = {
                     navController.navigateSafely(Route.Main) {
                         popUpTo(Route.Setup) { inclusive = true }
                     }
