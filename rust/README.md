@@ -57,10 +57,11 @@ The Rust functions are mapped to the corresponding Kotlin utility objects.
 
 ### Memory Utilities (`MemoryUtils`)
 
-| Rust Function                | Kotlin Native Method  |
-|:-----------------------------|:----------------------|
-| `Java_..._getRamDataNative`  | `getRamDataNative()`  |
-| `Java_..._getZramDataNative` | `getZramDataNative()` |
+| Rust Function                      | Kotlin Native Method     |
+|:-----------------------------------|:-------------------------|
+| `Java_..._getMemoryDataNative`     | `getMemoryDataNative()`  |
+| `Java_..._getRamDataNative`        | `getRamDataNative()`     |
+| `Java_..._getZramDataNative`       | `getZramDataNative()`    |
 
 ### CPU Utilities (`CpuUtils`)
 
@@ -70,6 +71,9 @@ The Rust functions are mapped to the corresponding Kotlin utility objects.
 | `Java_..._getCoreFrequencyNative`        | `getCoreFrequencyNative(coreId, type)` |
 | `Java_..._getCoreGovernorNative`         | `getCoreGovernorNative(coreId)`        |
 | `Java_..._getAllCoreFrequenciesNative`   | `getAllCoreFrequenciesNative()`        |
+| `Java_..._getCpuTemperatureNative`       | `getCpuTemperatureNative()`            |
+| `Java_..._getAllCoreTemperaturesNative`  | `getAllCoreTemperaturesNative()`       |
+| `Java_..._getCpuDynamicDataNative`       | `getCpuDynamicDataNative()`            |
 
 ### GPU Utilities (`GpuUtils`)
 
@@ -77,8 +81,7 @@ The Rust functions are mapped to the corresponding Kotlin utility objects.
 |:-----------------------------------|:--------------------------|
 | `Java_..._getVulkanVersionNative`  | `getVulkanVersionNative()`|
 
-> **Optimization Note**: `getAllCoreFrequenciesNative` returns a `jlongArray` (KHz) to avoid
-> the overhead of string allocation and array-of-objects manipulation at the JNI level.
+> **Optimization Note**: `getAllCoreFrequenciesNative` and `getCpuDynamicDataNative` return numeric arrays (Long/Double) to avoid the overhead of string allocation and array-of-objects manipulation at the JNI level.
 
 ## Documentation
 

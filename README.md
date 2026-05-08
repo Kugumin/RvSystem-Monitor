@@ -65,27 +65,27 @@ The project adheres to **Clean Architecture** principles, ensuring a strict sepa
 | Directory/File | Description |
 | :--- | :--- |
 | **`app/`** | **Main Android Module** |
-| `├── data/` | Implementation of repositories and JNI-linked data sources. |
-| `├── domain/` | Pure business logic: models and repository interfaces. |
-| `├── ui/` | Jetpack Compose screens, ViewModels, and Material 3 theme. |
-| `└── utils/` | JNI bridge declarations and helper utility classes. |
+| `├── data/` | Repositories and JNI-linked data sources (e.g., `CpuRepositoryImpl`). |
+| `├── domain/` | Model definitions and repository interfaces. |
+| `├── ui/` | Compose screens, ViewModels, and Material 3 theme. |
+| `└── utils/` | **JNI Bridge Declarations** (`CpuUtils`, `MemoryUtils`, etc.). |
 | **`rust/`** | **Native Monitoring Backend** |
-| `├── drivers/` | Hardware-specific logic (Vulkan versioning, GPU details). |
-| `├── kernel/` | Core system monitoring (CPU scaling, core frequencies). |
+| `├── drivers/` | GPU-specific logic (Vulkan versioning). |
+| `├── kernel/` | Core system monitoring (CPU frequencies, temperatures). |
 | `├── mm/` | Memory Management (RAM usage, ZRAM statistics). |
-| `└── lib.rs` | Main entry point for the JNI bridge implementation. |
+| `└── src/lib.rs` | **JNI Bridge Implementation** (Native entry points). |
 | **`gradle/`** | Project-wide build configurations and version catalogs. |
-| **`assets/`** | Screenshots and media assets for documentation. |
+| **`fastlane/`** | Metadata and screenshots for distribution. |
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **UI Framework**: [Jetpack Compose](https://developer.android.com/compose) (Material 3 Expressive)
-- **Dependency Injection**: [Hilt](https://developer.android.com/training/dependency-injection/hilt-android)
-- **Native Backend**: [Rust](https://www.rust-lang.org/) via [JNI](https://github.com/jni-rs/jni-rs)
-- **Asynchronous Flow**: [Kotlin Coroutines](https://kotlinlang.org/docs/coroutines-overview.html) & [Flow](https://kotlinlang.org/docs/flow.html)
-- **Build System**: Gradle Kotlin DSL + Cargo NDK
+- **UI Framework**: [Jetpack Compose](https://developer.android.com/compose) (Material 3 Expressive, BOM 2026.05.00)
+- **Dependency Injection**: [Hilt](https://developer.android.com/training/dependency-injection/hilt-android) (v2.59.2)
+- **Native Backend**: [Rust](https://www.rust-lang.org/) (Edition 2024) via [JNI](https://github.com/jni-rs/jni-rs)
+- **Asynchronous Flow**: [Kotlin Coroutines](https://kotlinlang.org/docs/coroutines-overview.html) & [Flow](https://kotlinlang.org/docs/flow.html) (Kotlin 2.3.21)
+- **Build System**: Gradle Kotlin DSL (AGP 9.2.1) + Cargo NDK
 - **Formatting**: [Spotless](https://github.com/diffplug/spotless) (ktlint) & Cargo Fmt
 
 ---
@@ -95,7 +95,7 @@ The project adheres to **Clean Architecture** principles, ensuring a strict sepa
 ### Prerequisites
 - **Android Studio** (Ladybug or newer)
 - **Rust Toolchain** ([rustup.rs](https://rustup.rs/))
-- **Android NDK** (Version specified in `app/build.gradle.kts`)
+- **Android NDK** (Version `30.0.14904198` recommended)
 - **cargo-ndk**: `cargo install cargo-ndk`
 
 ### Build Instructions
@@ -111,6 +111,7 @@ The project adheres to **Clean Architecture** principles, ensuring a strict sepa
    ```bash
    ./gradlew assembleDebug
    ```
+   *Note: The native build is automatically triggered as a dependency of `preBuild`.*
 
 ---
 
