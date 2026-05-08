@@ -25,3 +25,6 @@ signing.properties
 # Gemini CLI
 .skills/
 GEMINI.md
+
+# Codex
+AGENTS.md
