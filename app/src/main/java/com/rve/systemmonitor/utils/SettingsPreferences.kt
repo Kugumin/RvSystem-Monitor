@@ -25,11 +25,17 @@ class SettingsPreferences(private val context: Context) {
         val HAPTIC_FEEDBACK_ENABLED_KEY = booleanPreferencesKey("haptic_feedback_enabled")
         val VIBRATION_INTENSITY_KEY = stringPreferencesKey("vibration_intensity")
         val AUTO_UPDATE_ENABLED_KEY = booleanPreferencesKey("auto_update_enabled")
+        val UPDATES_PAUSED_UNTIL_KEY = longPreferencesKey("updates_paused_until")
     }
 
     val autoUpdateEnabledFlow: Flow<Boolean> = context.dataStore.data
         .map { preferences ->
             preferences[AUTO_UPDATE_ENABLED_KEY] ?: true
+        }
+
+    val updatesPausedUntilFlow: Flow<Long> = context.dataStore.data
+        .map { preferences ->
+            preferences[UPDATES_PAUSED_UNTIL_KEY] ?: 0L
         }
 
     val themeModeFlow: Flow<ThemeMode> = context.dataStore.data
@@ -125,6 +131,12 @@ class SettingsPreferences(private val context: Context) {
     suspend fun saveAutoUpdateEnabled(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[AUTO_UPDATE_ENABLED_KEY] = enabled
+        }
+    }
+
+    suspend fun saveUpdatesPausedUntil(timestamp: Long) {
+        context.dataStore.edit { preferences ->
+            preferences[UPDATES_PAUSED_UNTIL_KEY] = timestamp
         }
     }
 }

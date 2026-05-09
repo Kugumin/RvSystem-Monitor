@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.rve.systemmonitor.BuildConfig
 import com.rve.systemmonitor.domain.model.GitHubRelease
 import com.rve.systemmonitor.domain.repository.DownloadStatus
+import com.rve.systemmonitor.domain.repository.SettingsRepository
 import com.rve.systemmonitor.domain.repository.UpdateRepository
 import com.rve.systemmonitor.utils.VersionUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,10 +15,14 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 @HiltViewModel
-class UpdateViewModel @Inject constructor(private val updateRepository: UpdateRepository) : ViewModel() {
+class UpdateViewModel @Inject constructor(
+    private val updateRepository: UpdateRepository,
+    private val settingsRepository: SettingsRepository,
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UpdateUiState>(UpdateUiState.Idle)
     val uiState: StateFlow<UpdateUiState> = _uiState.asStateFlow()
@@ -31,6 +36,9 @@ class UpdateViewModel @Inject constructor(private val updateRepository: UpdateRe
         ) return
 
         viewModelScope.launch {
+            val pausedUntil = settingsRepository.updatesPausedUntil.first()
+            if (System.currentTimeMillis() < pausedUntil) return@launch
+
             _uiState.value = UpdateUiState.Checking
             updateRepository.getLatestRelease()
                 .onSuccess { release ->
@@ -43,6 +51,14 @@ class UpdateViewModel @Inject constructor(private val updateRepository: UpdateRe
                 .onFailure {
                     _uiState.value = UpdateUiState.Idle
                 }
+        }
+    }
+
+    fun pauseUpdates(hours: Int) {
+        viewModelScope.launch {
+            val pausedUntil = System.currentTimeMillis() + hours * 60 * 60 * 1000L
+            settingsRepository.setUpdatesPausedUntil(pausedUntil)
+            _uiState.value = UpdateUiState.Idle
         }
     }
 

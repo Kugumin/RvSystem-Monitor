@@ -8,16 +8,20 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalButton
@@ -26,9 +30,13 @@ import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.ToggleButton
+import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -40,6 +48,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -48,23 +59,39 @@ import androidx.core.content.FileProvider
 import com.rve.systemmonitor.BuildConfig
 import com.rve.systemmonitor.R
 import com.rve.systemmonitor.domain.model.GitHubRelease
+import com.rve.systemmonitor.ui.components.haptic.hapticClickable
 import com.rve.systemmonitor.ui.components.haptic.rememberHapticOnClick
 import com.rve.systemmonitor.ui.viewmodel.UpdateUiState
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun UpdateDialog(uiState: UpdateUiState, onDownload: (GitHubRelease) -> Unit, onCancelDownload: () -> Unit, onDismiss: () -> Unit) {
+fun UpdateDialog(
+    uiState: UpdateUiState,
+    onDownload: (GitHubRelease) -> Unit,
+    onCancelDownload: () -> Unit,
+    onDismiss: () -> Unit,
+    onPauseUpdates: (Int) -> Unit = {},
+) {
     val context = LocalContext.current
 
     when (uiState) {
         is UpdateUiState.UpdateAvailable -> {
+            var showPauseDialog by remember { mutableStateOf(false) }
+
             UpdateDialogSurface(
                 iconRes = R.drawable.download_2_filled,
                 title = "Update available",
                 subtitle = uiState.release.name.ifBlank { uiState.release.tagName },
                 onDismiss = onDismiss,
                 secondaryAction = {
+                    OutlinedButton(
+                        onClick = rememberHapticOnClick { showPauseDialog = true },
+                        modifier = Modifier.weight(1f),
+                        shapes = ButtonDefaults.shapes(),
+                    ) {
+                        Text("Pause")
+                    }
                     OutlinedButton(
                         onClick = rememberHapticOnClick(onDismiss),
                         modifier = Modifier.weight(1f),
@@ -84,6 +111,16 @@ fun UpdateDialog(uiState: UpdateUiState, onDownload: (GitHubRelease) -> Unit, on
                 },
             ) {
                 ReleaseSummary(release = uiState.release)
+            }
+
+            if (showPauseDialog) {
+                PauseUpdatesDialog(
+                    onDismiss = { showPauseDialog = false },
+                    onConfirm = { hours ->
+                        showPauseDialog = false
+                        onPauseUpdates(hours)
+                    },
+                )
             }
         }
 
@@ -470,4 +507,92 @@ fun installApk(context: Context, file: File) {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     }
     context.startActivity(intent)
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun PauseUpdatesDialog(onDismiss: () -> Unit, onConfirm: (Int) -> Unit) {
+    val options = listOf(
+        3 to "3 hours",
+        6 to "6 hours",
+        12 to "12 hours",
+        24 to "24 hours",
+    )
+
+    var selectedOption by remember { mutableStateOf(options.first().first) }
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            shape = RoundedCornerShape(24.dp),
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                Text(
+                    text = "Pause for...",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+
+                Column(verticalArrangement = Arrangement.spacedBy((-6).dp)) {
+                    options.forEachIndexed { index, (hours, label) ->
+                        val shape = when (index) {
+                            0 -> (ButtonGroupDefaults.connectedMiddleButtonShapes().shape as RoundedCornerShape)
+                                .copy(topStart = CornerSize(100), topEnd = CornerSize(100))
+
+                            options.lastIndex -> (ButtonGroupDefaults.connectedMiddleButtonShapes().shape as RoundedCornerShape)
+                                .copy(bottomStart = CornerSize(100), bottomEnd = CornerSize(100))
+
+                            else -> ButtonGroupDefaults.connectedMiddleButtonShapes().shape
+                        }
+
+                        val hapticAction = rememberHapticOnClick { selectedOption = hours }
+
+                        ToggleButton(
+                            checked = selectedOption == hours,
+                            onCheckedChange = { if (it) hapticAction() },
+                            shapes = ToggleButtonDefaults.shapes(
+                                shape = shape,
+                                checkedShape = ButtonGroupDefaults.connectedButtonCheckedShape,
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .semantics { role = Role.RadioButton },
+                        ) {
+                            Text(label)
+                        }
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    TextButton(
+                        onClick = rememberHapticOnClick(onDismiss),
+                        shapes = ButtonDefaults.shapes(),
+                    ) {
+                        Text("Cancel")
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(
+                        onClick = rememberHapticOnClick { onConfirm(selectedOption) },
+                        shapes = ButtonDefaults.shapes(),
+                    ) {
+                        Text("Pause")
+                    }
+                }
+            }
+        }
+    }
 }

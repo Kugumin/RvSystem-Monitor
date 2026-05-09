@@ -70,6 +70,7 @@ class MainActivity : ComponentActivity() {
                         onDownload = { updateViewModel.downloadAndInstall(it) },
                         onCancelDownload = { updateViewModel.cancelDownload() },
                         onDismiss = { updateViewModel.resetState() },
+                        onPauseUpdates = { updateViewModel.pauseUpdates(it) },
                     )
 
                     AppNavigation(isSetupCompleted)
