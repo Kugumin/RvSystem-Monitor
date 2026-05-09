@@ -24,7 +24,11 @@ class UpdateViewModel @Inject constructor(private val updateRepository: UpdateRe
     private var downloadJob: Job? = null
 
     fun checkForUpdates() {
-        if (_uiState.value is UpdateUiState.Checking || _uiState.value is UpdateUiState.Downloading) return
+        if (_uiState.value is UpdateUiState.Checking ||
+            _uiState.value is UpdateUiState.UpdateAvailable ||
+            _uiState.value is UpdateUiState.Downloading ||
+            _uiState.value is UpdateUiState.ReadyToInstall
+        ) return
 
         viewModelScope.launch {
             _uiState.value = UpdateUiState.Checking
