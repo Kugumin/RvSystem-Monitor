@@ -149,7 +149,7 @@ fun UpdateDialog(uiState: UpdateUiState, onDownload: (GitHubRelease) -> Unit, on
 
         is UpdateUiState.ReadyToInstall -> {
             UpdateDialogSurface(
-                iconRes = R.drawable.check_rounded,
+                iconRes = R.drawable.apk_install_filled,
                 title = "Update ready",
                 subtitle = "The APK has been downloaded and can be installed now.",
                 onDismiss = onDismiss,
@@ -187,9 +187,10 @@ fun UpdateDialog(uiState: UpdateUiState, onDownload: (GitHubRelease) -> Unit, on
                 iconRes = R.drawable.close_rounded,
                 title = "Update failed",
                 subtitle = "The update could not be completed.",
+                isError = true,
                 onDismiss = onDismiss,
                 primaryAction = {
-                    FilledTonalButton(
+                    Button(
                         onClick = rememberHapticOnClick(onDismiss),
                         modifier = Modifier.fillMaxWidth(),
                         shapes = ButtonDefaults.shapes(),
@@ -217,6 +218,7 @@ private fun UpdateDialogSurface(
     title: String,
     subtitle: String,
     canDismiss: Boolean = true,
+    isError: Boolean = false,
     onDismiss: () -> Unit = {},
     onBlockedDismiss: () -> Unit = {},
     secondaryAction: (@Composable RowScope.() -> Unit)? = null,
@@ -260,13 +262,15 @@ private fun UpdateDialogSurface(
                     modifier = Modifier
                         .size(56.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(MaterialTheme.colorScheme.primary),
+                        .background(
+                            if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                        ),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
                         painter = painterResource(iconRes),
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimary,
+                        tint = if (isError) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(30.dp),
                     )
                 }
