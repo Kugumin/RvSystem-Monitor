@@ -71,7 +71,7 @@ fun SettingsScreen(
                 SettingsMenuItem(
                     title = "App",
                     subtitle = "General application settings",
-                    icon = painterResource(R.drawable.android_filled),
+                    icon = painterResource(R.drawable.build_filled),
                     onClick = onNavigateToApp,
                 )
             }
