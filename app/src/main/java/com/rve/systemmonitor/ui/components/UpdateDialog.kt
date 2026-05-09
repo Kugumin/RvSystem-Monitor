@@ -409,14 +409,14 @@ private fun VersionPill(text: String) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(10.dp))
-            .background(MaterialTheme.colorScheme.secondaryContainer)
+            .background(MaterialTheme.colorScheme.tertiary)
             .padding(horizontal = 12.dp, vertical = 7.dp),
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSecondaryContainer,
+            color = MaterialTheme.colorScheme.onTertiary,
         )
     }
 }
