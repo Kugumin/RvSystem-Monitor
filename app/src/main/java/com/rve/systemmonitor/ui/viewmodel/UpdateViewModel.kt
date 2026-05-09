@@ -37,7 +37,7 @@ class UpdateViewModel @Inject constructor(private val updateRepository: UpdateRe
                     }
                 }
                 .onFailure {
-                    _uiState.value = UpdateUiState.Error("Failed to check for updates")
+                    _uiState.value = UpdateUiState.Idle
                 }
         }
     }
