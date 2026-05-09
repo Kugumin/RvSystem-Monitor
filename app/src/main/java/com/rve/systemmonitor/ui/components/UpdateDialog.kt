@@ -60,7 +60,7 @@ fun UpdateDialog(uiState: UpdateUiState, onDownload: (GitHubRelease) -> Unit, on
     when (uiState) {
         is UpdateUiState.UpdateAvailable -> {
             UpdateDialogSurface(
-                iconRes = R.drawable.update_rounded,
+                iconRes = R.drawable.download_2_filled,
                 title = "Update available",
                 subtitle = uiState.release.name.ifBlank { uiState.release.tagName },
                 onDismiss = onDismiss,
@@ -260,13 +260,13 @@ private fun UpdateDialogSurface(
                     modifier = Modifier
                         .size(56.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(MaterialTheme.colorScheme.primaryContainer),
+                        .background(MaterialTheme.colorScheme.primary),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
                         painter = painterResource(iconRes),
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(30.dp),
                     )
                 }
