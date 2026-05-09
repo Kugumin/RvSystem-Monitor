@@ -1,0 +1,7 @@
+- Refactored setup screen into a multi-step onboarding flow.
+- Enhanced update feature with expressive UI and in-app changelogs.
+- Added app settings screen with auto-update toggle.
+- Implemented CPU and Battery temperature monitoring for both the app and system overlay.
+- Optimized hardware polling with JNI batching and thermal caching for better performance.
+- Modernized Display APIs for Android 14+.
+- Various bug fixes and UI refinements.

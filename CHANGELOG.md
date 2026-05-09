@@ -1,5 +1,39 @@
 # Changelog
 
+## [0.3-beta] - 2026-05-09
+
+### Feat
+- **ui:** Add testing section to app settings for setup flow.
+- **ui:** Refactor setup screen into a multi-step onboarding flow.
+- **update:** Enhance update feature with expressive UI and changelogs.
+- **ui:** Add app settings screen and auto-update toggle.
+- **update:** Implement in-app "Check for Updates" feature.
+- **overlay:** Implement CPU and Battery temperature monitoring.
+- **battery:** Reset min/max stats and graph on charging status change.
+- **cpu:** Add real-time temperature monitoring for CPU and individual cores.
+- **battery:** Display negative values for discharging speed.
+- **overlay:** Support 0.5s increments for update interval.
+
+### Fix
+- **ui:** Resolve peak frequency showing 0.0 GHz on CPU screen.
+- **display:** Modernize APIs and fix context compatibility.
+
+### Perf
+- **kernel:** Optimize cpu.rs sysfs polling pipeline.
+- **cpu:** Optimize hardware polling with JNI batching and thermal caching.
+
+### Refactor
+- **rust:** Optimize memory info parsing using pattern matching.
+- **ui:** Modularize generic components and cleanup dead code.
+- **display:** Use modern Android 14+ APIs for display and HDR capabilities.
+
+### Docs
+- Overhaul README and add contributing guidelines.
+- Add initial 0.2-beta changelog.
+
+### Build
+- Bump AGP to 9.2.1 and core dependencies.
+
 ## [0.2-beta] - 2026-05-03
 
 ### Features
