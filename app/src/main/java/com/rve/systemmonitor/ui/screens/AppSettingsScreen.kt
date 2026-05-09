@@ -41,7 +41,7 @@ import com.rve.systemmonitor.ui.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun AppSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onNavigateBack: () -> Unit) {
+fun AppSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onNavigateBack: () -> Unit, onNavigateToSetup: () -> Unit) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val autoUpdateEnabled by viewModel.autoUpdateEnabled.collectAsStateWithLifecycle()
 
@@ -146,6 +146,79 @@ fun AppSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onNavigate
                                         )
                                     }
                                 },
+                            )
+                        }
+                    }
+                }
+            }
+
+            item {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        text = "Testing",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 12.dp, start = 8.dp),
+                    )
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(24.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .hapticClickable { onNavigateToSetup() }
+                                .padding(horizontal = 20.dp, vertical = 20.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(MaterialTheme.colorScheme.primary),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.home_storage_gear_filled),
+                                        contentDescription = "Setup Icon",
+                                        tint = MaterialTheme.colorScheme.onSecondary,
+                                    )
+                                }
+
+                                Column {
+                                    Text(
+                                        text = "Test Setup Flow",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                    )
+                                    Text(
+                                        text = "Launch setup without resetting app settings",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                            }
+
+                            Icon(
+                                painter = painterResource(R.drawable.arrow_forward_ios_new),
+                                contentDescription = "Open setup flow",
+                                modifier = Modifier.size(20.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
                     }

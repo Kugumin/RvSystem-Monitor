@@ -109,6 +109,7 @@ fun AppNavigation(isSetupCompleted: Boolean) {
             ScreenWrapper(navController = navController) {
                 AppSettingsScreen(
                     onNavigateBack = { navController.popBackStack() },
+                    onNavigateToSetup = { navController.navigateSafely(Route.Setup) },
                 )
             }
         }
