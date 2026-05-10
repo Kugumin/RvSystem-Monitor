@@ -539,7 +539,7 @@ private fun AppearanceHero(hapticEnabled: Boolean, vibrationIntensity: Vibration
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                         Text(
-                            text = "Customize your monitoring experience",
+                            text = "Make it pretty enough to flex in screenshots.",
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
                         )
