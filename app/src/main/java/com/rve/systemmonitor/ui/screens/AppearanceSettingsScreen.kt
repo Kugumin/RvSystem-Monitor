@@ -210,7 +210,8 @@ fun AppearanceSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
                                             contentDescription = "Amoled Icon",
                                             tint = if (amoledEnabled) MaterialTheme.colorScheme.onPrimary
                                             else MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.38f),
-                                        )                                    }
+                                        )
+                                    }
 
                                     Column {
                                         Text(
