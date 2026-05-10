@@ -151,6 +151,13 @@ private fun OverlayPermissionStep(isOverlayPermissionGranted: Boolean, onGrantPe
         } else {
             "You can always change this in Settings"
         },
+        nextButton = {
+            SetupNextButton(
+                enabled = isOverlayPermissionGranted,
+                onClick = onNext,
+                contentDescription = "Continue to update settings",
+            )
+        },
         action = {
             Button(
                 onClick = rememberHapticOnClick(onGrantPermission),
@@ -169,14 +176,6 @@ private fun OverlayPermissionStep(isOverlayPermissionGranted: Boolean, onGrantPe
                     fontWeight = FontWeight.Bold,
                 )
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            SetupNextButton(
-                enabled = isOverlayPermissionGranted,
-                onClick = onNext,
-                contentDescription = "Continue to update settings",
-            )
         },
     )
 }
@@ -190,6 +189,13 @@ private fun UpdatesStep(autoUpdateEnabled: Boolean, onAutoUpdateChanged: (Boolea
         title = "Check for Updates",
         description = "Choose whether RvSystem Monitor should automatically check for app updates on startup.",
         footer = "You can change this later in App settings",
+        nextButton = {
+            SetupNextButton(
+                enabled = true,
+                onClick = onComplete,
+                contentDescription = "Complete setup",
+            )
+        },
         action = {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -265,14 +271,6 @@ private fun UpdatesStep(autoUpdateEnabled: Boolean, onAutoUpdateChanged: (Boolea
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            SetupNextButton(
-                enabled = true,
-                onClick = onComplete,
-                contentDescription = "Complete setup",
-            )
         },
     )
 }
@@ -284,6 +282,7 @@ private fun SetupStepContainer(
     title: String,
     description: String,
     footer: String,
+    nextButton: @Composable () -> Unit,
     action: @Composable ColumnScope.() -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
@@ -331,6 +330,14 @@ private fun SetupStepContainer(
             Spacer(modifier = Modifier.height(48.dp))
 
             action()
+        }
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 80.dp),
+        ) {
+            nextButton()
         }
 
         Text(
