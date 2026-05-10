@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.rve.systemmonitor.RvSystemMonitorApp
 import com.rve.systemmonitor.ui.components.ScreenWrapper
 import com.rve.systemmonitor.ui.screens.AboutScreen
@@ -22,7 +23,7 @@ import com.rve.systemmonitor.ui.screens.SetupScreen
 fun AppNavigation(isSetupCompleted: Boolean) {
     val navController = rememberNavController()
     val startDestination = remember {
-        if (isSetupCompleted) Route.Main else Route.Setup
+        if (isSetupCompleted) Route.Main else Route.Setup(isTestFlow = false)
     }
 
     NavHost(
@@ -35,11 +36,16 @@ fun AppNavigation(isSetupCompleted: Boolean) {
             exitTransition = { exitTransition() },
             popEnterTransition = { popEnterTransition() },
             popExitTransition = { popExitTransition() },
-        ) {
+        ) { backStackEntry ->
+            val setup: Route.Setup = backStackEntry.toRoute()
             SetupScreen(
                 onSetupCompleted = {
-                    navController.navigateSafely(Route.Main) {
-                        popUpTo(Route.Setup) { inclusive = true }
+                    if (setup.isTestFlow) {
+                        navController.popBackStack()
+                    } else {
+                        navController.navigateSafely(Route.Main) {
+                            popUpTo(Route.Setup(isTestFlow = false)) { inclusive = true }
+                        }
                     }
                 },
             )
@@ -109,7 +115,7 @@ fun AppNavigation(isSetupCompleted: Boolean) {
             ScreenWrapper(navController = navController) {
                 AppSettingsScreen(
                     onNavigateBack = { navController.popBackStack() },
-                    onNavigateToSetup = { navController.navigateSafely(Route.Setup) },
+                    onNavigateToSetup = { navController.navigateSafely(Route.Setup(isTestFlow = true)) },
                 )
             }
         }

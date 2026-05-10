@@ -20,5 +20,5 @@ sealed interface Route {
     @Serializable
     data object About : Route
     @Serializable
-    data object Setup : Route
+    data class Setup(val isTestFlow: Boolean = false) : Route
 }
