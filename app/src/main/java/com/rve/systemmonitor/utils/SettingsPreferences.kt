@@ -17,6 +17,7 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "se
 class SettingsPreferences(private val context: Context) {
     companion object {
         val THEME_MODE_KEY = stringPreferencesKey("theme_mode")
+        val AMOLED_MODE_KEY = booleanPreferencesKey("amoled_mode")
         val IS_SETUP_COMPLETED_KEY = booleanPreferencesKey("is_setup_completed")
         val CPU_REFRESH_DELAY_KEY = longPreferencesKey("cpu_refresh_delay")
         val MEMORY_REFRESH_DELAY_KEY = longPreferencesKey("memory_refresh_delay")
@@ -42,6 +43,11 @@ class SettingsPreferences(private val context: Context) {
         .map { preferences ->
             val mode = preferences[THEME_MODE_KEY] ?: ThemeMode.SYSTEM.name
             ThemeMode.valueOf(mode)
+        }
+
+    val amoledModeFlow: Flow<Boolean> = context.dataStore.data
+        .map { preferences ->
+            preferences[AMOLED_MODE_KEY] ?: false
         }
 
     val vibrationIntensityFlow: Flow<VibrationIntensity> = context.dataStore.data
@@ -83,6 +89,12 @@ class SettingsPreferences(private val context: Context) {
     suspend fun saveThemeMode(mode: ThemeMode) {
         context.dataStore.edit { preferences ->
             preferences[THEME_MODE_KEY] = mode.name
+        }
+    }
+
+    suspend fun saveAmoledMode(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[AMOLED_MODE_KEY] = enabled
         }
     }
 

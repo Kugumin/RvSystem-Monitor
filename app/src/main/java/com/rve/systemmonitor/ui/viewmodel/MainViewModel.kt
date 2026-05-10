@@ -14,14 +14,22 @@ import kotlinx.coroutines.flow.stateIn
 
 @HiltViewModel
 class MainViewModel @Inject constructor(settingsRepository: SettingsRepository) : ViewModel() {
-    val uiState: StateFlow<MainUiState> = combine(
+    val uiState: StateFlow<MainUiState> = combine<Any, MainUiState>(
         settingsRepository.themeMode,
+        settingsRepository.amoledMode,
         settingsRepository.isSetupCompleted,
         settingsRepository.hapticFeedbackEnabled,
         settingsRepository.vibrationIntensity,
         settingsRepository.autoUpdateEnabled,
-    ) { theme, setupCompleted, hapticEnabled, vibrationIntensity, autoUpdateEnabled ->
-        MainUiState.Success(theme, setupCompleted, hapticEnabled, vibrationIntensity, autoUpdateEnabled)
+    ) { args ->
+        MainUiState.Success(
+            themeMode = args[0] as ThemeMode,
+            amoledMode = args[1] as Boolean,
+            isSetupCompleted = args[2] as Boolean,
+            hapticFeedbackEnabled = args[3] as Boolean,
+            vibrationIntensity = args[4] as VibrationIntensity,
+            autoUpdateEnabled = args[5] as Boolean,
+        )
     }.stateIn(
         scope = viewModelScope,
         initialValue = MainUiState.Loading,
@@ -33,6 +41,7 @@ sealed interface MainUiState {
     data object Loading : MainUiState
     data class Success(
         val themeMode: ThemeMode,
+        val amoledMode: Boolean,
         val isSetupCompleted: Boolean,
         val hapticFeedbackEnabled: Boolean,
         val vibrationIntensity: VibrationIntensity,

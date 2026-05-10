@@ -16,6 +16,8 @@ class SettingsRepositoryImpl @Inject constructor(application: Application) : Set
 
     override val themeMode: Flow<ThemeMode> = settingsPreferences.themeModeFlow
 
+    override val amoledMode: Flow<Boolean> = settingsPreferences.amoledModeFlow
+
     override val hapticFeedbackEnabled: Flow<Boolean> = settingsPreferences.hapticFeedbackEnabledFlow
 
     override val vibrationIntensity: Flow<VibrationIntensity> = settingsPreferences.vibrationIntensityFlow
@@ -36,6 +38,10 @@ class SettingsRepositoryImpl @Inject constructor(application: Application) : Set
 
     override suspend fun setThemeMode(mode: ThemeMode) {
         settingsPreferences.saveThemeMode(mode)
+    }
+
+    override suspend fun setAmoledMode(enabled: Boolean) {
+        settingsPreferences.saveAmoledMode(enabled)
     }
 
     override suspend fun setHapticFeedbackEnabled(enabled: Boolean) {

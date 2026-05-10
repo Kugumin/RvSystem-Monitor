@@ -25,12 +25,25 @@ import com.rve.systemmonitor.utils.VibrationIntensity
 @Composable
 fun RvSystemMonitorTheme(
     darkTheme: Boolean,
+    amoledMode: Boolean = false,
     hapticEnabled: Boolean = true,
     vibrationIntensity: VibrationIntensity = VibrationIntensity.LIGHT,
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
-    val targetColorScheme = if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+    val targetColorScheme = if (darkTheme) {
+        val baseColorScheme = dynamicDarkColorScheme(context)
+        if (amoledMode) {
+            baseColorScheme.copy(
+                background = Color.Black,
+                surface = Color.Black,
+            )
+        } else {
+            baseColorScheme
+        }
+    } else {
+        dynamicLightColorScheme(context)
+    }
     val colorScheme = animateColorScheme(targetColorScheme)
 
     val view = LocalView.current

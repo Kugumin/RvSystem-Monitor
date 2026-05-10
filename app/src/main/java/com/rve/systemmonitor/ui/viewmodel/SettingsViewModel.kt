@@ -22,6 +22,13 @@ class SettingsViewModel @Inject constructor(private val settingsRepository: Sett
             initialValue = ThemeMode.SYSTEM,
         )
 
+    val amoledMode: StateFlow<Boolean> = settingsRepository.amoledMode
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false,
+        )
+
     val hapticFeedbackEnabled: StateFlow<Boolean> = settingsRepository.hapticFeedbackEnabled
         .stateIn(
             scope = viewModelScope,
@@ -74,6 +81,12 @@ class SettingsViewModel @Inject constructor(private val settingsRepository: Sett
     fun setThemeMode(mode: ThemeMode) {
         viewModelScope.launch {
             settingsRepository.setThemeMode(mode)
+        }
+    }
+
+    fun setAmoledMode(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setAmoledMode(enabled)
         }
     }
 

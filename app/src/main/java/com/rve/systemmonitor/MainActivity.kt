@@ -53,6 +53,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 val themeMode = successState.themeMode
+                val amoledMode = successState.amoledMode
                 val isSetupCompleted = successState.isSetupCompleted
                 val hapticEnabled = successState.hapticFeedbackEnabled
                 val vibrationIntensity = successState.vibrationIntensity
@@ -62,7 +63,7 @@ class MainActivity : ComponentActivity() {
                     ThemeMode.SYSTEM -> isSystemInDarkTheme()
                 }
 
-                RvSystemMonitorTheme(darkTheme, hapticEnabled, vibrationIntensity) {
+                RvSystemMonitorTheme(darkTheme, amoledMode, hapticEnabled, vibrationIntensity) {
                     val updateUiState by updateViewModel.uiState.collectAsStateWithLifecycle()
 
                     UpdateDialog(

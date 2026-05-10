@@ -57,8 +57,15 @@ import com.rve.systemmonitor.utils.VibrationIntensity
 fun AppearanceSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onNavigateBack: () -> Unit) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val currentTheme by viewModel.themeMode.collectAsStateWithLifecycle()
+    val amoledMode by viewModel.amoledMode.collectAsStateWithLifecycle()
     val hapticEnabled by viewModel.hapticFeedbackEnabled.collectAsStateWithLifecycle()
     val vibrationIntensity by viewModel.vibrationIntensity.collectAsStateWithLifecycle()
+
+    val darkTheme = when (currentTheme) {
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+        ThemeMode.SYSTEM -> androidx.compose.foundation.isSystemInDarkTheme()
+    }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -170,6 +177,80 @@ fun AppearanceSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
                                 }
                             }
 
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            val amoledEnabled = darkTheme
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .hapticClickable(enabled = amoledEnabled) { viewModel.setAmoledMode(!amoledMode) }
+                                    .padding(horizontal = 20.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(vertical = 8.dp),
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(48.dp)
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(
+                                                if (amoledEnabled) MaterialTheme.colorScheme.primary
+                                                else MaterialTheme.colorScheme.primary.copy(alpha = 0.38f),
+                                            ),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.night_mode_filled),
+                                            contentDescription = "Amoled Icon",
+                                            tint = if (amoledEnabled) MaterialTheme.colorScheme.onPrimary
+                                            else MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.38f),
+                                        )                                    }
+
+                                    Column {
+                                        Text(
+                                            text = "Amoled Mode",
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = if (amoledEnabled) MaterialTheme.colorScheme.onSurface
+                                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                                        )
+                                        Text(
+                                            text = if (amoledEnabled) "Pure black background for OLED screens"
+                                            else "Dark mode is required to use Amoled mode",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = if (amoledEnabled) MaterialTheme.colorScheme.onSurfaceVariant
+                                            else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
+                                        )
+                                    }
+                                }
+
+                                Switch(
+                                    enabled = amoledEnabled,
+                                    checked = amoledMode && amoledEnabled,
+                                    onCheckedChange = { viewModel.setAmoledMode(it) },
+                                    thumbContent = {
+                                        Crossfade(
+                                            targetState = amoledMode && amoledEnabled,
+                                            animationSpec = MaterialTheme.motionScheme.slowEffectsSpec(),
+                                            label = "Amoled Switch Icon",
+                                        ) { enabled ->
+                                            Icon(
+                                                painter = painterResource(
+                                                    if (enabled) R.drawable.check_rounded else R.drawable.close_rounded,
+                                                ),
+                                                contentDescription = null,
+                                                modifier = Modifier.size(SwitchDefaults.IconSize),
+                                            )
+                                        }
+                                    },
+                                )
+                            }
                             Spacer(modifier = Modifier.height(8.dp))
 
                             Spacer(modifier = Modifier.height(4.dp))

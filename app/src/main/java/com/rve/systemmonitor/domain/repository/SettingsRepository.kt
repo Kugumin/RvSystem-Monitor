@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface SettingsRepository {
     val themeMode: Flow<ThemeMode>
+    val amoledMode: Flow<Boolean>
     val hapticFeedbackEnabled: Flow<Boolean>
     val vibrationIntensity: Flow<VibrationIntensity>
     val isSetupCompleted: Flow<Boolean>
@@ -16,6 +17,7 @@ interface SettingsRepository {
     val autoUpdateEnabled: Flow<Boolean>
     val updatesPausedUntil: Flow<Long>
     suspend fun setThemeMode(mode: ThemeMode)
+    suspend fun setAmoledMode(enabled: Boolean)
     suspend fun setHapticFeedbackEnabled(enabled: Boolean)
     suspend fun setVibrationIntensity(intensity: VibrationIntensity)
     suspend fun setSetupCompleted(completed: Boolean)
