@@ -1,12 +1,31 @@
 package com.rve.systemmonitor.ui.screens
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,13 +53,26 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -51,6 +83,8 @@ import com.rve.systemmonitor.ui.components.haptic.rememberHapticOnClick
 import com.rve.systemmonitor.ui.viewmodel.SettingsViewModel
 import com.rve.systemmonitor.utils.ThemeMode
 import com.rve.systemmonitor.utils.VibrationIntensity
+import kotlin.math.abs
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -88,6 +122,14 @@ fun AppearanceSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
             ),
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
+            item {
+                AppearanceHero(
+                    hapticEnabled = hapticEnabled,
+                    vibrationIntensity = vibrationIntensity,
+                    currentTheme = currentTheme,
+                    amoledMode = amoledMode,
+                )
+            }
             item {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
@@ -381,6 +423,264 @@ fun AppearanceSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
                                             }
                                         }
                                     }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+fun Modifier.shimmerEffect(): Modifier = composed {
+    val transition = rememberInfiniteTransition(label = "Shimmer Transition")
+    val translateAnim by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1000f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1200, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart,
+        ),
+        label = "Shimmer Offset",
+    )
+
+    val shimmerColors = listOf(
+        Color.White.copy(alpha = 0.0f),
+        Color.White.copy(alpha = 0.3f),
+        Color.White.copy(alpha = 0.0f),
+    )
+
+    background(
+        brush = Brush.linearGradient(
+            colors = shimmerColors,
+            start = Offset.Zero,
+            end = Offset(x = translateAnim, y = translateAnim),
+        ),
+    )
+}
+
+@Composable
+private fun AppearanceHero(hapticEnabled: Boolean, vibrationIntensity: VibrationIntensity, currentTheme: ThemeMode, amoledMode: Boolean) {
+    val isDark = when (currentTheme) {
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+        ThemeMode.SYSTEM -> androidx.compose.foundation.isSystemInDarkTheme()
+    }
+
+    val iconRes = remember(isDark, amoledMode) {
+        if (isDark) {
+            if (amoledMode) R.drawable.night_mode_filled else R.drawable.dark_mode
+        } else {
+            R.drawable.light_mode
+        }
+    }
+
+    val shakeOffset = remember { Animatable(0f) }
+    val blurRadius = abs(shakeOffset.value).dp / 2f
+
+    LaunchedEffect(hapticEnabled, vibrationIntensity) {
+        if (hapticEnabled) {
+            val amplitude = when (vibrationIntensity) {
+                VibrationIntensity.LIGHT -> 2f
+                VibrationIntensity.MEDIUM -> 4f
+                VibrationIntensity.STRONG -> 8f
+            }
+            val duration = when (vibrationIntensity) {
+                VibrationIntensity.LIGHT -> 40
+                VibrationIntensity.MEDIUM -> 30
+                VibrationIntensity.STRONG -> 20
+            }
+
+            shakeOffset.animateTo(
+                targetValue = 0f,
+                animationSpec = keyframes {
+                    durationMillis = duration * 8
+                    -amplitude at duration using LinearEasing
+                    amplitude at duration * 2 using LinearEasing
+                    -amplitude at duration * 3 using LinearEasing
+                    amplitude at duration * 4 using LinearEasing
+                    -amplitude at duration * 5 using LinearEasing
+                    amplitude at duration * 6 using LinearEasing
+                    -amplitude at duration * 7 using LinearEasing
+                    0f at duration * 8 using LinearEasing
+                },
+            )
+        }
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(220.dp),
+        shape = RoundedCornerShape(32.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Appearance",
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        )
+                        Text(
+                            text = "Customize your monitoring experience",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
+                        )
+                    }
+
+                    val spatialSpec = MaterialTheme.motionScheme.slowSpatialSpec<Float>()
+                    val effectsSpec = MaterialTheme.motionScheme.slowEffectsSpec<Float>()
+                    val spatialSpecInt = MaterialTheme.motionScheme.slowSpatialSpec<IntOffset>()
+
+                    AnimatedContent(
+                        targetState = iconRes,
+                        transitionSpec = {
+                            (
+                                fadeIn(animationSpec = effectsSpec) +
+                                    scaleIn(
+                                        initialScale = 0f,
+                                        transformOrigin = TransformOrigin(0.5f, 1f),
+                                        animationSpec = spatialSpec,
+                                    ) +
+                                    slideInVertically(
+                                        initialOffsetY = { it },
+                                        animationSpec = spatialSpecInt,
+                                    )
+                                )
+                                .togetherWith(
+                                    fadeOut(animationSpec = effectsSpec) +
+                                        scaleOut(
+                                            targetScale = 0f,
+                                            transformOrigin = TransformOrigin(0.5f, 1f),
+                                            animationSpec = spatialSpec,
+                                        ) +
+                                        slideOutVertically(
+                                            targetOffsetY = { it },
+                                            animationSpec = spatialSpecInt,
+                                        ),
+                                )
+                        },
+                        label = "Icon Transition",
+                    ) { targetIcon ->
+                        Icon(
+                            painter = painterResource(targetIcon),
+                            contentDescription = null,
+                            modifier = Modifier.size(48.dp),
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        )
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(64.dp)
+                            .graphicsLayer {
+                                translationX = shakeOffset.value
+                            }
+                            .blur(radiusX = blurRadius, radiusY = 0.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(MaterialTheme.colorScheme.surface)
+                            .padding(12.dp),
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)),
+                            ) {
+                                Box(modifier = Modifier.fillMaxSize().shimmerEffect())
+                            }
+                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth(0.7f)
+                                        .height(6.6.dp)
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)),
+                                ) {
+                                    Box(modifier = Modifier.fillMaxSize().shimmerEffect())
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth(0.5f)
+                                        .height(4.dp)
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)),
+                                ) {
+                                    Box(modifier = Modifier.fillMaxSize().shimmerEffect())
+                                }
+                            }
+                        }
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(64.dp)
+                            .graphicsLayer {
+                                translationX = shakeOffset.value
+                            }
+                            .blur(radiusX = blurRadius, radiusY = 0.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(MaterialTheme.colorScheme.tertiary)
+                            .padding(12.dp),
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(MaterialTheme.colorScheme.onTertiary),
+                            ) {
+                                Box(modifier = Modifier.fillMaxSize().shimmerEffect())
+                            }
+                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth(0.7f)
+                                        .height(6.6.dp)
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(MaterialTheme.colorScheme.onTertiary.copy(alpha = 0.6f)),
+                                ) {
+                                    Box(modifier = Modifier.fillMaxSize().shimmerEffect())
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth(0.5f)
+                                        .height(4.dp)
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(MaterialTheme.colorScheme.onTertiary.copy(alpha = 0.3f)),
+                                ) {
+                                    Box(modifier = Modifier.fillMaxSize().shimmerEffect())
                                 }
                             }
                         }
