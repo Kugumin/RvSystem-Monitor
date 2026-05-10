@@ -131,6 +131,9 @@ fun AppSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onNavigate
                             Switch(
                                 checked = autoUpdateEnabled,
                                 onCheckedChange = { viewModel.setAutoUpdateEnabled(it) },
+                                colors = SwitchDefaults.colors(
+                                    checkedIconColor = MaterialTheme.colorScheme.primary,
+                                ),
                                 thumbContent = {
                                     Crossfade(
                                         targetState = autoUpdateEnabled,

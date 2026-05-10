@@ -234,6 +234,9 @@ fun AppearanceSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
                                     enabled = amoledEnabled,
                                     checked = amoledMode && amoledEnabled,
                                     onCheckedChange = { viewModel.setAmoledMode(it) },
+                                    colors = SwitchDefaults.colors(
+                                        checkedIconColor = MaterialTheme.colorScheme.primary,
+                                    ),
                                     thumbContent = {
                                         Crossfade(
                                             targetState = amoledMode && amoledEnabled,
@@ -302,6 +305,9 @@ fun AppearanceSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
                                 Switch(
                                     checked = hapticEnabled,
                                     onCheckedChange = { viewModel.setHapticFeedbackEnabled(it) },
+                                    colors = SwitchDefaults.colors(
+                                        checkedIconColor = MaterialTheme.colorScheme.primary,
+                                    ),
                                     thumbContent = {
                                         Crossfade(
                                             targetState = hapticEnabled,

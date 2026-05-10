@@ -1020,6 +1020,9 @@ private fun MetricToggleCard(
                 onCheckedChange = null,
                 enabled = hasPermission,
                 interactionSource = if (hasPermission) interactionSource else null,
+                colors = SwitchDefaults.colors(
+                    checkedIconColor = MaterialTheme.colorScheme.primary,
+                ),
                 thumbContent = {
                     Crossfade(
                         targetState = isEnabled,

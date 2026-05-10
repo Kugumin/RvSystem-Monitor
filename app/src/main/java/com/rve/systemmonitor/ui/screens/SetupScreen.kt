@@ -244,6 +244,9 @@ private fun UpdatesStep(autoUpdateEnabled: Boolean, onAutoUpdateChanged: (Boolea
                     Switch(
                         checked = autoUpdateEnabled,
                         onCheckedChange = onAutoUpdateChanged,
+                        colors = SwitchDefaults.colors(
+                            checkedIconColor = MaterialTheme.colorScheme.primary,
+                        ),
                         thumbContent = {
                             Crossfade(
                                 targetState = autoUpdateEnabled,
