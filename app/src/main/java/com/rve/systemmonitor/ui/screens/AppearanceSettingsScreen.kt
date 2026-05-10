@@ -142,100 +142,108 @@ fun AppearanceSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
                         modifier = Modifier.padding(bottom = 12.dp, start = 8.dp),
                     )
 
-                    Card(
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
-                        ),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
-                        Column(
-                            modifier = Modifier.padding(top = 20.dp, bottom = 12.dp),
-                            verticalArrangement = Arrangement.spacedBy(0.dp),
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomStart = 8.dp, bottomEnd = 8.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
+                            ),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                         ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 20.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            Column(
+                                modifier = Modifier.padding(vertical = 20.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
                             ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(MaterialTheme.colorScheme.primary),
-                                    contentAlignment = Alignment.Center,
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 20.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(16.dp),
                                 ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.brightness_medium_filled),
-                                        contentDescription = "Theme Icon",
-                                        tint = MaterialTheme.colorScheme.onPrimary,
-                                    )
-                                }
-
-                                Column {
-                                    Text(
-                                        text = "App Theme",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                    )
-                                    Text(
-                                        text = "Choose your preferred visual style",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            val themeOptions = listOf(
-                                ThemeMode.LIGHT to "Light",
-                                ThemeMode.SYSTEM to "System",
-                                ThemeMode.DARK to "Dark",
-                            )
-
-                            SingleChoiceSegmentedButtonRow(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 20.dp),
-                            ) {
-                                themeOptions.forEachIndexed { index, (mode, label) ->
-                                    SegmentedButton(
-                                        shape = SegmentedButtonDefaults.itemShape(
-                                            index = index,
-                                            count = themeOptions.size,
-                                        ),
-                                        onClick = rememberHapticOnClick { viewModel.setThemeMode(mode) },
-                                        selected = currentTheme == mode,
+                                    Box(
+                                        modifier = Modifier
+                                            .size(48.dp)
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(MaterialTheme.colorScheme.primary),
+                                        contentAlignment = Alignment.Center,
                                     ) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.brightness_medium_filled),
+                                            contentDescription = "Theme Icon",
+                                            tint = MaterialTheme.colorScheme.onPrimary,
+                                        )
+                                    }
+
+                                    Column {
                                         Text(
-                                            text = label,
-                                            style = MaterialTheme.typography.labelLarge,
-                                            fontWeight = if (currentTheme == mode) FontWeight.Bold else FontWeight.Normal,
+                                            text = "App Theme",
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                        )
+                                        Text(
+                                            text = "Choose your preferred visual style",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
                                     }
                                 }
+
+                                val themeOptions = listOf(
+                                    ThemeMode.LIGHT to "Light",
+                                    ThemeMode.SYSTEM to "System",
+                                    ThemeMode.DARK to "Dark",
+                                )
+
+                                SingleChoiceSegmentedButtonRow(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 20.dp),
+                                ) {
+                                    themeOptions.forEachIndexed { index, (mode, label) ->
+                                        SegmentedButton(
+                                            shape = SegmentedButtonDefaults.itemShape(
+                                                index = index,
+                                                count = themeOptions.size,
+                                            ),
+                                            onClick = rememberHapticOnClick { viewModel.setThemeMode(mode) },
+                                            selected = currentTheme == mode,
+                                        ) {
+                                            Text(
+                                                text = label,
+                                                style = MaterialTheme.typography.labelLarge,
+                                                fontWeight = if (currentTheme == mode) FontWeight.Bold else FontWeight.Normal,
+                                            )
+                                        }
+                                    }
+                                }
                             }
+                        }
 
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            val amoledEnabled = darkTheme
+                        val amoledEnabled = darkTheme
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
+                            ),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                        ) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .hapticClickable(enabled = amoledEnabled) { viewModel.setAmoledMode(!amoledMode) }
-                                    .padding(horizontal = 20.dp),
+                                    .padding(horizontal = 20.dp, vertical = 20.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween,
                             ) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .padding(vertical = 8.dp),
+                                    modifier = Modifier.weight(1f),
                                 ) {
                                     Box(
                                         modifier = Modifier
@@ -297,129 +305,139 @@ fun AppearanceSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
                                     },
                                 )
                             }
-                            Spacer(modifier = Modifier.height(8.dp))
+                        }
 
-                            Spacer(modifier = Modifier.height(4.dp))
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .hapticClickable { viewModel.setHapticFeedbackEnabled(!hapticEnabled) }
-                                    .padding(horizontal = 20.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween,
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 24.dp, bottomEnd = 24.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
+                            ),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(vertical = 12.dp),
                             ) {
                                 Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(16.dp),
                                     modifier = Modifier
-                                        .weight(1f)
-                                        .padding(vertical = 8.dp),
+                                        .fillMaxWidth()
+                                        .hapticClickable { viewModel.setHapticFeedbackEnabled(!hapticEnabled) }
+                                        .padding(horizontal = 20.dp, vertical = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween,
                                 ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(48.dp)
-                                            .clip(RoundedCornerShape(12.dp))
-                                            .background(MaterialTheme.colorScheme.primary),
-                                        contentAlignment = Alignment.Center,
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                        modifier = Modifier.weight(1f),
                                     ) {
-                                        Icon(
-                                            painter = painterResource(R.drawable.mobile_vibrate_filled),
-                                            contentDescription = "Haptic Icon",
-                                            tint = MaterialTheme.colorScheme.onSecondary,
-                                        )
-                                    }
-
-                                    Column {
-                                        Text(
-                                            text = "Haptic Feedback",
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = MaterialTheme.colorScheme.onSurface,
-                                        )
-                                        Text(
-                                            text = "Subtle vibrations on interaction",
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        )
-                                    }
-                                }
-
-                                Switch(
-                                    checked = hapticEnabled,
-                                    onCheckedChange = { viewModel.setHapticFeedbackEnabled(it) },
-                                    colors = SwitchDefaults.colors(
-                                        checkedIconColor = MaterialTheme.colorScheme.primary,
-                                    ),
-                                    thumbContent = {
-                                        Crossfade(
-                                            targetState = hapticEnabled,
-                                            animationSpec = MaterialTheme.motionScheme.slowEffectsSpec(),
-                                            label = "Haptic Switch Icon",
-                                        ) { enabled ->
+                                        Box(
+                                            modifier = Modifier
+                                                .size(48.dp)
+                                                .clip(RoundedCornerShape(12.dp))
+                                                .background(MaterialTheme.colorScheme.primary),
+                                            contentAlignment = Alignment.Center,
+                                        ) {
                                             Icon(
-                                                painter = painterResource(
-                                                    if (enabled) R.drawable.check_rounded else R.drawable.close_rounded,
-                                                ),
-                                                contentDescription = null,
-                                                modifier = Modifier.size(SwitchDefaults.IconSize),
+                                                painter = painterResource(R.drawable.mobile_vibrate_filled),
+                                                contentDescription = "Haptic Icon",
+                                                tint = MaterialTheme.colorScheme.onSecondary,
                                             )
                                         }
-                                    },
-                                )
-                            }
 
-                            AnimatedVisibility(
-                                visible = hapticEnabled,
-                                enter = expandVertically(
-                                    animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
-                                ) + fadeIn(
-                                    animationSpec = MaterialTheme.motionScheme.slowEffectsSpec(),
-                                ),
-                                exit = shrinkVertically(
-                                    animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
-                                ) + fadeOut(
-                                    animationSpec = MaterialTheme.motionScheme.slowEffectsSpec(),
-                                ),
-                            ) {
-                                Column(
-                                    modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 8.dp),
-                                ) {
-                                    Spacer(modifier = Modifier.height(8.dp))
+                                        Column {
+                                            Text(
+                                                text = "Haptic Feedback",
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = MaterialTheme.colorScheme.onSurface,
+                                            )
+                                            Text(
+                                                text = "Subtle vibrations on interaction",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            )
+                                        }
+                                    }
 
-                                    Text(
-                                        text = "Vibration Intensity",
-                                        style = MaterialTheme.typography.titleSmall,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        modifier = Modifier.padding(bottom = 8.dp),
-                                    )
-
-                                    val intensityOptions = listOf(
-                                        VibrationIntensity.LIGHT to "Light",
-                                        VibrationIntensity.MEDIUM to "Medium",
-                                        VibrationIntensity.STRONG to "Strong",
-                                    )
-
-                                    SingleChoiceSegmentedButtonRow(
-                                        modifier = Modifier.fillMaxWidth(),
-                                    ) {
-                                        intensityOptions.forEachIndexed { index, (intensity, label) ->
-                                            SegmentedButton(
-                                                shape = SegmentedButtonDefaults.itemShape(
-                                                    index = index,
-                                                    count = intensityOptions.size,
-                                                ),
-                                                onClick = rememberHapticOnClick { viewModel.setVibrationIntensity(intensity) },
-                                                selected = vibrationIntensity == intensity,
-                                            ) {
-                                                Text(
-                                                    text = label,
-                                                    style = MaterialTheme.typography.labelLarge,
-                                                    fontWeight = if (vibrationIntensity ==
-                                                        intensity
-                                                    ) FontWeight.Bold else FontWeight.Normal,
+                                    Switch(
+                                        checked = hapticEnabled,
+                                        onCheckedChange = { viewModel.setHapticFeedbackEnabled(it) },
+                                        colors = SwitchDefaults.colors(
+                                            checkedIconColor = MaterialTheme.colorScheme.primary,
+                                        ),
+                                        thumbContent = {
+                                            Crossfade(
+                                                targetState = hapticEnabled,
+                                                animationSpec = MaterialTheme.motionScheme.slowEffectsSpec(),
+                                                label = "Haptic Switch Icon",
+                                            ) { enabled ->
+                                                Icon(
+                                                    painter = painterResource(
+                                                        if (enabled) R.drawable.check_rounded else R.drawable.close_rounded,
+                                                    ),
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(SwitchDefaults.IconSize),
                                                 )
+                                            }
+                                        },
+                                    )
+                                }
+
+                                AnimatedVisibility(
+                                    visible = hapticEnabled,
+                                    enter = expandVertically(
+                                        animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
+                                    ) + fadeIn(
+                                        animationSpec = MaterialTheme.motionScheme.slowEffectsSpec(),
+                                    ),
+                                    exit = shrinkVertically(
+                                        animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
+                                    ) + fadeOut(
+                                        animationSpec = MaterialTheme.motionScheme.slowEffectsSpec(),
+                                    ),
+                                ) {
+                                    Column(
+                                        modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 8.dp, top = 8.dp),
+                                    ) {
+                                        Text(
+                                            text = "Vibration Intensity",
+                                            style = MaterialTheme.typography.titleSmall,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                            modifier = Modifier.padding(bottom = 8.dp),
+                                        )
+
+                                        val intensityOptions = listOf(
+                                            VibrationIntensity.LIGHT to "Light",
+                                            VibrationIntensity.MEDIUM to "Medium",
+                                            VibrationIntensity.STRONG to "Strong",
+                                        )
+
+                                        SingleChoiceSegmentedButtonRow(
+                                            modifier = Modifier.fillMaxWidth(),
+                                        ) {
+                                            intensityOptions.forEachIndexed { index, (intensity, label) ->
+                                                SegmentedButton(
+                                                    shape = SegmentedButtonDefaults.itemShape(
+                                                        index = index,
+                                                        count = intensityOptions.size,
+                                                    ),
+                                                    onClick = rememberHapticOnClick {
+                                                        viewModel.setVibrationIntensity(
+                                                            intensity,
+                                                        )
+                                                    },
+                                                    selected = vibrationIntensity == intensity,
+                                                ) {
+                                                    Text(
+                                                        text = label,
+                                                        style = MaterialTheme.typography.labelLarge,
+                                                        fontWeight = if (vibrationIntensity ==
+                                                            intensity
+                                                        ) FontWeight.Bold else FontWeight.Normal,
+                                                    )
+                                                }
                                             }
                                         }
                                     }
