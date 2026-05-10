@@ -157,7 +157,7 @@ private fun OverlayPermissionStep(isOverlayPermissionGranted: Boolean, onGrantPe
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
-                shape = RoundedCornerShape(16.dp),
+                shapes = ButtonDefaults.shapes(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -351,6 +351,7 @@ private fun SetupNextButton(enabled: Boolean, onClick: () -> Unit, contentDescri
         onClick = rememberHapticOnClick(onClick),
         enabled = enabled,
         modifier = Modifier.size(56.dp),
+        shapes = IconButtonDefaults.shapes(),
         colors = IconButtonDefaults.filledIconButtonColors(
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimary,
