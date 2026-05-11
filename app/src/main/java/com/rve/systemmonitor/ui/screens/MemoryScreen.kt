@@ -4,14 +4,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
@@ -33,28 +30,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rve.systemmonitor.R
 import com.rve.systemmonitor.domain.model.RAM
 import com.rve.systemmonitor.domain.model.Storage
 import com.rve.systemmonitor.domain.model.ZRAM
 import com.rve.systemmonitor.ui.components.card.OverviewCard
 import com.rve.systemmonitor.ui.components.dialog.InfoDialog
+import com.rve.systemmonitor.ui.components.layout.ScreenLazyColumn
 import com.rve.systemmonitor.ui.components.row.MemoryStorageProgressRow
-import com.rve.systemmonitor.ui.viewmodel.MemoryUiState
+import com.rve.systemmonitor.ui.components.row.TwoColumnInfoRow
+import com.rve.systemmonitor.ui.utils.rememberLifecycleAwareState
 import com.rve.systemmonitor.ui.viewmodel.MemoryViewModel
 import java.util.Locale
-import kotlinx.coroutines.flow.emptyFlow
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun MemoryScreen(isActive: Boolean, viewModel: MemoryViewModel = hiltViewModel()) {
-    val initialUiState = remember { viewModel.uiState.value }
-    val uiState by if (isActive) {
-        viewModel.uiState.collectAsStateWithLifecycle()
-    } else {
-        remember { emptyFlow<MemoryUiState>() }.collectAsStateWithLifecycle(initialUiState)
-    }
+    val uiState by rememberLifecycleAwareState(isActive, viewModel.uiState)
 
     LaunchedEffect(isActive) {
         if (isActive) {
@@ -72,16 +64,7 @@ fun MemoryScreen(isActive: Boolean, viewModel: MemoryViewModel = hiltViewModel()
         )
     }
 
-    LazyColumn(
-        contentPadding = PaddingValues(
-            top = 16.dp,
-            bottom = 112.dp,
-        ),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp),
-    ) {
+    ScreenLazyColumn {
         item {
             MemoryCard(
                 ram = uiState.ram,
@@ -124,10 +107,7 @@ private fun DetailedMemoryCard(ram: RAM, onItemClick: (String, String) -> Unit) 
             fontWeight = FontWeight.Bold,
         )
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
+        TwoColumnInfoRow(spacing = 12.dp) {
             MemoryDetailItem(
                 label = "Cached",
                 value = cached,
@@ -145,10 +125,7 @@ private fun DetailedMemoryCard(ram: RAM, onItemClick: (String, String) -> Unit) 
             )
         }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
+        TwoColumnInfoRow(spacing = 12.dp) {
             MemoryDetailItem(
                 label = "Active",
                 value = active,

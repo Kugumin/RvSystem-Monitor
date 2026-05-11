@@ -5,20 +5,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearWavyProgressIndicator
@@ -37,36 +32,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rve.systemmonitor.R
 import com.rve.systemmonitor.domain.model.CPU
 import com.rve.systemmonitor.domain.model.CoreDetail
 import com.rve.systemmonitor.ui.components.card.OverviewCard
+import com.rve.systemmonitor.ui.components.card.StandardCard
 import com.rve.systemmonitor.ui.components.chip.BadgeChip
 import com.rve.systemmonitor.ui.components.chip.CompactInfoChip
 import com.rve.systemmonitor.ui.components.item.InfoItem
+import com.rve.systemmonitor.ui.components.layout.ScreenLazyColumn
+import com.rve.systemmonitor.ui.components.row.TwoColumnInfoRow
+import com.rve.systemmonitor.ui.utils.rememberLifecycleAwareState
 import com.rve.systemmonitor.ui.viewmodel.CPUViewModel
-import kotlinx.coroutines.flow.emptyFlow
 
 @Composable
 fun CPUScreen(isActive: Boolean, viewModel: CPUViewModel = hiltViewModel()) {
-    val initialCpuInfo = remember { viewModel.cpuInfo.value }
-    val cpuInfo by if (isActive) {
-        viewModel.cpuInfo.collectAsStateWithLifecycle()
-    } else {
-        remember { emptyFlow<CPU>() }.collectAsStateWithLifecycle(initialCpuInfo)
-    }
+    val cpuInfo by rememberLifecycleAwareState(isActive, viewModel.cpuInfo)
 
-    LazyColumn(
-        contentPadding = PaddingValues(
-            top = 16.dp,
-            bottom = 112.dp,
-        ),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp),
-    ) {
+    ScreenLazyColumn {
         item {
             CPUOverviewCard(cpuInfo)
         }
@@ -147,10 +130,7 @@ private fun CPUOverviewCard(cpu: CPU) {
                 )
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
+            TwoColumnInfoRow {
                 InfoItem(
                     label = "Architecture",
                     value = cpu.architecture,
@@ -165,10 +145,7 @@ private fun CPUOverviewCard(cpu: CPU) {
                 )
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
+            TwoColumnInfoRow {
                 InfoItem(
                     label = "Hardware",
                     value = cpu.hardware,
@@ -198,95 +175,84 @@ private fun CoreDetailCard(core: CoreDetail) {
         label = "FreqProgress",
     )
 
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-            contentColor = MaterialTheme.colorScheme.onSurface,
-        ),
+    StandardCard(
+        modifier = Modifier.padding(vertical = 4.dp),
     ) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.primary)
+                    .padding(8.dp),
+                contentAlignment = Alignment.Center,
             ) {
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(MaterialTheme.colorScheme.primary)
-                        .padding(8.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.memory_filled),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(20.dp),
-                    )
-                }
-
-                Text(
-                    text = "CPU Core ${core.id}",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.ExtraBold,
-                    letterSpacing = 0.5.sp,
-                    modifier = Modifier.weight(1f),
-                )
-
-                BadgeChip(
-                    text = String.format("%.1f °C", core.temperature),
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    textColor = MaterialTheme.colorScheme.onPrimary,
-                )
-
-                BadgeChip(
-                    text = core.governor.uppercase(),
-                    containerColor = MaterialTheme.colorScheme.tertiary,
-                    textColor = MaterialTheme.colorScheme.onTertiary,
+                Icon(
+                    painter = painterResource(R.drawable.memory_filled),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(20.dp),
                 )
             }
 
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = core.currentFreq,
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontWeight = FontWeight.Black,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                    ),
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                LinearWavyProgressIndicator(
-                    progress = { animatedProgress },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(8.dp),
-                    color = MaterialTheme.colorScheme.primary,
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                )
-            }
+            Text(
+                text = "CPU Core ${core.id}",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 0.5.sp,
+                modifier = Modifier.weight(1f),
+            )
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                CompactInfoChip(
-                    label = "Minimum",
-                    value = core.minFreq,
-                    modifier = Modifier.weight(1f),
-                )
-                CompactInfoChip(
-                    label = "Maximum",
-                    value = core.maxFreq,
-                    modifier = Modifier.weight(1f),
-                )
-            }
+            BadgeChip(
+                text = String.format("%.1f °C", core.temperature),
+                containerColor = MaterialTheme.colorScheme.primary,
+                textColor = MaterialTheme.colorScheme.onPrimary,
+            )
+
+            BadgeChip(
+                text = core.governor.uppercase(),
+                containerColor = MaterialTheme.colorScheme.tertiary,
+                textColor = MaterialTheme.colorScheme.onTertiary,
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = core.currentFreq,
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.Black,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                ),
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            LinearWavyProgressIndicator(
+                progress = { animatedProgress },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp),
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TwoColumnInfoRow(spacing = 12.dp) {
+            CompactInfoChip(
+                label = "Minimum",
+                value = core.minFreq,
+                modifier = Modifier.weight(1f),
+            )
+            CompactInfoChip(
+                label = "Maximum",
+                value = core.maxFreq,
+                modifier = Modifier.weight(1f),
+            )
         }
     }
 }

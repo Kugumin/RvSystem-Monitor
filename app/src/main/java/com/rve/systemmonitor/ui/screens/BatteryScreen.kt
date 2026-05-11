@@ -5,11 +5,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -25,7 +20,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,11 +28,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -67,36 +57,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rve.systemmonitor.R
 import com.rve.systemmonitor.domain.model.Battery
 import com.rve.systemmonitor.domain.model.BatteryDataPoint
 import com.rve.systemmonitor.ui.components.card.OverviewCard
+import com.rve.systemmonitor.ui.components.card.StandardCard
 import com.rve.systemmonitor.ui.components.chip.BadgeChip
 import com.rve.systemmonitor.ui.components.dialog.HelpBottomSheetContent
 import com.rve.systemmonitor.ui.components.haptic.rememberHapticOnClick
 import com.rve.systemmonitor.ui.components.item.InfoItem
+import com.rve.systemmonitor.ui.components.layout.ScreenLazyColumn
+import com.rve.systemmonitor.ui.components.row.TwoColumnInfoRow
 import com.rve.systemmonitor.ui.navigation.TRANSITION_DURATION
+import com.rve.systemmonitor.ui.utils.rememberLifecycleAwareState
 import com.rve.systemmonitor.ui.viewmodel.BatteryViewModel
 import kotlin.math.abs
-import kotlinx.coroutines.flow.emptyFlow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BatteryScreen(isActive: Boolean, viewModel: BatteryViewModel = hiltViewModel()) {
-    val initialBatteryInfo = remember { viewModel.batteryInfo.value }
-    val batteryInfo by if (isActive) {
-        viewModel.batteryInfo.collectAsStateWithLifecycle()
-    } else {
-        remember { emptyFlow<Battery>() }.collectAsStateWithLifecycle(initialBatteryInfo)
-    }
-
-    val initialBatteryHistory = remember { viewModel.batteryHistory.value }
-    val batteryHistory by if (isActive) {
-        viewModel.batteryHistory.collectAsStateWithLifecycle()
-    } else {
-        remember { emptyFlow<List<BatteryDataPoint>>() }.collectAsStateWithLifecycle(initialBatteryHistory)
-    }
+    val batteryInfo by rememberLifecycleAwareState(isActive, viewModel.batteryInfo)
+    val batteryHistory by rememberLifecycleAwareState(isActive, viewModel.batteryHistory)
 
     val hasAlreadyAnimated = remember { viewModel.hasAnimated }
 
@@ -113,16 +94,7 @@ fun BatteryScreen(isActive: Boolean, viewModel: BatteryViewModel = hiltViewModel
         }
     }
 
-    LazyColumn(
-        contentPadding = PaddingValues(
-            top = 16.dp,
-            bottom = 112.dp,
-        ),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp),
-    ) {
+    ScreenLazyColumn {
         item {
             BatteryOverviewCard(batteryInfo)
         }
@@ -159,19 +131,9 @@ private fun ChargingSpeedCard(battery: Battery, history: List<BatteryDataPoint>,
 
     val accentColor = MaterialTheme.colorScheme.primary
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-            contentColor = MaterialTheme.colorScheme.onSurface,
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-    ) {
+    StandardCard {
         Column(
-            modifier = Modifier
-                .padding(20.dp)
-                .animateContentSize(),
+            modifier = Modifier.animateContentSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Row(
@@ -506,19 +468,8 @@ private fun BatteryOverviewCard(battery: Battery) {
 
 @Composable
 private fun BatteryDetailsCard(battery: Battery, onHelpClick: () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-            contentColor = MaterialTheme.colorScheme.onSurface,
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
+    StandardCard(shape = RoundedCornerShape(16.dp), contentPadding = 16.dp) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -542,10 +493,7 @@ private fun BatteryDetailsCard(battery: Battery, onHelpClick: () -> Unit) {
                 }
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
+            TwoColumnInfoRow {
                 InfoItem(
                     label = "Voltage",
                     value = "${battery.voltage} mV",
@@ -558,10 +506,7 @@ private fun BatteryDetailsCard(battery: Battery, onHelpClick: () -> Unit) {
                 )
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
+            TwoColumnInfoRow {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "Power Source",
@@ -604,10 +549,7 @@ private fun BatteryDetailsCard(battery: Battery, onHelpClick: () -> Unit) {
                 )
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
+            TwoColumnInfoRow {
                 InfoItem(
                     label = "Design Capacity",
                     value = if (battery.capacity > 0) "${battery.capacity.toInt()} mAh" else "Unknown",
@@ -620,10 +562,7 @@ private fun BatteryDetailsCard(battery: Battery, onHelpClick: () -> Unit) {
                 )
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
+            TwoColumnInfoRow {
                 InfoItem(
                     label = "Deep Sleep",
                     value = formatUptime(battery.deepSleep),
