@@ -21,6 +21,13 @@ import com.rve.systemmonitor.utils.BatteryUtils
 import com.rve.systemmonitor.utils.CpuUtils
 import com.rve.systemmonitor.utils.MemoryUtils
 import java.util.Locale
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 class SystemOverlayService : Service() {
 
@@ -47,6 +54,13 @@ class SystemOverlayService : Service() {
     private var lastFpsUpdateTime: Long = 0
     private var updateDelayNanos: Long = 1_000_000_000L // Default 1s
 
+    private val serviceJob = SupervisorJob()
+    private val serviceScope = CoroutineScope(Dispatchers.Default + serviceJob)
+
+    @Volatile private var ramText: String = ""
+    @Volatile private var cpuText: String = ""
+    @Volatile private var batteryText: String = ""
+
     private val frameCallback = object : Choreographer.FrameCallback {
         override fun doFrame(frameTimeNanos: Long) {
             if (lastFrameTimeNanos != 0L) {
@@ -60,43 +74,19 @@ class SystemOverlayService : Service() {
                         metrics.add(String.format(Locale.US, "FPS: %d", fps))
                     }
 
-                    if (showRam) {
-                        val ram = MemoryUtils.getRamData()
-                        val ramText = when {
-                            showRamGb && showRamPercentage -> {
-                                String.format(Locale.US, "%.1f/%.1f GB (%.0f%%)", ram.used, ram.total, ram.usedPercentage)
-                            }
-
-                            showRamGb -> {
-                                String.format(Locale.US, "%.1f/%.1f GB", ram.used, ram.total)
-                            }
-
-                            showRamPercentage -> {
-                                String.format(Locale.US, "%.0f%%", ram.usedPercentage)
-                            }
-
-                            else -> {
-                                // Default fallback if both false but showRam is true
-                                String.format(Locale.US, "%.1f/%.1f GB (%.0f%%)", ram.used, ram.total, ram.usedPercentage)
-                            }
-                        }
-                        metrics.add("RAM: $ramText")
+                    val currentRam = ramText
+                    if (showRam && currentRam.isNotEmpty()) {
+                        metrics.add(currentRam)
                     }
 
-                    if (showBatteryTemp) {
-                        val batteryIntent = BatteryUtils.getBatteryIntent(this@SystemOverlayService)
-                        if (batteryIntent != null) {
-                            val temp = BatteryUtils.getTemperature(batteryIntent)
-                            metrics.add(String.format(Locale.US, "BATT: %.1f°C", temp))
-                        }
+                    val currentBattery = batteryText
+                    if (showBatteryTemp && currentBattery.isNotEmpty()) {
+                        metrics.add(currentBattery)
                     }
 
-                    if (showCpuTemp) {
-                        val cpuData = CpuUtils.getCpuDynamicData()
-                        if (cpuData.isNotEmpty()) {
-                            val temp = cpuData[0] // overall_temp is at index 0
-                            metrics.add(String.format(Locale.US, "CPU: %.1f°C", temp))
-                        }
+                    val currentCpu = cpuText
+                    if (showCpuTemp && currentCpu.isNotEmpty()) {
+                        metrics.add(currentCpu)
                     }
 
                     val separator = if (isVerticalLayout) "\n" else " | "
@@ -132,6 +122,7 @@ class SystemOverlayService : Service() {
         overlayCornerRadius = intent?.getIntExtra("corner_radius", 8) ?: 8
 
         applySettings()
+        updateBatteryText()
 
         return START_NOT_STICKY
     }
@@ -157,14 +148,80 @@ class SystemOverlayService : Service() {
         super.onCreate()
         startForeground(NOTIFICATION_ID, createNotification())
         showOverlay()
+        startMetricsPolling()
+        startBatteryMonitoring()
         choreographer.postFrameCallback(frameCallback)
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        serviceScope.cancel()
         choreographer.removeFrameCallback(frameCallback)
         if (overlayView != null) {
             windowManager?.removeView(overlayView)
+        }
+    }
+
+    private fun startMetricsPolling() {
+        serviceScope.launch {
+            while (isActive) {
+                if (showRam) {
+                    val ram = MemoryUtils.getRamData()
+                    ramText = when {
+                        showRamGb && showRamPercentage -> {
+                            String.format(Locale.US, "RAM: %.1f/%.1f GB (%.0f%%)", ram.used, ram.total, ram.usedPercentage)
+                        }
+
+                        showRamGb -> {
+                            String.format(Locale.US, "RAM: %.1f/%.1f GB", ram.used, ram.total)
+                        }
+
+                        showRamPercentage -> {
+                            String.format(Locale.US, "RAM: %.0f%%", ram.usedPercentage)
+                        }
+
+                        else -> {
+                            String.format(Locale.US, "RAM: %.1f/%.1f GB (%.0f%%)", ram.used, ram.total, ram.usedPercentage)
+                        }
+                    }
+                } else {
+                    ramText = ""
+                }
+
+                if (showCpuTemp) {
+                    val cpuData = CpuUtils.getCpuDynamicData()
+                    if (cpuData.isNotEmpty()) {
+                        val temp = cpuData[0] // overall_temp is at index 0
+                        cpuText = String.format(Locale.US, "CPU: %.1f°C", temp)
+                    }
+                } else {
+                    cpuText = ""
+                }
+
+                val delayMillis = updateDelayNanos / 1_000_000L
+                delay(if (delayMillis > 0) delayMillis else 1000L)
+            }
+        }
+    }
+
+    private var lastBatteryIntent: Intent? = null
+
+    private fun startBatteryMonitoring() {
+        serviceScope.launch {
+            BatteryUtils.getBatteryFlow(this@SystemOverlayService).collect { intent ->
+                lastBatteryIntent = intent
+                updateBatteryText()
+            }
+        }
+    }
+
+    private fun updateBatteryText() {
+        val intent = lastBatteryIntent
+        if (showBatteryTemp && intent != null) {
+            val temp = BatteryUtils.getTemperature(intent)
+            batteryText = String.format(Locale.US, "BATT: %.1f°C", temp)
+        } else {
+            batteryText = ""
         }
     }
 
