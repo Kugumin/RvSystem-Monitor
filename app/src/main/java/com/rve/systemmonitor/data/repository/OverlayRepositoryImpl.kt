@@ -12,6 +12,7 @@ class OverlayRepositoryImpl @Inject constructor(application: Application) : Over
 
     private val overlayPreferences = OverlayPreferences(application)
 
+    override val isOverlayEnabled: Flow<Boolean> = overlayPreferences.isOverlayEnabledFlow
     override val isFpsEnabled: Flow<Boolean> = overlayPreferences.isFpsEnabledFlow
     override val isRamEnabled: Flow<Boolean> = overlayPreferences.isRamEnabledFlow
     override val isRamPercentageEnabled: Flow<Boolean> = overlayPreferences.isRamPercentageEnabledFlow
@@ -25,6 +26,10 @@ class OverlayRepositoryImpl @Inject constructor(application: Application) : Over
     override val overlayTextColor: Flow<Int> = overlayPreferences.overlayTextColorFlow
     override val isVerticalLayout: Flow<Boolean> = overlayPreferences.isVerticalLayoutFlow
     override val overlayCornerRadius: Flow<Int> = overlayPreferences.overlayCornerRadiusFlow
+
+    override suspend fun setOverlayEnabled(enabled: Boolean) {
+        overlayPreferences.saveIsOverlayEnabled(enabled)
+    }
 
     override suspend fun setFpsEnabled(enabled: Boolean) {
         overlayPreferences.saveIsFpsEnabled(enabled)

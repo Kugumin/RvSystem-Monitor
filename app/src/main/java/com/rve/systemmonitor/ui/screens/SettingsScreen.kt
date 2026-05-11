@@ -85,8 +85,8 @@ fun SettingsScreen(
             }
             item {
                 SettingsMenuItem(
-                    title = "Overlay",
-                    subtitle = "Global system monitor overlay",
+                    title = "Floating Overlay",
+                    subtitle = "Global system monitor floating overlay",
                     icon = painterResource(R.drawable.layers_filled),
                     onClick = onNavigateToOverlay,
                 )

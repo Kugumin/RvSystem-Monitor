@@ -8,11 +8,11 @@
 - **update:** Enhance update feature with expressive UI and changelogs.
 - **ui:** Add app settings screen and auto-update toggle.
 - **update:** Implement in-app "Check for Updates" feature.
-- **overlay:** Implement CPU and Battery temperature monitoring.
+- **Floating Overlay:** Implement CPU and Battery temperature monitoring.
 - **battery:** Reset min/max stats and graph on charging status change.
 - **cpu:** Add real-time temperature monitoring for CPU and individual cores.
 - **battery:** Display negative values for discharging speed.
-- **overlay:** Support 0.5s increments for update interval.
+- **Floating Overlay:** Support 0.5s increments for update interval.
 
 ### Fix
 - **ui:** Resolve peak frequency showing 0.0 GHz on CPU screen.
@@ -45,7 +45,7 @@
 - **settings:** Implement adjustable vibration intensity.
 - **haptics:** Implement system-wide haptic feedback support.
 - **ui:** Implement data source help bottom sheet in HomeScreen.
-- **ui:** Implement visual customization options in Overlay Settings.
+- **ui:** Implement visual customization options in Floating Overlay Settings.
 
 ### Performance
 - Persist battery history across screen sessions while pausing updates when inactive.
@@ -60,13 +60,13 @@
 - **BatteryScreen:** Animate Power Source text transitions.
 - **BatteryScreen:** Implement dynamic charging speeds and animations.
 - **Theme:** Adopt Material 3 motion scheme for color animations.
-- **Settings:** Update snap animations and overlay transitions to use standard motion specs.
+- **Settings:** Update snap animations and Floating Overlay transitions to use standard motion specs.
 - **CPUScreen:** Redesign CoreDetailCard for better information density.
 
 ### Bug Fixes
 - **ui:** Fix BottomNavBar colors in dark mode.
 - **ui:** Fix color accent bugs on certain Custom ROMs.
-- **ui:** Eliminate white blink effect on Layout cards in Overlay Settings.
+- **ui:** Eliminate white blink effect on Layout cards in Floating Overlay Settings.
 
 ### Refactoring & Cleanup
 - Extract reusable UI components and reorganize haptic package.

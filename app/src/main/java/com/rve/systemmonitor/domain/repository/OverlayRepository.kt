@@ -3,6 +3,7 @@ package com.rve.systemmonitor.domain.repository
 import kotlinx.coroutines.flow.Flow
 
 interface OverlayRepository {
+    val isOverlayEnabled: Flow<Boolean>
     val isFpsEnabled: Flow<Boolean>
     val isRamEnabled: Flow<Boolean>
     val isRamPercentageEnabled: Flow<Boolean>
@@ -17,6 +18,7 @@ interface OverlayRepository {
     val isVerticalLayout: Flow<Boolean>
     val overlayCornerRadius: Flow<Int>
 
+    suspend fun setOverlayEnabled(enabled: Boolean)
     suspend fun setFpsEnabled(enabled: Boolean)
     suspend fun setRamEnabled(enabled: Boolean)
     suspend fun setRamPercentageEnabled(enabled: Boolean)

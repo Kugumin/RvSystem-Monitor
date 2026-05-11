@@ -14,6 +14,7 @@ val Context.overlayDataStore: DataStore<Preferences> by preferencesDataStore(nam
 
 class OverlayPreferences(private val context: Context) {
     companion object {
+        val IS_OVERLAY_ENABLED_KEY = booleanPreferencesKey("is_overlay_enabled")
         val IS_FPS_ENABLED_KEY = booleanPreferencesKey("is_fps_enabled")
         val IS_RAM_ENABLED_KEY = booleanPreferencesKey("is_ram_enabled")
         val IS_RAM_PERCENTAGE_ENABLED_KEY = booleanPreferencesKey("is_ram_percentage_enabled")
@@ -29,6 +30,7 @@ class OverlayPreferences(private val context: Context) {
         val OVERLAY_CORNER_RADIUS_KEY = intPreferencesKey("overlay_corner_radius")
     }
 
+    val isOverlayEnabledFlow: Flow<Boolean> = context.overlayDataStore.getValueFlow(IS_OVERLAY_ENABLED_KEY, false)
     val isFpsEnabledFlow: Flow<Boolean> = context.overlayDataStore.getValueFlow(IS_FPS_ENABLED_KEY, false)
     val isRamEnabledFlow: Flow<Boolean> = context.overlayDataStore.getValueFlow(IS_RAM_ENABLED_KEY, false)
     val isRamPercentageEnabledFlow: Flow<Boolean> = context.overlayDataStore.getValueFlow(IS_RAM_PERCENTAGE_ENABLED_KEY, false)
@@ -43,6 +45,7 @@ class OverlayPreferences(private val context: Context) {
     val isVerticalLayoutFlow: Flow<Boolean> = context.overlayDataStore.getValueFlow(IS_VERTICAL_LAYOUT_KEY, false)
     val overlayCornerRadiusFlow: Flow<Int> = context.overlayDataStore.getValueFlow(OVERLAY_CORNER_RADIUS_KEY, 8)
 
+    suspend fun saveIsOverlayEnabled(enabled: Boolean) = context.overlayDataStore.setValue(IS_OVERLAY_ENABLED_KEY, enabled)
     suspend fun saveIsFpsEnabled(enabled: Boolean) = context.overlayDataStore.setValue(IS_FPS_ENABLED_KEY, enabled)
     suspend fun saveIsRamEnabled(enabled: Boolean) = context.overlayDataStore.setValue(IS_RAM_ENABLED_KEY, enabled)
     suspend fun saveIsRamPercentageEnabled(enabled: Boolean) = context.overlayDataStore.setValue(IS_RAM_PERCENTAGE_ENABLED_KEY, enabled)

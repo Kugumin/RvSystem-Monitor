@@ -13,6 +13,13 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class OverlaySettingsViewModel @Inject constructor(private val overlayRepository: OverlayRepository) : ViewModel() {
 
+    val isOverlayEnabled: StateFlow<Boolean> = overlayRepository.isOverlayEnabled
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false,
+        )
+
     val isFpsEnabled: StateFlow<Boolean> = overlayRepository.isFpsEnabled
         .stateIn(
             scope = viewModelScope,
@@ -104,6 +111,12 @@ class OverlaySettingsViewModel @Inject constructor(private val overlayRepository
             initialValue = 8,
         )
 
+    fun setOverlayEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            overlayRepository.setOverlayEnabled(enabled)
+        }
+    }
+
     fun setFpsEnabled(enabled: Boolean) {
         viewModelScope.launch {
             overlayRepository.setFpsEnabled(enabled)
@@ -179,6 +192,18 @@ class OverlaySettingsViewModel @Inject constructor(private val overlayRepository
     fun setOverlayCornerRadius(radius: Int) {
         viewModelScope.launch {
             overlayRepository.setOverlayCornerRadius(radius)
+        }
+    }
+
+    fun disableAll() {
+        viewModelScope.launch {
+            overlayRepository.setOverlayEnabled(false)
+            overlayRepository.setFpsEnabled(false)
+            overlayRepository.setRamEnabled(false)
+            overlayRepository.setRamPercentageEnabled(false)
+            overlayRepository.setRamGbEnabled(false)
+            overlayRepository.setBatteryTempEnabled(false)
+            overlayRepository.setCpuTempEnabled(false)
         }
     }
 }

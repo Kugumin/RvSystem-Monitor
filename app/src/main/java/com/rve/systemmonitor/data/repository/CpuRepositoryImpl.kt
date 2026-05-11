@@ -8,8 +8,8 @@ import com.rve.systemmonitor.domain.model.CPU
 import com.rve.systemmonitor.domain.model.CoreDetail
 import com.rve.systemmonitor.domain.repository.CpuRepository
 import com.rve.systemmonitor.domain.repository.SettingsRepository
-import com.rve.systemmonitor.utils.FlowUtils
 import com.rve.systemmonitor.utils.CpuUtils
+import com.rve.systemmonitor.utils.FlowUtils
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers

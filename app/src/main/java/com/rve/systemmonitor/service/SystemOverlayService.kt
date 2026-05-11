@@ -100,7 +100,7 @@ class SystemOverlayService : Service() {
                     }
 
                     val separator = if (isVerticalLayout) "\n" else " | "
-                    metricsTextView?.text = if (metrics.isEmpty()) "No metrics" else metrics.joinToString(separator)
+                    metricsTextView?.text = metrics.joinToString(separator)
                     frameCount = 0
                     lastFpsUpdateTime = frameTimeNanos
                 }
@@ -184,7 +184,7 @@ class SystemOverlayService : Service() {
         }
 
         val textView = TextView(this).apply {
-            text = "Loading ..."
+            text = ""
             textSize = overlayTextSize
             setTextColor(overlayTextColor)
 
@@ -235,14 +235,14 @@ class SystemOverlayService : Service() {
         val channelId = "system_overlay_channel"
         val channel = NotificationChannel(
             channelId,
-            "System Overlay Service",
+            "Floating Overlay Service",
             NotificationManager.IMPORTANCE_LOW,
         )
         val notificationManager = getSystemService(NotificationManager::class.java)
         notificationManager.createNotificationChannel(channel)
 
         return NotificationCompat.Builder(this, channelId)
-            .setContentTitle("System Overlay Active")
+            .setContentTitle("Floating Overlay Active")
             .setContentText("Monitoring system performance (FPS & RAM)")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setPriority(NotificationCompat.PRIORITY_LOW)

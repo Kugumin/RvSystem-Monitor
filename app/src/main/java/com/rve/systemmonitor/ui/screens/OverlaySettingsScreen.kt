@@ -96,6 +96,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
     val coroutineScope = rememberCoroutineScope()
     val snapAnimationSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Float>()
 
+    val isOverlayEnabled by viewModel.isOverlayEnabled.collectAsStateWithLifecycle()
     val isFpsEnabled by viewModel.isFpsEnabled.collectAsStateWithLifecycle()
     val isRamPercentageEnabled by viewModel.isRamPercentageEnabled.collectAsStateWithLifecycle()
     val isRamGbEnabled by viewModel.isRamGbEnabled.collectAsStateWithLifecycle()
@@ -109,13 +110,14 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
     val isVerticalLayout by viewModel.isVerticalLayout.collectAsStateWithLifecycle()
     val cornerRadius by viewModel.overlayCornerRadius.collectAsStateWithLifecycle()
 
-    val isAnyMetricEnabled = isFpsEnabled || isRamPercentageEnabled || isRamGbEnabled || isBatteryTempEnabled || isCpuTempEnabled
+    val isOverlayActive = isOverlayEnabled
+
     val appearanceAlpha by animateFloatAsState(
-        targetValue = if (isAnyMetricEnabled) 1f else 0.5f,
+        targetValue = if (isOverlayActive) 1f else 0.5f,
         label = "Appearance Alpha Animation",
     )
     val cardBgAlpha by animateFloatAsState(
-        targetValue = if (isAnyMetricEnabled) 0.7f else 0.35f,
+        targetValue = if (isOverlayActive) 0.7f else 0.35f,
         label = "Card BG Alpha Animation",
     )
 
@@ -128,6 +130,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
     }
 
     fun updateService(
+        overlayEnabled: Boolean = isOverlayEnabled,
         fps: Boolean = isFpsEnabled,
         ramPercentage: Boolean = isRamPercentageEnabled,
         ramGb: Boolean = isRamGbEnabled,
@@ -142,7 +145,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
         radius: Int = cornerRadius,
     ) {
         val ramEnabled = ramPercentage || ramGb
-        if (fps || ramEnabled || batteryTemp || cpuTemp) {
+        if (overlayEnabled) {
             if (Settings.canDrawOverlays(context)) {
                 val intent = Intent(context, SystemOverlayService::class.java).apply {
                     putExtra("update_delay", interval)
@@ -222,7 +225,8 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                 hasOverlayPermission = Settings.canDrawOverlays(context)
                 isServiceRunning = isServiceRunning(context, SystemOverlayService::class.java)
 
-                if (!hasOverlayPermission && isServiceRunning) {
+                if (!hasOverlayPermission && (isOverlayEnabled || isServiceRunning)) {
+                    viewModel.disableAll()
                     context.stopService(Intent(context, SystemOverlayService::class.java))
                     isServiceRunning = false
                 }
@@ -238,7 +242,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             ExitUntilCollapsedMediumTopAppBar(
-                title = "Overlay Settings",
+                title = "Floating Overlay Settings",
                 onNavigateBack = onNavigateBack,
                 scrollBehavior = scrollBehavior,
             )
@@ -255,6 +259,28 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
             ),
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
+            item {
+                MetricToggleCard(
+                    title = "Enable Floating Overlay",
+                    isEnabled = isOverlayEnabled,
+                    hasPermission = hasOverlayPermission,
+                    showPermissionWarning = true,
+                    onClick = rememberHapticOnClick {
+                        if (!hasOverlayPermission && !isOverlayEnabled) {
+                            val intent = Intent(
+                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                "package:${context.packageName}".toUri(),
+                            )
+                            context.startActivity(intent)
+                        } else {
+                            val nextState = !isOverlayEnabled
+                            viewModel.setOverlayEnabled(nextState)
+                            updateService(overlayEnabled = nextState)
+                        }
+                    },
+                )
+            }
+
             item {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
@@ -274,6 +300,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                         icon = R.drawable.sixty_fps_select_rounded,
                         isEnabled = isFpsEnabled,
                         hasPermission = hasOverlayPermission,
+                        enabled = isOverlayEnabled,
                         onClick = rememberHapticOnClick {
                             if (!hasOverlayPermission && !isFpsEnabled) {
                                 val intent = Intent(
@@ -295,6 +322,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                         icon = R.drawable.memory_alt_filled,
                         isEnabled = isRamGbEnabled,
                         hasPermission = hasOverlayPermission,
+                        enabled = isOverlayEnabled,
                         onClick = rememberHapticOnClick {
                             if (!hasOverlayPermission && !isRamGbEnabled) {
                                 val intent = Intent(
@@ -316,6 +344,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                         icon = R.drawable.memory_alt_filled,
                         isEnabled = isRamPercentageEnabled,
                         hasPermission = hasOverlayPermission,
+                        enabled = isOverlayEnabled,
                         onClick = rememberHapticOnClick {
                             if (!hasOverlayPermission && !isRamPercentageEnabled) {
                                 val intent = Intent(
@@ -337,6 +366,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                         icon = R.drawable.device_thermostat_filled,
                         isEnabled = isBatteryTempEnabled,
                         hasPermission = hasOverlayPermission,
+                        enabled = isOverlayEnabled,
                         onClick = rememberHapticOnClick {
                             if (!hasOverlayPermission && !isBatteryTempEnabled) {
                                 val intent = Intent(
@@ -358,6 +388,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                         icon = R.drawable.device_thermostat_filled,
                         isEnabled = isCpuTempEnabled,
                         hasPermission = hasOverlayPermission,
+                        enabled = isOverlayEnabled,
                         onClick = rememberHapticOnClick {
                             if (!hasOverlayPermission && !isCpuTempEnabled) {
                                 val intent = Intent(
@@ -394,9 +425,9 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                             LayoutOptionCard(
                                 title = "Horizontal",
                                 isSelected = !isVerticalLayout,
-                                enabled = isAnyMetricEnabled,
+                                enabled = isOverlayActive,
                                 onClick = {
-                                    if (isAnyMetricEnabled) {
+                                    if (isOverlayActive) {
                                         viewModel.setVerticalLayout(false)
                                         if (isServiceRunning) updateService(vertical = false)
                                     }
@@ -434,9 +465,9 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                             LayoutOptionCard(
                                 title = "Vertical",
                                 isSelected = isVerticalLayout,
-                                enabled = isAnyMetricEnabled,
+                                enabled = isOverlayActive,
                                 onClick = {
-                                    if (isAnyMetricEnabled) {
+                                    if (isOverlayActive) {
                                         viewModel.setVerticalLayout(true)
                                         if (isServiceRunning) updateService(vertical = true)
                                     }
@@ -510,7 +541,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                                         .size(48.dp)
                                         .clip(RoundedCornerShape(12.dp))
                                         .background(
-                                            if (isAnyMetricEnabled)
+                                            if (isOverlayActive)
                                                 MaterialTheme.colorScheme.primary
                                             else
                                                 MaterialTheme.colorScheme.primary.copy(alpha = 0.38f),
@@ -520,7 +551,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                                     Icon(
                                         painter = painterResource(R.drawable.acute_filled),
                                         contentDescription = "Update Interval Icon",
-                                        tint = if (isAnyMetricEnabled)
+                                        tint = if (isOverlayActive)
                                             MaterialTheme.colorScheme.onPrimary
                                         else
                                             MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.38f),
@@ -532,15 +563,15 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                                         text = "Update Interval",
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.SemiBold,
-                                        color = if (isAnyMetricEnabled)
+                                        color = if (isOverlayActive)
                                             MaterialTheme.colorScheme.onSurface
                                         else
                                             MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
                                     )
                                     Text(
-                                        text = "Adjust how often overlay metrics refresh",
+                                        text = "Adjust how often metrics refresh on the floating overlay",
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = if (isAnyMetricEnabled)
+                                        color = if (isOverlayActive)
                                             MaterialTheme.colorScheme.onSurfaceVariant
                                         else
                                             MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
@@ -560,7 +591,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                                     Text(
                                         text = "Refresh Rate",
                                         style = MaterialTheme.typography.labelLarge,
-                                        color = if (isAnyMetricEnabled)
+                                        color = if (isOverlayActive)
                                             MaterialTheme.colorScheme.onSurface
                                         else
                                             MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
@@ -575,13 +606,13 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                                             text = "${displayValue}s",
                                             style = MaterialTheme.typography.titleMedium,
                                             fontWeight = FontWeight.Bold,
-                                            color = if (isAnyMetricEnabled)
+                                            color = if (isOverlayActive)
                                                 MaterialTheme.colorScheme.primary
                                             else
                                                 MaterialTheme.colorScheme.primary.copy(alpha = 0.38f),
                                         )
                                         AnimatedVisibility(
-                                            visible = isAnyMetricEnabled && overlayCurrentValue != 1.0f,
+                                            visible = isOverlayActive && overlayCurrentValue != 1.0f,
                                             enter = slideInHorizontally(
                                                 animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
                                             ) { it } + expandHorizontally(
@@ -620,7 +651,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
 
                                 Slider(
                                     state = delaySliderState,
-                                    enabled = isAnyMetricEnabled,
+                                    enabled = isOverlayActive,
                                     modifier = Modifier.fillMaxWidth(),
                                     track = {
                                         SliderDefaults.Track(
@@ -692,7 +723,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                                                 color = MaterialTheme.colorScheme.primary,
                                                 shape = CircleShape,
                                             )
-                                            .hapticClickable(enabled = isAnyMetricEnabled) {
+                                            .hapticClickable(enabled = isOverlayActive) {
                                                 viewModel.setOverlayTextColor(color.toArgb())
                                                 if (isServiceRunning) updateService(color = color.toArgb())
                                             },
@@ -721,7 +752,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                                 value = textSize,
                                 defaultValue = 14f,
                                 valueRange = 10f..24f,
-                                enabled = isAnyMetricEnabled,
+                                enabled = isOverlayActive,
                                 onValueChange = {
                                     viewModel.setOverlayTextSize(it)
                                     if (isServiceRunning) updateService(size = it)
@@ -738,7 +769,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                                 value = bgOpacity,
                                 defaultValue = 0.5f,
                                 valueRange = 0f..1f,
-                                enabled = isAnyMetricEnabled,
+                                enabled = isOverlayActive,
                                 onValueChange = {
                                     viewModel.setOverlayBgOpacity(it)
                                     if (isServiceRunning) updateService(opacity = it)
@@ -755,7 +786,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                                 value = padding.toFloat(),
                                 defaultValue = 16f,
                                 valueRange = 0f..32f,
-                                enabled = isAnyMetricEnabled,
+                                enabled = isOverlayActive,
                                 onValueChange = {
                                     viewModel.setOverlayPadding(it.toInt())
                                     if (isServiceRunning) updateService(padd = it.toInt())
@@ -772,7 +803,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                                 value = cornerRadius.toFloat(),
                                 defaultValue = 8f,
                                 valueRange = 0f..64f,
-                                enabled = isAnyMetricEnabled,
+                                enabled = isOverlayActive,
                                 onValueChange = {
                                     viewModel.setOverlayCornerRadius(it.toInt())
                                     if (isServiceRunning) updateService(radius = it.toInt())
@@ -957,16 +988,26 @@ private fun LayoutOptionCard(
 @Composable
 private fun MetricToggleCard(
     title: String,
-    description: String,
-    icon: Int,
+    description: String? = null,
+    icon: Int? = null,
     isEnabled: Boolean,
     hasPermission: Boolean,
+    enabled: Boolean = true,
+    showPermissionWarning: Boolean = false,
     onClick: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val cardAlpha by animateFloatAsState(
+        targetValue = if (enabled && hasPermission) 1f else 0.5f,
+        label = "Metric Card Alpha",
+    )
+
     Card(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
+        enabled = enabled,
+        modifier = Modifier
+            .fillMaxWidth()
+            .graphicsLayer { alpha = cardAlpha },
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
@@ -979,18 +1020,28 @@ private fun MetricToggleCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.primary),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    painter = painterResource(icon),
-                    contentDescription = "$title Icon",
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                )
+            if (icon != null) {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            if (enabled && hasPermission)
+                                MaterialTheme.colorScheme.primary
+                            else
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.38f),
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        painter = painterResource(icon),
+                        contentDescription = "$title Icon",
+                        tint = if (enabled && hasPermission)
+                            MaterialTheme.colorScheme.onPrimary
+                        else
+                            MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.38f),
+                    )
+                }
             }
 
             Column(modifier = Modifier.weight(1f)) {
@@ -998,19 +1049,25 @@ private fun MetricToggleCard(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = if (enabled && hasPermission)
+                        MaterialTheme.colorScheme.onSurface
+                    else
+                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
                 )
-                if (!hasPermission) {
+                if (!hasPermission && showPermissionWarning) {
                     Text(
                         text = "Requires 'Draw over other apps' permission",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error,
                     )
-                } else {
+                } else if (description != null) {
                     Text(
                         text = description,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = if (enabled && hasPermission)
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        else
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
                     )
                 }
             }
@@ -1018,8 +1075,8 @@ private fun MetricToggleCard(
             Switch(
                 checked = isEnabled,
                 onCheckedChange = null,
-                enabled = hasPermission,
-                interactionSource = if (hasPermission) interactionSource else null,
+                enabled = hasPermission && enabled,
+                interactionSource = if (hasPermission && enabled) interactionSource else null,
                 colors = SwitchDefaults.colors(
                     checkedIconColor = MaterialTheme.colorScheme.primary,
                 ),
@@ -1028,9 +1085,9 @@ private fun MetricToggleCard(
                         targetState = isEnabled,
                         animationSpec = MaterialTheme.motionScheme.slowEffectsSpec(),
                         label = "Switch Icon Fade",
-                    ) { enabled ->
+                    ) { enabledState ->
                         Icon(
-                            painter = painterResource(if (enabled) R.drawable.check_rounded else R.drawable.close_rounded),
+                            painter = painterResource(if (enabledState) R.drawable.check_rounded else R.drawable.close_rounded),
                             contentDescription = null,
                             modifier = Modifier.size(SwitchDefaults.IconSize),
                         )

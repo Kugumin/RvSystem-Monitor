@@ -142,7 +142,7 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: (
 private fun OverlayPermissionStep(isOverlayPermissionGranted: Boolean, onGrantPermission: () -> Unit, onNext: () -> Unit) {
     SetupStepContainer(
         icon = R.drawable.layers_filled,
-        iconContentDescription = "Overlay Permission Icon",
+        iconContentDescription = "Floating Overlay Permission Icon",
         title = "Appear on Top",
         description = "To show FPS, RAM usage, battery temperature, and CPU temperature while you use other apps, " +
             "RvSystem Monitor needs permission to display over them.",
