@@ -8,11 +8,7 @@ object MemoryUtils {
     private const val TAG = "MemoryUtils"
 
     init {
-        try {
-            System.loadLibrary("rvsystem_monitor")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to load Rust library: ${e.message}")
-        }
+        NativeLoader.load()
     }
 
     @JvmStatic

@@ -8,6 +8,7 @@ import com.rve.systemmonitor.domain.model.CPU
 import com.rve.systemmonitor.domain.model.CoreDetail
 import com.rve.systemmonitor.domain.repository.CpuRepository
 import com.rve.systemmonitor.domain.repository.SettingsRepository
+import com.rve.systemmonitor.utils.FlowUtils
 import com.rve.systemmonitor.utils.CpuUtils
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -37,68 +38,53 @@ class CpuRepositoryImpl @Inject constructor(private val settingsRepository: Sett
     }
 
     override fun getCpuStream(): Flow<CPU> = settingsRepository.cpuRefreshDelay.flatMapLatest { delayMillis ->
-        flow {
-            if (BuildConfig.DEBUG) Log.d(TAG, "CPU Stream Started with delay: $delayMillis")
+        val manufacturer = CpuUtils.getSocManufacturer()
+        val model = CpuUtils.getSocModel()
+        val cores = CpuUtils.getCoreCount()
+        val hardware = CpuUtils.getHardware()
+        val board = CpuUtils.getBoard()
+        val architecture = CpuUtils.getArchitecture()
 
-            val manufacturer = CpuUtils.getSocManufacturer()
-            val model = CpuUtils.getSocModel()
-            val cores = CpuUtils.getCoreCount()
-            val hardware = CpuUtils.getHardware()
-            val board = CpuUtils.getBoard()
-            val architecture = CpuUtils.getArchitecture()
+        val staticCoreInfo = (0 until cores).map { i ->
+            CoreStaticInfo(
+                minFreqKhz = CpuUtils.getCoreFrequencyKhz(i, "min_info"),
+                maxFreqKhz = CpuUtils.getCoreFrequencyKhz(i, "max_info"),
+                governor = CpuUtils.getCoreGovernor(i),
+            )
+        }
 
-            val staticCoreInfo = (0 until cores).map { i ->
-                val minKhz = CpuUtils.getCoreFrequencyKhz(i, "min_info")
-                val maxKhz = CpuUtils.getCoreFrequencyKhz(i, "max_info")
-                val governor = CpuUtils.getCoreGovernor(i)
-                CoreStaticInfo(
-                    minFreqKhz = minKhz,
-                    maxFreqKhz = maxKhz,
-                    governor = governor,
-                )
-            }
+        FlowUtils.pollingFlow(TAG, delayMillis) {
+            val dynamicData = CpuUtils.getCpuDynamicData()
+            val cpuTemperature = dynamicData.getOrElse(0) { 0.0 }
+            val coreDetails = ArrayList<CoreDetail>(cores)
 
-            while (true) {
-                if (BuildConfig.DEBUG) Log.d(TAG, "CPU Stream Updated")
-                val coreDetails = ArrayList<CoreDetail>(cores)
-                val dynamicData = CpuUtils.getCpuDynamicData()
-
-                // dynamicData structure: [overall_temp, core0_freq, core0_temp, core1_freq, core1_temp, ...]
-                val cpuTemperature = dynamicData.getOrElse(0) { 0.0 }
-
-                for (i in 0 until cores) {
-                    val currentKhz = dynamicData.getOrElse(1 + i * 2) { 0.0 }.toLong()
-                    val currentTemp = dynamicData.getOrElse(2 + i * 2) { 0.0 }
-                    val static = staticCoreInfo[i]
-                    coreDetails.add(
-                        CoreDetail(
-                            id = i,
-                            currentFreqKhz = currentKhz,
-                            minFreqKhz = static.minFreqKhz,
-                            maxFreqKhz = static.maxFreqKhz,
-                            governor = static.governor,
-                            temperature = currentTemp,
-                        ),
-                    )
-                }
-
-                emit(
-                    CPU(
-                        manufacturer = manufacturer,
-                        model = model,
-                        cores = cores,
-                        hardware = hardware,
-                        board = board,
-                        architecture = architecture,
-                        temperature = cpuTemperature,
-                        coreDetails = coreDetails,
+            for (i in 0 until cores) {
+                val currentKhz = dynamicData.getOrElse(1 + i * 2) { 0.0 }.toLong()
+                val currentTemp = dynamicData.getOrElse(2 + i * 2) { 0.0 }
+                val static = staticCoreInfo[i]
+                coreDetails.add(
+                    CoreDetail(
+                        id = i,
+                        currentFreqKhz = currentKhz,
+                        minFreqKhz = static.minFreqKhz,
+                        maxFreqKhz = static.maxFreqKhz,
+                        governor = static.governor,
+                        temperature = currentTemp,
                     ),
                 )
-                delay(delayMillis)
             }
-        }.onCompletion {
-            if (BuildConfig.DEBUG) Log.d(TAG, "CPU Stream Stopped")
-        }.flowOn(Dispatchers.IO)
+
+            CPU(
+                manufacturer = manufacturer,
+                model = model,
+                cores = cores,
+                hardware = hardware,
+                board = board,
+                architecture = architecture,
+                temperature = cpuTemperature,
+                coreDetails = coreDetails,
+            )
+        }
     }
 
     private data class CoreStaticInfo(val minFreqKhz: Long, val maxFreqKhz: Long, val governor: String)

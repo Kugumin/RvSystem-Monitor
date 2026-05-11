@@ -7,11 +7,7 @@ object CpuUtils {
     private const val TAG = "CpuUtils"
 
     init {
-        try {
-            System.loadLibrary("rvsystem_monitor")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to load Rust library: ${e.message}", e)
-        }
+        NativeLoader.load()
     }
 
     @JvmStatic

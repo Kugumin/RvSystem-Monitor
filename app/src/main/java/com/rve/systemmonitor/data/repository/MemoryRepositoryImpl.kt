@@ -8,6 +8,7 @@ import com.rve.systemmonitor.domain.model.RAM
 import com.rve.systemmonitor.domain.model.ZRAM
 import com.rve.systemmonitor.domain.repository.MemoryRepository
 import com.rve.systemmonitor.domain.repository.SettingsRepository
+import com.rve.systemmonitor.utils.FlowUtils
 import com.rve.systemmonitor.utils.MemoryUtils
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -25,16 +26,8 @@ class MemoryRepositoryImpl @Inject constructor(private val settingsRepository: S
     private val TAG = "MemoryRepository"
 
     override fun getMemoryInfo(): Flow<Pair<RAM, ZRAM>> = settingsRepository.memoryRefreshDelay.flatMapLatest { delayMillis ->
-        flow {
-            if (BuildConfig.DEBUG) Log.d(TAG, "Memory Stream Started with delay: $delayMillis")
-            while (true) {
-                if (BuildConfig.DEBUG) Log.d(TAG, "Memory Stream Updated")
-                val (ram, zram) = MemoryUtils.getMemoryInfo()
-                emit(ram to zram)
-                delay(delayMillis)
-            }
-        }.onCompletion {
-            if (BuildConfig.DEBUG) Log.d(TAG, "Memory Stream Stopped")
-        }.flowOn(Dispatchers.IO)
+        FlowUtils.pollingFlow(TAG, delayMillis) {
+            MemoryUtils.getMemoryInfo()
+        }
     }
 }

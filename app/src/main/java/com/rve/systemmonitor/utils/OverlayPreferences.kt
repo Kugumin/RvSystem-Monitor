@@ -4,13 +4,11 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 
 val Context.overlayDataStore: DataStore<Preferences> by preferencesDataStore(name = "overlay_settings")
 
@@ -31,146 +29,31 @@ class OverlayPreferences(private val context: Context) {
         val OVERLAY_CORNER_RADIUS_KEY = intPreferencesKey("overlay_corner_radius")
     }
 
-    val isFpsEnabledFlow: Flow<Boolean> = context.overlayDataStore.data
-        .map { preferences ->
-            preferences[IS_FPS_ENABLED_KEY] ?: false
-        }
+    val isFpsEnabledFlow: Flow<Boolean> = context.overlayDataStore.getValueFlow(IS_FPS_ENABLED_KEY, false)
+    val isRamEnabledFlow: Flow<Boolean> = context.overlayDataStore.getValueFlow(IS_RAM_ENABLED_KEY, false)
+    val isRamPercentageEnabledFlow: Flow<Boolean> = context.overlayDataStore.getValueFlow(IS_RAM_PERCENTAGE_ENABLED_KEY, false)
+    val isRamGbEnabledFlow: Flow<Boolean> = context.overlayDataStore.getValueFlow(IS_RAM_GB_ENABLED_KEY, false)
+    val isBatteryTempEnabledFlow: Flow<Boolean> = context.overlayDataStore.getValueFlow(IS_BATTERY_TEMP_ENABLED_KEY, false)
+    val isCpuTempEnabledFlow: Flow<Boolean> = context.overlayDataStore.getValueFlow(IS_CPU_TEMP_ENABLED_KEY, false)
+    val overlayUpdateIntervalFlow: Flow<Long> = context.overlayDataStore.getValueFlow(OVERLAY_UPDATE_INTERVAL_KEY, 1000L)
+    val overlayTextSizeFlow: Flow<Float> = context.overlayDataStore.getValueFlow(OVERLAY_TEXT_SIZE_KEY, 14f)
+    val overlayBgOpacityFlow: Flow<Float> = context.overlayDataStore.getValueFlow(OVERLAY_BG_OPACITY_KEY, 0.5f)
+    val overlayPaddingFlow: Flow<Int> = context.overlayDataStore.getValueFlow(OVERLAY_PADDING_KEY, 16)
+    val overlayTextColorFlow: Flow<Int> = context.overlayDataStore.getValueFlow(OVERLAY_TEXT_COLOR_KEY, android.graphics.Color.GREEN)
+    val isVerticalLayoutFlow: Flow<Boolean> = context.overlayDataStore.getValueFlow(IS_VERTICAL_LAYOUT_KEY, false)
+    val overlayCornerRadiusFlow: Flow<Int> = context.overlayDataStore.getValueFlow(OVERLAY_CORNER_RADIUS_KEY, 8)
 
-    val isRamEnabledFlow: Flow<Boolean> = context.overlayDataStore.data
-        .map { preferences ->
-            preferences[IS_RAM_ENABLED_KEY] ?: false
-        }
-
-    val isRamPercentageEnabledFlow: Flow<Boolean> = context.overlayDataStore.data
-        .map { preferences ->
-            preferences[IS_RAM_PERCENTAGE_ENABLED_KEY] ?: false
-        }
-
-    val isRamGbEnabledFlow: Flow<Boolean> = context.overlayDataStore.data
-        .map { preferences ->
-            preferences[IS_RAM_GB_ENABLED_KEY] ?: false
-        }
-
-    val isBatteryTempEnabledFlow: Flow<Boolean> = context.overlayDataStore.data
-        .map { preferences ->
-            preferences[IS_BATTERY_TEMP_ENABLED_KEY] ?: false
-        }
-
-    val isCpuTempEnabledFlow: Flow<Boolean> = context.overlayDataStore.data
-        .map { preferences ->
-            preferences[IS_CPU_TEMP_ENABLED_KEY] ?: false
-        }
-
-    val overlayUpdateIntervalFlow: Flow<Long> = context.overlayDataStore.data
-        .map { preferences ->
-            preferences[OVERLAY_UPDATE_INTERVAL_KEY] ?: 1000L
-        }
-
-    val overlayTextSizeFlow: Flow<Float> = context.overlayDataStore.data
-        .map { preferences ->
-            preferences[OVERLAY_TEXT_SIZE_KEY] ?: 14f
-        }
-
-    val overlayBgOpacityFlow: Flow<Float> = context.overlayDataStore.data
-        .map { preferences ->
-            preferences[OVERLAY_BG_OPACITY_KEY] ?: 0.5f
-        }
-
-    val overlayPaddingFlow: Flow<Int> = context.overlayDataStore.data
-        .map { preferences ->
-            preferences[OVERLAY_PADDING_KEY] ?: 16
-        }
-
-    val overlayTextColorFlow: Flow<Int> = context.overlayDataStore.data
-        .map { preferences ->
-            preferences[OVERLAY_TEXT_COLOR_KEY] ?: android.graphics.Color.GREEN
-        }
-
-    val isVerticalLayoutFlow: Flow<Boolean> = context.overlayDataStore.data
-        .map { preferences ->
-            preferences[IS_VERTICAL_LAYOUT_KEY] ?: false
-        }
-
-    val overlayCornerRadiusFlow: Flow<Int> = context.overlayDataStore.data
-        .map { preferences ->
-            preferences[OVERLAY_CORNER_RADIUS_KEY] ?: 8
-        }
-
-    suspend fun saveIsFpsEnabled(enabled: Boolean) {
-        context.overlayDataStore.edit { preferences ->
-            preferences[IS_FPS_ENABLED_KEY] = enabled
-        }
-    }
-
-    suspend fun saveIsRamEnabled(enabled: Boolean) {
-        context.overlayDataStore.edit { preferences ->
-            preferences[IS_RAM_ENABLED_KEY] = enabled
-        }
-    }
-
-    suspend fun saveIsRamPercentageEnabled(enabled: Boolean) {
-        context.overlayDataStore.edit { preferences ->
-            preferences[IS_RAM_PERCENTAGE_ENABLED_KEY] = enabled
-        }
-    }
-
-    suspend fun saveIsRamGbEnabled(enabled: Boolean) {
-        context.overlayDataStore.edit { preferences ->
-            preferences[IS_RAM_GB_ENABLED_KEY] = enabled
-        }
-    }
-
-    suspend fun saveIsBatteryTempEnabled(enabled: Boolean) {
-        context.overlayDataStore.edit { preferences ->
-            preferences[IS_BATTERY_TEMP_ENABLED_KEY] = enabled
-        }
-    }
-
-    suspend fun saveIsCpuTempEnabled(enabled: Boolean) {
-        context.overlayDataStore.edit { preferences ->
-            preferences[IS_CPU_TEMP_ENABLED_KEY] = enabled
-        }
-    }
-
-    suspend fun saveOverlayUpdateInterval(delayMillis: Long) {
-        context.overlayDataStore.edit { preferences ->
-            preferences[OVERLAY_UPDATE_INTERVAL_KEY] = delayMillis
-        }
-    }
-
-    suspend fun saveOverlayTextSize(size: Float) {
-        context.overlayDataStore.edit { preferences ->
-            preferences[OVERLAY_TEXT_SIZE_KEY] = size
-        }
-    }
-
-    suspend fun saveOverlayBgOpacity(opacity: Float) {
-        context.overlayDataStore.edit { preferences ->
-            preferences[OVERLAY_BG_OPACITY_KEY] = opacity
-        }
-    }
-
-    suspend fun saveOverlayPadding(padding: Int) {
-        context.overlayDataStore.edit { preferences ->
-            preferences[OVERLAY_PADDING_KEY] = padding
-        }
-    }
-
-    suspend fun saveOverlayTextColor(color: Int) {
-        context.overlayDataStore.edit { preferences ->
-            preferences[OVERLAY_TEXT_COLOR_KEY] = color
-        }
-    }
-
-    suspend fun saveIsVerticalLayout(vertical: Boolean) {
-        context.overlayDataStore.edit { preferences ->
-            preferences[IS_VERTICAL_LAYOUT_KEY] = vertical
-        }
-    }
-
-    suspend fun saveOverlayCornerRadius(radius: Int) {
-        context.overlayDataStore.edit { preferences ->
-            preferences[OVERLAY_CORNER_RADIUS_KEY] = radius
-        }
-    }
+    suspend fun saveIsFpsEnabled(enabled: Boolean) = context.overlayDataStore.setValue(IS_FPS_ENABLED_KEY, enabled)
+    suspend fun saveIsRamEnabled(enabled: Boolean) = context.overlayDataStore.setValue(IS_RAM_ENABLED_KEY, enabled)
+    suspend fun saveIsRamPercentageEnabled(enabled: Boolean) = context.overlayDataStore.setValue(IS_RAM_PERCENTAGE_ENABLED_KEY, enabled)
+    suspend fun saveIsRamGbEnabled(enabled: Boolean) = context.overlayDataStore.setValue(IS_RAM_GB_ENABLED_KEY, enabled)
+    suspend fun saveIsBatteryTempEnabled(enabled: Boolean) = context.overlayDataStore.setValue(IS_BATTERY_TEMP_ENABLED_KEY, enabled)
+    suspend fun saveIsCpuTempEnabled(enabled: Boolean) = context.overlayDataStore.setValue(IS_CPU_TEMP_ENABLED_KEY, enabled)
+    suspend fun saveOverlayUpdateInterval(delayMillis: Long) = context.overlayDataStore.setValue(OVERLAY_UPDATE_INTERVAL_KEY, delayMillis)
+    suspend fun saveOverlayTextSize(size: Float) = context.overlayDataStore.setValue(OVERLAY_TEXT_SIZE_KEY, size)
+    suspend fun saveOverlayBgOpacity(opacity: Float) = context.overlayDataStore.setValue(OVERLAY_BG_OPACITY_KEY, opacity)
+    suspend fun saveOverlayPadding(padding: Int) = context.overlayDataStore.setValue(OVERLAY_PADDING_KEY, padding)
+    suspend fun saveOverlayTextColor(color: Int) = context.overlayDataStore.setValue(OVERLAY_TEXT_COLOR_KEY, color)
+    suspend fun saveIsVerticalLayout(vertical: Boolean) = context.overlayDataStore.setValue(IS_VERTICAL_LAYOUT_KEY, vertical)
+    suspend fun saveOverlayCornerRadius(radius: Int) = context.overlayDataStore.setValue(OVERLAY_CORNER_RADIUS_KEY, radius)
 }
