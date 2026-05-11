@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use std::fs::{self, File};
 use std::io::{Read, Seek, SeekFrom};
 use std::path::PathBuf;
-use std::sync::{Mutex, RwLock};
+use std::sync::Mutex;
 
 fn read_fd_parsed<T: std::str::FromStr>(file: &mut File, buf: &mut String) -> Option<T> {
     buf.clear();
@@ -97,12 +97,51 @@ fn get_thermal_map() -> &'static HashMap<String, PathBuf> {
     })
 }
 
-static CORE_THERMAL_PATHS: OnceCell<RwLock<Vec<Option<PathBuf>>>> = OnceCell::new();
+static CPU_THERMAL_FD: OnceCell<Mutex<Option<File>>> = OnceCell::new();
 
-fn get_core_thermal_paths() -> &'static RwLock<Vec<Option<PathBuf>>> {
-    CORE_THERMAL_PATHS.get_or_init(|| {
+fn get_cpu_thermal_fd() -> &'static Mutex<Option<File>> {
+    CPU_THERMAL_FD.get_or_init(|| {
+        let map = get_thermal_map();
+        let priority = [
+            "cpu-thermal",
+            "soc-thermal",
+            "cpu",
+            "soc",
+            "thermal-cpufreq",
+        ];
+        let mut best_path = None;
+        for zone in priority {
+            if let Some(path) = map.get(zone) {
+                best_path = Some(path.clone());
+                break;
+            }
+        }
+        if best_path.is_none() {
+            for (tz_type, temp_path) in map {
+                if priority.iter().any(|p| tz_type.contains(p)) {
+                    best_path = Some(temp_path.clone());
+                    break;
+                }
+            }
+        }
+        let file = best_path.and_then(|p| File::open(p).ok());
+        Mutex::new(file)
+    })
+}
+
+static CORE_THERMAL_FDS: OnceCell<Mutex<Vec<Option<File>>>> = OnceCell::new();
+
+fn get_core_thermal_fds() -> &'static Mutex<Vec<Option<File>>> {
+    CORE_THERMAL_FDS.get_or_init(|| {
         let cores = get_core_count() as usize;
-        RwLock::new(vec![None; cores])
+        let map = get_thermal_map();
+        let mut fds = Vec::with_capacity(cores);
+        for i in 0..cores {
+            let key = format!("cpu{}-thermal", i);
+            let file = map.get(&key).and_then(|p| File::open(p).ok());
+            fds.push(file);
+        }
+        Mutex::new(fds)
     })
 }
 
@@ -182,28 +221,10 @@ pub fn get_core_governor(core_id: i32) -> String {
 }
 
 pub fn get_cpu_temperature() -> f64 {
-    let map = get_thermal_map();
-    let priority = [
-        "cpu-thermal",
-        "soc-thermal",
-        "cpu",
-        "soc",
-        "thermal-cpufreq",
-    ];
     let mut buf = String::with_capacity(16);
-
-    for zone in priority {
-        if let Some(temp_path) = map.get(zone)
-            && let Some(temp) = read_path_parsed::<f64>(temp_path.to_str().unwrap_or(""), &mut buf)
-        {
-            return if temp > 1000.0 { temp / 1000.0 } else { temp };
-        }
-    }
-
-    for (tz_type, temp_path) in map {
-        if priority.iter().any(|p| tz_type.contains(p))
-            && let Some(temp) = read_path_parsed::<f64>(temp_path.to_str().unwrap_or(""), &mut buf)
-        {
+    let mut fd_mutex = get_cpu_thermal_fd().lock().unwrap();
+    if let Some(file) = fd_mutex.as_mut() {
+        if let Some(temp) = read_fd_parsed::<f64>(file, &mut buf) {
             return if temp > 1000.0 { temp / 1000.0 } else { temp };
         }
     }
@@ -211,37 +232,12 @@ pub fn get_cpu_temperature() -> f64 {
 }
 
 pub fn get_core_temperature(core_id: i32) -> f64 {
-    let rw = get_core_thermal_paths();
     let mut buf = String::with_capacity(16);
-
-    {
-        let paths = rw.read().unwrap();
-        if let Some(Some(path)) = paths.get(core_id as usize)
-            && let Some(temp) = read_path_parsed::<f64>(path.to_str().unwrap_or(""), &mut buf)
-        {
+    let mut fds_mutex = get_core_thermal_fds().lock().unwrap();
+    if let Some(Some(file)) = fds_mutex.get_mut(core_id as usize) {
+        if let Some(temp) = read_fd_parsed::<f64>(file, &mut buf) {
             return if temp > 1000.0 { temp / 1000.0 } else { temp };
         }
     }
-
-    let key = format!("cpu{}-thermal", core_id);
-    let map = get_thermal_map();
-    let found_path = map.get(&key).cloned();
-
-    {
-        let mut paths = rw.write().unwrap();
-        if paths.len() <= core_id as usize {
-            paths.resize(core_id as usize + 1, None);
-        }
-        if paths[core_id as usize].is_none() {
-            paths[core_id as usize] = found_path.clone();
-        }
-    }
-
-    if let Some(path) = found_path
-        && let Some(temp) = read_path_parsed::<f64>(path.to_str().unwrap_or(""), &mut buf)
-    {
-        return if temp > 1000.0 { temp / 1000.0 } else { temp };
-    }
-
     get_cpu_temperature()
 }

@@ -17,26 +17,35 @@ import android.view.WindowManager
 import android.widget.TextView
 import androidx.core.app.NotificationCompat
 import com.rve.systemmonitor.R
+import com.rve.systemmonitor.domain.repository.OverlayRepository
 import com.rve.systemmonitor.utils.BatteryUtils
 import com.rve.systemmonitor.utils.CpuUtils
 import com.rve.systemmonitor.utils.MemoryUtils
+import dagger.hilt.android.AndroidEntryPoint
 import java.util.Locale
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class SystemOverlayService : Service() {
+
+    @Inject
+    lateinit var overlayRepository: OverlayRepository
 
     private var windowManager: WindowManager? = null
     private var overlayView: View? = null
     private var metricsTextView: TextView? = null
 
     private var showFps = true
-    private var showRam = true
     private var showRamPercentage = false
     private var showRamGb = false
     private var showBatteryTemp = false
@@ -75,7 +84,7 @@ class SystemOverlayService : Service() {
                     }
 
                     val currentRam = ramText
-                    if (showRam && currentRam.isNotEmpty()) {
+                    if ((showRamGb || showRamPercentage) && currentRam.isNotEmpty()) {
                         metrics.add(currentRam)
                     }
 
@@ -105,25 +114,6 @@ class SystemOverlayService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val delayMillis = intent?.getLongExtra("update_delay", 1000L) ?: 1000L
-        updateDelayNanos = delayMillis * 1_000_000L
-        showFps = intent?.getBooleanExtra("show_fps", true) ?: true
-        showRam = intent?.getBooleanExtra("show_ram", true) ?: true
-        showRamPercentage = intent?.getBooleanExtra("show_ram_percentage", false) ?: false
-        showRamGb = intent?.getBooleanExtra("show_ram_gb", false) ?: false
-        showBatteryTemp = intent?.getBooleanExtra("show_battery_temp", false) ?: false
-        showCpuTemp = intent?.getBooleanExtra("show_cpu_temp", false) ?: false
-
-        overlayTextSize = intent?.getFloatExtra("text_size", 14f) ?: 14f
-        overlayBgOpacity = intent?.getFloatExtra("bg_opacity", 0.5f) ?: 0.5f
-        overlayPadding = intent?.getIntExtra("padding", 16) ?: 16
-        overlayTextColor = intent?.getIntExtra("text_color", Color.GREEN) ?: Color.GREEN
-        isVerticalLayout = intent?.getBooleanExtra("is_vertical", false) ?: false
-        overlayCornerRadius = intent?.getIntExtra("corner_radius", 8) ?: 8
-
-        applySettings()
-        updateBatteryText()
-
         return START_NOT_STICKY
     }
 
@@ -146,15 +136,80 @@ class SystemOverlayService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        isRunning = true
         startForeground(NOTIFICATION_ID, createNotification())
         showOverlay()
+        startSettingsObservation()
         startMetricsPolling()
         startBatteryMonitoring()
         choreographer.postFrameCallback(frameCallback)
     }
 
+    private fun startSettingsObservation() {
+        serviceScope.launch {
+            overlayRepository.isFpsEnabled.collect { showFps = it }
+        }
+        serviceScope.launch {
+            overlayRepository.isRamPercentageEnabled.collect { showRamPercentage = it }
+        }
+        serviceScope.launch {
+            overlayRepository.isRamGbEnabled.collect { showRamGb = it }
+        }
+        serviceScope.launch {
+            overlayRepository.isBatteryTempEnabled.collect {
+                showBatteryTemp = it
+                updateBatteryText()
+            }
+        }
+        serviceScope.launch {
+            overlayRepository.isCpuTempEnabled.collect { showCpuTemp = it }
+        }
+        serviceScope.launch {
+            overlayRepository.overlayUpdateInterval.collect { delayMillis ->
+                updateDelayNanos = delayMillis * 1_000_000L
+            }
+        }
+        serviceScope.launch(Dispatchers.Main) {
+            overlayRepository.overlayTextSize.collect {
+                overlayTextSize = it
+                applySettings()
+            }
+        }
+        serviceScope.launch(Dispatchers.Main) {
+            overlayRepository.overlayBgOpacity.collect {
+                overlayBgOpacity = it
+                applySettings()
+            }
+        }
+        serviceScope.launch(Dispatchers.Main) {
+            overlayRepository.overlayPadding.collect {
+                overlayPadding = it
+                applySettings()
+            }
+        }
+        serviceScope.launch(Dispatchers.Main) {
+            overlayRepository.overlayTextColor.collect {
+                overlayTextColor = it
+                applySettings()
+            }
+        }
+        serviceScope.launch(Dispatchers.Main) {
+            overlayRepository.isVerticalLayout.collect {
+                isVerticalLayout = it
+                applySettings()
+            }
+        }
+        serviceScope.launch(Dispatchers.Main) {
+            overlayRepository.overlayCornerRadius.collect {
+                overlayCornerRadius = it
+                applySettings()
+            }
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
+        isRunning = false
         serviceScope.cancel()
         choreographer.removeFrameCallback(frameCallback)
         if (overlayView != null) {
@@ -165,7 +220,7 @@ class SystemOverlayService : Service() {
     private fun startMetricsPolling() {
         serviceScope.launch {
             while (isActive) {
-                if (showRam) {
+                if (showRamGb || showRamPercentage) {
                     val ram = MemoryUtils.getRamData()
                     ramText = when {
                         showRamGb && showRamPercentage -> {
@@ -308,5 +363,6 @@ class SystemOverlayService : Service() {
 
     companion object {
         private const val NOTIFICATION_ID = 1001
+        var isRunning = false
     }
 }

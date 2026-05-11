@@ -122,7 +122,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
     )
 
     var isServiceRunning by remember {
-        mutableStateOf(isServiceRunning(context, SystemOverlayService::class.java))
+        mutableStateOf(SystemOverlayService.isRunning)
     }
 
     var hasOverlayPermission by remember {
@@ -223,7 +223,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 hasOverlayPermission = Settings.canDrawOverlays(context)
-                isServiceRunning = isServiceRunning(context, SystemOverlayService::class.java)
+                isServiceRunning = SystemOverlayService.isRunning
 
                 if (!hasOverlayPermission && (isOverlayEnabled || isServiceRunning)) {
                     viewModel.disableAll()
@@ -755,11 +755,9 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                                 enabled = isOverlayActive,
                                 onValueChange = {
                                     viewModel.setOverlayTextSize(it)
-                                    if (isServiceRunning) updateService(size = it)
                                 },
                                 onReset = {
                                     viewModel.setOverlayTextSize(14f)
-                                    if (isServiceRunning) updateService(size = 14f)
                                 },
                                 valueDisplay = "${textSize.toInt()} sp",
                             )
@@ -772,11 +770,9 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                                 enabled = isOverlayActive,
                                 onValueChange = {
                                     viewModel.setOverlayBgOpacity(it)
-                                    if (isServiceRunning) updateService(opacity = it)
                                 },
                                 onReset = {
                                     viewModel.setOverlayBgOpacity(0.5f)
-                                    if (isServiceRunning) updateService(opacity = 0.5f)
                                 },
                                 valueDisplay = "${(bgOpacity * 100).toInt()}%",
                             )
@@ -789,11 +785,9 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                                 enabled = isOverlayActive,
                                 onValueChange = {
                                     viewModel.setOverlayPadding(it.toInt())
-                                    if (isServiceRunning) updateService(padd = it.toInt())
                                 },
                                 onReset = {
                                     viewModel.setOverlayPadding(16)
-                                    if (isServiceRunning) updateService(padd = 16)
                                 },
                                 valueDisplay = "$padding px",
                             )
@@ -806,11 +800,9 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                                 enabled = isOverlayActive,
                                 onValueChange = {
                                     viewModel.setOverlayCornerRadius(it.toInt())
-                                    if (isServiceRunning) updateService(radius = it.toInt())
                                 },
                                 onReset = {
                                     viewModel.setOverlayCornerRadius(8)
-                                    if (isServiceRunning) updateService(radius = 8)
                                 },
                                 valueDisplay = "$cornerRadius px",
                             )
@@ -1096,15 +1088,4 @@ private fun MetricToggleCard(
             )
         }
     }
-}
-
-@Suppress("DEPRECATION")
-private fun isServiceRunning(context: Context, serviceClass: Class<*>): Boolean {
-    val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-    for (service in manager.getRunningServices(Int.MAX_VALUE)) {
-        if (serviceClass.name == service.service.className) {
-            return true
-        }
-    }
-    return false
 }
