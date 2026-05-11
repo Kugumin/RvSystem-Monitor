@@ -21,6 +21,7 @@
 - [🏗️ Architecture](#-architecture)
 - [⚙️ Getting Started](#-getting-started)
 - [🤝 Contributing](#-contributing)
+- [💬 Support](#-support)
 - [📜 License](#-license)
 
 ---
@@ -50,7 +51,10 @@ Built with **Material 3 Expressive**, the application offers a visually rich exp
 ## ✨ Key Features
 
 - **🔋 Battery Intelligence**: Live tracking of Wattage (W), cycle counts (Android 14+), health percentage, and precise Deep Sleep vs. Uptime metrics.
-- **🖥️ System Overlay**: A draggable, low-overhead floating monitor for real-time FPS and RAM metrics. Fully customizable update intervals.
+- **🖥️ System Overlay**: A draggable, high-performance floating monitor powered by Android's `Choreographer` for accurate frame-timing.
+  - **Metrics**: Real-time FPS tracking, RAM usage (GB/Percentage), and live CPU & Battery temperatures.
+  - **Customization**: Fully configurable via dedicated settings including update intervals (down to 0.5s), text size, colors, background opacity, padding, and corner radius.
+  - **Adaptive Layout**: Supports both horizontal (piped) and vertical (stacked) orientations to fit any screen usage scenario.
 - **🎮 GPU & Graphics**: Retrieval of GPU renderer, vendor, and supported OpenGL ES & Vulkan versions directly through the EGL context and native drivers.
 - **⚙️ CPU Dynamics**: Detailed per-core monitoring including current, minimum, and maximum frequencies and scaling governors.
 - **🧠 Memory & ZRAM**: High-precision tracking of RAM and ZRAM usage, including cached, buffers, and kernel slab memory.
@@ -61,41 +65,28 @@ Built with **Material 3 Expressive**, the application offers a visually rich exp
 
 ## 🛠️ Tech Stack
 
-### Frontend (Android)
-- **Language**: Kotlin 2.3.21
-- **UI Framework**: Jetpack Compose (Material 3 Expressive, BOM 2026.05.00)
-- **Dependency Injection**: Hilt 2.59.2
-- **Concurrency**: Coroutines & Flow
-- **Persistence**: Jetpack DataStore (Preferences)
-
-### Backend (Native)
-- **Language**: Rust (Edition 2024)
-- **Bridge**: JNI (Java Native Interface) via `jni-rs`
-- **Native APIs**: `libc`, Vulkan, EGL
-- **Optimization**: `once_cell` for efficient kernel file descriptor caching
-
-### Infrastructure
-- **Build System**: Gradle Kotlin DSL + Cargo NDK
-- **Distribution**: Fastlane
-- **Formatting**: Spotless (Kotlin) & Cargo Fmt (Rust)
+- **Languages**: Kotlin 2.3.21, Rust (Edition 2024), C (via `libc`).
+- **Frameworks**: Jetpack Compose (BOM 2026.05.00), Material 3 Expressive, Hilt DI.
+- **Native Bridge**: JNI via `jni-rs`, `cargo-ndk`.
+- **Infrastructure**: Gradle Kotlin DSL, Android NDK 30.0, Fastlane.
+- **Libraries**: Retrofit 3.0, OkHttp 5.3, Coil 3.4, Jetpack DataStore.
 
 ---
 
 ## 📂 Project Structure
 ```text
 RvSystem-Monitor/
-├── app/                  # Main Android application module (Kotlin)
-│   ├── src/main/java/    # UI, ViewModels, and JNI bridge
-│   ├── src/main/res/     # Resources and assets
-│   ├── build.gradle.kts  # App-level build configuration
-│   └── proguard-rules.pro # R8/Proguard optimization rules
+├── app/                  # Android application module (Kotlin)
+│   ├── src/main/java/    # UI, ViewModels, and JNI bridge declarations
+│   ├── src/main/jniLibs/ # Compiled native shared libraries (.so)
+│   ├── src/main/res/     # App resources and icons
+│   └── build.gradle.kts  # Gradle configuration for Android
 ├── rust/                 # Native monitoring backend (Rust)
-│   ├── src/              # Kernel parsing and JNI implementation
-│   ├── Cargo.toml        # Rust package metadata
-│   └── README.md         # Native-specific documentation
-├── gradle/               # Build system configurations
-│   └── libs.versions.toml # Centralized dependency management
-├── fastlane/             # Distribution metadata and screenshots
+│   ├── src/              # Kernel parsing, JNI implementation, and drivers
+│   ├── Cargo.toml        # Rust package and dependency metadata
+│   └── README.md         # Documentation for the Rust sub-system
+├── gradle/               # Build system scripts and version catalogs
+├── fastlane/             # Automation for screenshots and deployments
 ├── LICENSE               # GNU GPL v3.0
 └── README.md             # This file
 ```
@@ -107,7 +98,7 @@ RvSystem-Monitor/
 The project adheres to **Clean Architecture** principles, ensuring a strict separation of concerns and high maintainability.
 
 ### The Hybrid Core
-- **UI Orchestration**: The Kotlin layer manages the application lifecycle and UI state. It uses ViewModels to expose data streams from repositories.
+- **UI Orchestration**: The Kotlin layer manages the application lifecycle and UI state. It uses ViewModels to expose reactive data streams from Hilt-injected repositories.
 - **Native Data Source**: The Rust layer handles the "heavy lifting". It parses system files and interacts with hardware drivers. By mirroring the Linux kernel's structure (`kernel/` for CPU, `mm/` for Memory, and `drivers/` for GPU), it provides an idiomatic and high-performance data source.
 - **Optimized JNI Bridge**: Instead of frequent fine-grained calls, the bridge is designed for **batch data retrieval**. Single calls fetch complete data sets (e.g., all CPU metrics at once), significantly reducing context-switching overhead between the JVM and Native code.
 
@@ -118,7 +109,7 @@ The project adheres to **Clean Architecture** principles, ensuring a strict sepa
 ### Prerequisites
 - **Android Studio** (Ladybug 2024.2.1 or newer)
 - **Rust Toolchain** ([rustup.rs](https://rustup.rs/))
-- **Android NDK** (Version `30.0.14904198` recommended)
+- **Android NDK** (Version `30.0.14904198` configured)
 - **cargo-ndk**: `cargo install cargo-ndk`
 
 ### Installation & Build
@@ -132,7 +123,7 @@ The project adheres to **Clean Architecture** principles, ensuring a strict sepa
    ./gradlew :app:buildRustLibraries
    ```
 3. **Run the application**:
-   Connect an Android device and run:
+   Connect an Android device (API 34+) and run:
    ```bash
    ./gradlew installDebug
    ```
@@ -141,6 +132,10 @@ The project adheres to **Clean Architecture** principles, ensuring a strict sepa
 
 ## 🤝 Contributing
 We welcome contributions from the community! Whether you are fixing a bug, adding a feature, or improving documentation, please read our [CONTRIBUTING.md](CONTRIBUTING.md) to get started.
+
+## 💬 Support
+- **Issues**: [GitHub Issues](https://github.com/Rve27/RvSystem-Monitor/issues) for bug reports and feature requests.
+- **Discussions**: [GitHub Discussions](https://github.com/Rve27/RvSystem-Monitor/discussions) for questions and ideas.
 
 ## 📜 License
 This project is licensed under the **GNU General Public License v3.0**. See the [LICENSE](LICENSE) file for details.

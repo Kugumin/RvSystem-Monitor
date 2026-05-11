@@ -15,6 +15,7 @@ The project structure is intentionally organized to mirror the **Linux Kernel** 
 ## Project Structure
 
 - `src/lib.rs`: Entry point for the JNI bridge. Contains the native functions called by Kotlin.
+- `src/macros.rs`: Project-wide macros, including the core `jni_fn!` boilerplate reducer.
 - `src/kernel/`: Core system logic (matches Linux kernel's `kernel/` directory).
     - `cpu.rs`: Logic for detecting core count, reading frequencies (Current, Min, Max), and scaling
       governors.
@@ -54,6 +55,12 @@ task `:app:buildRustLibraries`.
 ## JNI Integration
 
 The Rust functions are mapped to the corresponding Kotlin utility objects.
+
+### The `jni_fn!` Macro
+To minimize the significant boilerplate and safety risks associated with JNI, this project uses a custom `jni_fn!` macro (defined in `src/macros.rs`). It handles:
+- **Environment Unwrapping**: Automatically manages `EnvUnowned` and `with_env` calls.
+- **Error Propagation**: Converts Rust `Result` types into JNI-compatible returns, logging errors to the Android logcat automatically via `jni::errors::LogErrorAndDefault`.
+- **Mangle Safety**: Applies `#[unsafe(no_mangle)]` and `pub extern "system"` automatically.
 
 ### Memory Utilities (`MemoryUtils`)
 
