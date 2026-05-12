@@ -8,7 +8,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animate
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
@@ -16,7 +15,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -70,7 +68,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -905,8 +902,7 @@ private fun LayoutOptionCard(
     onClick: () -> Unit,
     content: @Composable () -> Unit,
 ) {
-    val colorSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Color>()
-    val dpSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Dp>()
+    val colorSpec = MaterialTheme.motionScheme.slowEffectsSpec<Color>()
 
     val backgroundColor by animateColorAsState(
         targetValue = if (isSelected) {
@@ -927,18 +923,6 @@ private fun LayoutOptionCard(
         animationSpec = colorSpec,
     )
 
-    val animatedElevation by animateDpAsState(
-        targetValue = if (isSelected && enabled) 4.dp else 0.dp,
-        label = "Layout Option Elevation",
-        animationSpec = dpSpec,
-    )
-
-    val animatedBorderWidth by animateDpAsState(
-        targetValue = if (isSelected && enabled) 2.dp else 0.dp,
-        label = "Layout Option Border Width",
-        animationSpec = dpSpec,
-    )
-
     Card(
         onClick = onClick,
         enabled = enabled,
@@ -950,11 +934,7 @@ private fun LayoutOptionCard(
             containerColor = backgroundColor,
             contentColor = contentColor,
         ),
-        border = BorderStroke(
-            width = animatedBorderWidth,
-            color = MaterialTheme.colorScheme.primary.copy(alpha = if (isSelected) 0.5f else 0f),
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = animatedElevation),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
