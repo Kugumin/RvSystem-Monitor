@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -21,9 +22,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -33,6 +36,8 @@ import androidx.compose.ui.unit.dp
 import com.rve.systemmonitor.R
 import com.rve.systemmonitor.ui.components.ExitUntilCollapsedMediumTopAppBar
 import com.rve.systemmonitor.ui.components.haptic.hapticClickable
+
+private data class SettingsItem(val title: String, val subtitle: String, val iconRes: Int, val onClick: () -> Unit)
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -45,6 +50,41 @@ fun SettingsScreen(
     onNavigateToAbout: () -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+
+    val settingsItems = remember {
+        listOf(
+            SettingsItem(
+                title = "App",
+                subtitle = "General application settings",
+                iconRes = R.drawable.build_filled,
+                onClick = onNavigateToApp,
+            ),
+            SettingsItem(
+                title = "Appearance",
+                subtitle = "Theme, haptics, and visual style",
+                iconRes = R.drawable.brightness_medium_filled,
+                onClick = onNavigateToAppearance,
+            ),
+            SettingsItem(
+                title = "Floating Overlay",
+                subtitle = "Global system monitor floating overlay",
+                iconRes = R.drawable.layers_filled,
+                onClick = onNavigateToOverlay,
+            ),
+            SettingsItem(
+                title = "Monitoring",
+                subtitle = "Update intervals and graph history",
+                iconRes = R.drawable.dvr_filled,
+                onClick = onNavigateToMonitoring,
+            ),
+            SettingsItem(
+                title = "About",
+                subtitle = "Developer and project information",
+                iconRes = R.drawable.info_filled,
+                onClick = onNavigateToAbout,
+            ),
+        )
+    }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -65,46 +105,21 @@ fun SettingsScreen(
                 start = 16.dp,
                 end = 16.dp,
             ),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            item {
+            itemsIndexed(settingsItems) { index, item ->
+                val shape = when (index) {
+                    0 -> RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomStart = 8.dp, bottomEnd = 8.dp)
+                    settingsItems.lastIndex -> RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 24.dp, bottomEnd = 24.dp)
+                    else -> RoundedCornerShape(8.dp)
+                }
+
                 SettingsMenuItem(
-                    title = "App",
-                    subtitle = "General application settings",
-                    icon = painterResource(R.drawable.build_filled),
-                    onClick = onNavigateToApp,
-                )
-            }
-            item {
-                SettingsMenuItem(
-                    title = "Appearance",
-                    subtitle = "Theme, haptics, and visual style",
-                    icon = painterResource(R.drawable.brightness_medium_filled),
-                    onClick = onNavigateToAppearance,
-                )
-            }
-            item {
-                SettingsMenuItem(
-                    title = "Floating Overlay",
-                    subtitle = "Global system monitor floating overlay",
-                    icon = painterResource(R.drawable.layers_filled),
-                    onClick = onNavigateToOverlay,
-                )
-            }
-            item {
-                SettingsMenuItem(
-                    title = "Monitoring",
-                    subtitle = "Update intervals and graph history",
-                    icon = painterResource(R.drawable.dvr_filled),
-                    onClick = onNavigateToMonitoring,
-                )
-            }
-            item {
-                SettingsMenuItem(
-                    title = "About",
-                    subtitle = "Developer and project information",
-                    icon = painterResource(R.drawable.info_filled),
-                    onClick = onNavigateToAbout,
+                    title = item.title,
+                    subtitle = item.subtitle,
+                    icon = painterResource(item.iconRes),
+                    shape = shape,
+                    onClick = item.onClick,
                 )
             }
         }
@@ -112,10 +127,10 @@ fun SettingsScreen(
 }
 
 @Composable
-private fun SettingsMenuItem(title: String, subtitle: String, icon: Painter, onClick: () -> Unit) {
+private fun SettingsMenuItem(title: String, subtitle: String, icon: Painter, shape: Shape, onClick: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
+        shape = shape,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
         ),
