@@ -8,6 +8,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
@@ -710,13 +711,19 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                             ) {
                                 colors.forEach { color ->
+                                    val isSelected = textColor == color.toArgb()
+                                    val animatedBorderWidth by animateDpAsState(
+                                        targetValue = if (isSelected) 3.dp else 0.dp,
+                                        label = "Color Selection Border Width Animation",
+                                        animationSpec = MaterialTheme.motionScheme.slowEffectsSpec(),
+                                    )
                                     Box(
                                         modifier = Modifier
                                             .size(40.dp)
                                             .clip(CircleShape)
                                             .background(color)
                                             .border(
-                                                width = if (textColor == color.toArgb()) 3.dp else 0.dp,
+                                                width = animatedBorderWidth,
                                                 color = MaterialTheme.colorScheme.primary,
                                                 shape = CircleShape,
                                             )
