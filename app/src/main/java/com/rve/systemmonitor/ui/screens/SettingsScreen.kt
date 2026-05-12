@@ -178,7 +178,7 @@ private fun SettingsMenuItem(title: String, subtitle: String, icon: Painter, sha
                 modifier = Modifier
                     .size(16.dp)
                     .graphicsLayer(rotationZ = 180f),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = MaterialTheme.colorScheme.primary,
             )
         }
     }
