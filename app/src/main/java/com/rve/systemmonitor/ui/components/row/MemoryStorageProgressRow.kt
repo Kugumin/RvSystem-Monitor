@@ -40,13 +40,13 @@ import com.rve.systemmonitor.ui.components.chip.BadgeChip
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun MemoryStorageProgressRow(
+    modifier: Modifier = Modifier,
     label: String,
     usedValue: String,
     totalValue: String,
     usedPercentage: Float,
     freeValue: String,
     progressColor: Color = MaterialTheme.colorScheme.primary,
-    modifier: Modifier = Modifier,
 ) {
     val density = LocalDensity.current
     val customStroke = remember(density) {

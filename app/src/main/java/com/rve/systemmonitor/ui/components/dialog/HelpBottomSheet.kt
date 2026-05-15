@@ -22,7 +22,7 @@ import com.rve.systemmonitor.ui.components.item.HelpItem
  * @param modifier The [Modifier] to be applied to the container.
  */
 @Composable
-fun HelpBottomSheetContent(title: String = "Data Sources", helpItems: List<Pair<String, String>>, modifier: Modifier = Modifier) {
+fun HelpBottomSheetContent(modifier: Modifier = Modifier, title: String = "Data Sources", helpItems: List<Pair<String, String>>) {
     Column(
         modifier = modifier
             .fillMaxWidth()
