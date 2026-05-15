@@ -38,6 +38,7 @@ import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -516,7 +517,7 @@ private fun PauseUpdatesDialog(onDismiss: () -> Unit, onConfirm: (Int) -> Unit) 
         24 to "24 hours",
     )
 
-    var selectedOption by remember { mutableStateOf(options.first().first) }
+    var selectedOption by remember { mutableIntStateOf(options.first().first) }
 
     Dialog(
         onDismissRequest = onDismiss,
