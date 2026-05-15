@@ -223,10 +223,10 @@ pub fn get_core_governor(core_id: i32) -> String {
 pub fn get_cpu_temperature() -> f64 {
     let mut buf = String::with_capacity(16);
     let mut fd_mutex = get_cpu_thermal_fd().lock().unwrap();
-    if let Some(file) = fd_mutex.as_mut() {
-        if let Some(temp) = read_fd_parsed::<f64>(file, &mut buf) {
-            return if temp > 1000.0 { temp / 1000.0 } else { temp };
-        }
+    if let Some(file) = fd_mutex.as_mut()
+        && let Some(temp) = read_fd_parsed::<f64>(file, &mut buf)
+    {
+        return if temp > 1000.0 { temp / 1000.0 } else { temp };
     }
     0.0
 }
@@ -234,10 +234,10 @@ pub fn get_cpu_temperature() -> f64 {
 pub fn get_core_temperature(core_id: i32) -> f64 {
     let mut buf = String::with_capacity(16);
     let mut fds_mutex = get_core_thermal_fds().lock().unwrap();
-    if let Some(Some(file)) = fds_mutex.get_mut(core_id as usize) {
-        if let Some(temp) = read_fd_parsed::<f64>(file, &mut buf) {
-            return if temp > 1000.0 { temp / 1000.0 } else { temp };
-        }
+    if let Some(Some(file)) = fds_mutex.get_mut(core_id as usize)
+        && let Some(temp) = read_fd_parsed::<f64>(file, &mut buf)
+    {
+        return if temp > 1000.0 { temp / 1000.0 } else { temp };
     }
     get_cpu_temperature()
 }
