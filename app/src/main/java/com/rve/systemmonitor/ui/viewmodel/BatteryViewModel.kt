@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.flow.stateIn
+
 @OptIn(FlowPreview::class)
 @HiltViewModel
 class BatteryViewModel @Inject constructor(private val batteryRepository: BatteryRepository, settingsRepository: SettingsRepository) :

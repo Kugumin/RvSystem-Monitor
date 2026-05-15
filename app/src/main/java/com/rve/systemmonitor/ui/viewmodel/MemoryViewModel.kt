@@ -6,7 +6,6 @@ import com.rve.systemmonitor.domain.repository.HardwareRepository
 import com.rve.systemmonitor.domain.repository.MemoryRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn

@@ -9,6 +9,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+
 @HiltViewModel
 class HomeViewModel @Inject constructor(private val hardwareRepository: HardwareRepository, private val cpuRepository: CpuRepository) :
     ViewModel() {

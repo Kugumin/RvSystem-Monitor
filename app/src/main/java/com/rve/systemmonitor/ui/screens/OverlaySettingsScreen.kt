@@ -1,7 +1,5 @@
 package com.rve.systemmonitor.ui.screens
 
-import android.app.ActivityManager
-import android.content.Context
 import android.content.Intent
 import android.provider.Settings
 import androidx.compose.animation.AnimatedVisibility
