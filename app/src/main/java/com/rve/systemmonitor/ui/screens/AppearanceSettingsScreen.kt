@@ -38,6 +38,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -64,15 +65,22 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -80,6 +88,7 @@ import com.rve.systemmonitor.R
 import com.rve.systemmonitor.ui.components.ExitUntilCollapsedMediumTopAppBar
 import com.rve.systemmonitor.ui.components.haptic.hapticClickable
 import com.rve.systemmonitor.ui.components.haptic.rememberHapticOnClick
+import com.rve.systemmonitor.ui.components.shape.LShape
 import com.rve.systemmonitor.ui.viewmodel.SettingsViewModel
 import com.rve.systemmonitor.utils.ThemeMode
 import com.rve.systemmonitor.utils.VibrationIntensity
@@ -527,83 +536,40 @@ private fun AppearanceHero(hapticEnabled: Boolean, vibrationIntensity: Vibration
         }
     }
 
-    Card(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(220.dp),
-        shape = RoundedCornerShape(32.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Card(
+            modifier = Modifier
+                .fillMaxSize(),
+            shape = LShape(cornerRadius = 32.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(24.dp),
                 verticalArrangement = Arrangement.SpaceBetween,
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top,
+                Column(
+                    modifier = Modifier.fillMaxWidth(0.73f),
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Appearance",
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        )
-                        Text(
-                            text = "Make it pretty enough to flex in screenshots.",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
-                        )
-                    }
-
-                    val spatialSpec = MaterialTheme.motionScheme.slowSpatialSpec<Float>()
-                    val effectsSpec = MaterialTheme.motionScheme.slowEffectsSpec<Float>()
-                    val spatialSpecInt = MaterialTheme.motionScheme.slowSpatialSpec<IntOffset>()
-
-                    AnimatedContent(
-                        targetState = iconRes,
-                        transitionSpec = {
-                            (
-                                fadeIn(animationSpec = effectsSpec) +
-                                    scaleIn(
-                                        initialScale = 0f,
-                                        transformOrigin = TransformOrigin(0.5f, 1f),
-                                        animationSpec = spatialSpec,
-                                    ) +
-                                    slideInVertically(
-                                        initialOffsetY = { it },
-                                        animationSpec = spatialSpecInt,
-                                    )
-                                )
-                                .togetherWith(
-                                    fadeOut(animationSpec = effectsSpec) +
-                                        scaleOut(
-                                            targetScale = 0f,
-                                            transformOrigin = TransformOrigin(0.5f, 1f),
-                                            animationSpec = spatialSpec,
-                                        ) +
-                                        slideOutVertically(
-                                            targetOffsetY = { it },
-                                            animationSpec = spatialSpecInt,
-                                        ),
-                                )
-                        },
-                        label = "Icon Transition",
-                    ) { targetIcon ->
-                        Icon(
-                            painter = painterResource(targetIcon),
-                            contentDescription = null,
-                            modifier = Modifier.size(48.dp),
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        )
-                    }
+                    Text(
+                        text = "Appearance",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                    Text(
+                        text = "Make it pretty enough to flex in screenshots.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
+                    )
                 }
 
                 Row(
@@ -705,6 +671,52 @@ private fun AppearanceHero(hapticEnabled: Boolean, vibrationIntensity: Vibration
                     }
                 }
             }
+        }
+
+        val spatialSpec = MaterialTheme.motionScheme.slowSpatialSpec<Float>()
+        val effectsSpec = MaterialTheme.motionScheme.slowEffectsSpec<Float>()
+        val spatialSpecInt = MaterialTheme.motionScheme.slowSpatialSpec<IntOffset>()
+
+        AnimatedContent(
+            targetState = iconRes,
+            transitionSpec = {
+                (
+                    fadeIn(animationSpec = effectsSpec) +
+                        scaleIn(
+                            initialScale = 0f,
+                            transformOrigin = TransformOrigin(0.5f, 1f),
+                            animationSpec = spatialSpec,
+                        ) +
+                        slideInVertically(
+                            initialOffsetY = { it },
+                            animationSpec = spatialSpecInt,
+                        )
+                    )
+                    .togetherWith(
+                        fadeOut(animationSpec = effectsSpec) +
+                            scaleOut(
+                                targetScale = 0f,
+                                transformOrigin = TransformOrigin(0.5f, 1f),
+                                animationSpec = spatialSpec,
+                            ) +
+                            slideOutVertically(
+                                targetOffsetY = { it },
+                                animationSpec = spatialSpecInt,
+                            ),
+                    )
+            },
+            label = "Icon Transition",
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(end = 16.dp, top = 16.dp)
+                .size(48.dp),
+        ) { targetIcon ->
+            Icon(
+                painter = painterResource(targetIcon),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
         }
     }
 }
