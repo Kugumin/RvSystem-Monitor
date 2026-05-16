@@ -15,5 +15,9 @@
 # We keep only the dontwarn for optional dependencies.
 -dontwarn io.github.kyant0.backdrop.**
 
-# 4. Standard Android/Compose attributes
+# 4. JNA & AWT: Suppress warnings for missing desktop-only classes
+-dontwarn java.awt.**
+-dontwarn com.sun.jna.**
+
+# 5. Standard Android/Compose attributes
 -keepattributes Signature,InnerClasses,EnclosingMethod,AnnotationDefault,*Annotation*
