@@ -1,0 +1,7 @@
+- UI: New interactive hero section in Appearance settings.
+- UI: Added AMOLED mode for pure black backgrounds.
+- UI: Refactored appearance settings into organized cards.
+- Overlay: Renamed to Floating Overlay with a new master toggle.
+- Updates: Enhanced update dialog with pause functionality.
+- Performance: Optimized SystemOverlayService and native backend.
+- Bug fixes and stability improvements.

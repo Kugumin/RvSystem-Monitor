@@ -1,5 +1,55 @@
 # Changelog
 
+## [0.4-beta] - 2026-05-16
+
+### Feat
+- **ui:** add custom LShape and update Appearance hero section
+- **perf:** reactive overlay settings and performance optimizations
+- **overlay:** rename to floating overlay and add master toggle
+- **ui:** refactor appearance settings into grouped cards
+- **ui:** update appearance hero description text
+- **ui:** add interactive hero section to appearance settings
+- **navigation:** add isTestFlow parameter to Setup route
+- **ui:** add amoled mode for pure black backgrounds
+- **ui:** add pause updates feature to update dialog
+- **update:** pause redundant update checks when update UI is active
+- **ui:** update VersionPill colors in UpdateDialog
+- **ui:** update dialog icon and colors
+
+### Fix
+- **update:** remove intrusive update failure error message
+- **ui:** resolve compilation errors and update icons in UpdateDialog
+
+### Perf
+- **overlay:** optimize SystemOverlayService
+
+### Refactor
+- **kernel:** flatten thermal reading logic in cpu.rs
+- **ui:** update settings screen with grouped list styling
+- **ui:** extract reusable compose components and utilities
+- **core:** reduce boilerplate across kotlin and rust layers
+
+### Docs
+- **readme:** update features, tech stack, and rust documentation
+
+### Style
+- **ui:** animate color selection border width
+- **ui:** simplify layout option card visuals
+- **ui:** update settings menu item arrow tint to primary
+- **ui:** apply spotless formatting to AppearanceSettingsScreen
+- **setup:** move next button to bottom in SetupScreen
+- **setup:** use default button shapes in SetupScreen
+- **ui:** set primary color for switch check icons
+
+### Build
+- **deps:** bump com.diffplug.spotless from 8.4.0 to 8.5.0
+- **deps:** bump com.google.devtools.ksp from 2.3.7 to 2.3.8
+- **deps:** bump gradle-wrapper from 9.5.0 to 9.5.1
+- **config:** optimize gradle performance settings
+
+### Chore
+- chore: remove unused imports and optimize codebase
+
 ## [0.3-beta] - 2026-05-09
 
 ### Feat

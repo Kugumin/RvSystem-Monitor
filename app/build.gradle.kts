@@ -18,8 +18,8 @@ android {
         applicationId = "com.rve.systemmonitor"
         minSdk = 34
         targetSdk = 37
-        versionCode = 3
-        versionName = "0.3-beta"
+        versionCode = 4
+        versionName = "0.4-beta"
         ndkVersion = "30.0.14904198"
         buildToolsVersion = "37.0.0"
 
