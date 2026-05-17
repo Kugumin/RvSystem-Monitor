@@ -68,6 +68,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.lottiefiles.dotlottie.core.compose.runtime.DotLottieController
 import com.lottiefiles.dotlottie.core.compose.ui.DotLottieAnimation
 import com.lottiefiles.dotlottie.core.util.DotLottieSource
 import com.rve.systemmonitor.R
@@ -93,17 +94,14 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: (
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
     var setupStep by remember { mutableStateOf(SetupStep.OverlayPermission) }
     var isOverlayPermissionGranted by remember { mutableStateOf(Settings.canDrawOverlays(context)) }
-    var animationVisible by remember { mutableStateOf(false) }
+    val dotLottieController = remember { DotLottieController() }
 
-    val spatialSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>()
-    val effectsSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Float>()
-    val spatialSpecInt = MaterialTheme.motionScheme.defaultSpatialSpec<IntOffset>()
     val slowSpatialSpec = MaterialTheme.motionScheme.slowSpatialSpec<IntOffset>()
     val slowEffectsSpec = MaterialTheme.motionScheme.slowEffectsSpec<Float>()
 
     LaunchedEffect(Unit) {
         delay(400)
-        animationVisible = true
+        dotLottieController.play()
     }
 
     BackHandler(enabled = setupStep != SetupStep.OverlayPermission) {
@@ -137,34 +135,14 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: (
                 .fillMaxWidth(),
             contentAlignment = Alignment.Center,
         ) {
-            this@Column.AnimatedVisibility(
-                visible = animationVisible,
-                enter = fadeIn(animationSpec = effectsSpec) +
-                    slideInVertically(
-                        initialOffsetY = { it / 2 },
-                        animationSpec = spatialSpecInt,
-                    ) +
-                    scaleIn(
-                        initialScale = 0.8f,
-                        animationSpec = spatialSpec,
-                    ),
-                exit = fadeOut(animationSpec = effectsSpec) +
-                    slideOutVertically(
-                        targetOffsetY = { it / 2 },
-                        animationSpec = spatialSpecInt,
-                    ) +
-                    scaleOut(
-                        targetScale = 0.8f,
-                        animationSpec = spatialSpec,
-                    ),
-            ) {
-                DotLottieAnimation(
-                    source = DotLottieSource.Res(R.raw.cat),
-                    autoplay = true,
-                    loop = true,
-                    modifier = Modifier.size(280.dp),
-                )
-            }
+            DotLottieAnimation(
+                source = DotLottieSource.Res(R.raw.cat),
+                autoplay = false,
+                loop = true,
+                controller = dotLottieController,
+                useFrameInterpolation = true,
+                modifier = Modifier.size(280.dp),
+            )
         }
 
         Surface(
@@ -257,13 +235,9 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: (
 
                     SetupStep.Theme -> {
                         {
-                            scope.launch {
-                                animationVisible = false
-                                delay(400)
-                                viewModel.completeSetup()
-                                onSetupCompleted()
-                            }
-                            Unit
+                            dotLottieController.stop()
+                            viewModel.completeSetup()
+                            onSetupCompleted()
                         }
                     }
                 }
