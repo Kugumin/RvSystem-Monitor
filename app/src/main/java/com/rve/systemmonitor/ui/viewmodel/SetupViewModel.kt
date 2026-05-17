@@ -3,6 +3,7 @@ package com.rve.systemmonitor.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rve.systemmonitor.domain.repository.SettingsRepository
+import com.rve.systemmonitor.utils.ThemeMode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
@@ -20,6 +21,13 @@ class SetupViewModel @Inject constructor(private val settingsRepository: Setting
             initialValue = true,
         )
 
+    val themeMode: StateFlow<ThemeMode> = settingsRepository.themeMode
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = ThemeMode.SYSTEM,
+        )
+
     fun completeSetup() {
         viewModelScope.launch {
             settingsRepository.setSetupCompleted(true)
@@ -29,6 +37,12 @@ class SetupViewModel @Inject constructor(private val settingsRepository: Setting
     fun setAutoUpdateEnabled(enabled: Boolean) {
         viewModelScope.launch {
             settingsRepository.setAutoUpdateEnabled(enabled)
+        }
+    }
+
+    fun setThemeMode(mode: ThemeMode) {
+        viewModelScope.launch {
+            settingsRepository.setThemeMode(mode)
         }
     }
 }

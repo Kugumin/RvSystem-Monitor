@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -56,7 +55,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -75,12 +73,14 @@ import com.lottiefiles.dotlottie.core.util.DotLottieSource
 import com.rve.systemmonitor.R
 import com.rve.systemmonitor.ui.components.haptic.rememberHapticOnClick
 import com.rve.systemmonitor.ui.viewmodel.SetupViewModel
+import com.rve.systemmonitor.utils.ThemeMode
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private enum class SetupStep {
     OverlayPermission,
     Updates,
+    Theme,
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -90,6 +90,7 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: (
     val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
     val autoUpdateEnabled by viewModel.autoUpdateEnabled.collectAsStateWithLifecycle()
+    val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
     var setupStep by remember { mutableStateOf(SetupStep.OverlayPermission) }
     var isOverlayPermissionGranted by remember { mutableStateOf(Settings.canDrawOverlays(context)) }
     var animationVisible by remember { mutableStateOf(false) }
@@ -106,8 +107,10 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: (
     }
 
     BackHandler(enabled = setupStep != SetupStep.OverlayPermission) {
-        if (setupStep == SetupStep.Updates) {
-            setupStep = SetupStep.OverlayPermission
+        setupStep = when (setupStep) {
+            SetupStep.Updates -> SetupStep.OverlayPermission
+            SetupStep.Theme -> SetupStep.Updates
+            SetupStep.OverlayPermission -> SetupStep.OverlayPermission
         }
     }
 
@@ -215,6 +218,11 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: (
                             autoUpdateEnabled = autoUpdateEnabled,
                             onAutoUpdateChanged = viewModel::setAutoUpdateEnabled,
                         )
+
+                        SetupStep.Theme -> ThemeContent(
+                            selectedTheme = themeMode,
+                            onThemeSelected = viewModel::setThemeMode,
+                        )
                     }
                 }
 
@@ -222,7 +230,8 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: (
 
                 val buttonText = when (setupStep) {
                     SetupStep.OverlayPermission -> if (isOverlayPermissionGranted) "Continue" else "Grant Permission"
-                    SetupStep.Updates -> "Finish Setup"
+                    SetupStep.Updates -> "Continue"
+                    SetupStep.Theme -> "Finish Setup"
                 }
 
                 val onButtonClick = when (setupStep) {
@@ -241,6 +250,12 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: (
                     }
 
                     SetupStep.Updates -> {
+                        {
+                            setupStep = SetupStep.Theme
+                        }
+                    }
+
+                    SetupStep.Theme -> {
                         {
                             scope.launch {
                                 animationVisible = false
@@ -280,7 +295,9 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: (
                         "Required to show the monitor overlay"
                     }
 
-                    SetupStep.Updates -> "You can change this later in Settings"
+                    SetupStep.Updates -> "Always stay up to date"
+
+                    SetupStep.Theme -> "You can change this later in Settings"
                 }
 
                 Text(
@@ -455,4 +472,76 @@ private fun SetupStepContent(title: String, description: String, action: (@Compo
             action()
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun ThemeContent(selectedTheme: ThemeMode, onThemeSelected: (ThemeMode) -> Unit) {
+    SetupStepContent(
+        title = "Choose Theme",
+        description = "Select your preferred visual style for the application.",
+        action = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                ThemeMode.entries.forEach { theme ->
+                    val isSelected = selectedTheme == theme
+                    Card(
+                        onClick = rememberHapticOnClick { onThemeSelected(theme) },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(100.dp),
+                        shape = RoundedCornerShape(24.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (isSelected) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.surfaceContainerHigh
+                            },
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                        ) {
+                            Icon(
+                                painter = painterResource(
+                                    when (theme) {
+                                        ThemeMode.LIGHT -> R.drawable.light_mode
+                                        ThemeMode.DARK -> R.drawable.dark_mode
+                                        ThemeMode.SYSTEM -> R.drawable.brightness_medium_filled
+                                    },
+                                ),
+                                contentDescription = null,
+                                modifier = Modifier.size(32.dp),
+                                tint = if (isSelected) {
+                                    MaterialTheme.colorScheme.onPrimary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                },
+                            )
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                text = when (theme) {
+                                    ThemeMode.LIGHT -> "Light"
+                                    ThemeMode.DARK -> "Dark"
+                                    ThemeMode.SYSTEM -> "System"
+                                },
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.SemiBold,
+                                color = if (isSelected) {
+                                    MaterialTheme.colorScheme.onPrimary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface
+                                },
+                            )
+                        }
+                    }
+                }
+            }
+        },
+    )
 }
