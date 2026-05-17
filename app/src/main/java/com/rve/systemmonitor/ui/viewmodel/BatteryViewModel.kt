@@ -8,6 +8,8 @@ import com.rve.systemmonitor.domain.repository.BatteryRepository
 import com.rve.systemmonitor.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -62,7 +64,7 @@ class BatteryViewModel @Inject constructor(private val batteryRepository: Batter
 
     private val _historyList = mutableListOf<BatteryDataPoint>()
 
-    val batteryHistory: StateFlow<List<BatteryDataPoint>> = batteryInfo
+    val batteryHistory: StateFlow<ImmutableList<BatteryDataPoint>> = batteryInfo
         .sample(1000)
         .map { info ->
             _historyList.add(BatteryDataPoint(info.current, info.status))
@@ -70,15 +72,15 @@ class BatteryViewModel @Inject constructor(private val batteryRepository: Batter
             if (_historyList.size > maxHistory) {
                 _historyList.subList(0, _historyList.size - maxHistory).clear()
             }
-            _historyList.toList()
+            _historyList.toImmutableList()
         }
         .combine(graphHistorySeconds) { history, maxHistory ->
-            if (history.size > maxHistory) history.takeLast(maxHistory) else history
+            if (history.size > maxHistory) history.takeLast(maxHistory).toImmutableList() else history
         }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = _historyList.toList(),
+            initialValue = _historyList.toImmutableList(),
         )
 
     private var _hasAnimated = false

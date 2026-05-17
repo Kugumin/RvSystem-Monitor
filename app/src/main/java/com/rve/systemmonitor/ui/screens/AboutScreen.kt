@@ -56,6 +56,7 @@ import com.rve.systemmonitor.domain.model.GitHubContributor
 import com.rve.systemmonitor.ui.components.ExitUntilCollapsedMediumTopAppBar
 import com.rve.systemmonitor.ui.components.haptic.hapticClickable
 import com.rve.systemmonitor.ui.viewmodel.AboutViewModel
+import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun AboutScreen(viewModel: AboutViewModel = hiltViewModel(), onNavigateBack: () -> Unit) {
@@ -75,7 +76,7 @@ fun AboutScreen(viewModel: AboutViewModel = hiltViewModel(), onNavigateBack: () 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun AboutScreenContent(
-    contributors: List<GitHubContributor>,
+    contributors: ImmutableList<GitHubContributor>,
     isLoading: Boolean,
     error: String?,
     onRetry: () -> Unit,

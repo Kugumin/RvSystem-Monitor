@@ -21,6 +21,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -31,6 +32,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.rve.systemmonitor.R
 import com.rve.systemmonitor.ui.components.haptic.rememberHapticOnClick
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
 /**
  * Data class representing the content of an information overview card.
@@ -45,6 +48,7 @@ import com.rve.systemmonitor.ui.components.haptic.rememberHapticOnClick
  * @property secondaryBadgeIndices Indices of badges that should use the secondary color scheme.
  * @property onHelpClick Optional callback for a help icon click.
  */
+@Immutable
 data class InfoCardData(
     val title: String,
     val headline: String,
@@ -52,8 +56,8 @@ data class InfoCardData(
     val iconRes: Int,
     val backgroundIconRes: Int = iconRes,
     val backgroundIconOffset: Dp = 30.dp,
-    val badges: List<String> = emptyList(),
-    val secondaryBadgeIndices: List<Int> = listOf(0),
+    val badges: ImmutableList<String> = persistentListOf(),
+    val secondaryBadgeIndices: ImmutableList<Int> = persistentListOf(0),
     val onHelpClick: (() -> Unit)? = null,
 )
 

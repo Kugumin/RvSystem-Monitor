@@ -6,6 +6,9 @@ import com.rve.systemmonitor.domain.model.GitHubContributor
 import com.rve.systemmonitor.domain.repository.AboutRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,8 +17,8 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class AboutViewModel @Inject constructor(private val aboutRepository: AboutRepository) : ViewModel() {
 
-    private val _contributors = MutableStateFlow<List<GitHubContributor>>(emptyList())
-    val contributors: StateFlow<List<GitHubContributor>> = _contributors.asStateFlow()
+    private val _contributors = MutableStateFlow<ImmutableList<GitHubContributor>>(persistentListOf())
+    val contributors: StateFlow<ImmutableList<GitHubContributor>> = _contributors.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -33,7 +36,7 @@ class AboutViewModel @Inject constructor(private val aboutRepository: AboutRepos
             _error.value = null
             aboutRepository.getContributors()
                 .onSuccess {
-                    _contributors.value = it
+                    _contributors.value = it.toImmutableList()
                 }
                 .onFailure {
                     _error.value = "No internet connection or failed to fetch contributors"

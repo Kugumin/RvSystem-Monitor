@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.rve.systemmonitor.ui.components.item.HelpItem
+import kotlinx.collections.immutable.ImmutableList
 
 /**
  * A shared component for the content of a help bottom sheet.
@@ -22,7 +23,7 @@ import com.rve.systemmonitor.ui.components.item.HelpItem
  * @param modifier The [Modifier] to be applied to the container.
  */
 @Composable
-fun HelpBottomSheetContent(modifier: Modifier = Modifier, title: String = "Data Sources", helpItems: List<Pair<String, String>>) {
+fun HelpBottomSheetContent(modifier: Modifier = Modifier, title: String = "Data Sources", helpItems: ImmutableList<Pair<String, String>>) {
     Column(
         modifier = modifier
             .fillMaxWidth()

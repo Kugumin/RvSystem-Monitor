@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package com.rve.systemmonitor.data.repository
 
 import com.rve.systemmonitor.domain.model.CPU
@@ -10,10 +8,12 @@ import com.rve.systemmonitor.utils.CpuUtils
 import com.rve.systemmonitor.utils.FlowUtils
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @Singleton
 class CpuRepositoryImpl @Inject constructor(private val settingsRepository: SettingsRepository) : CpuRepository {
     private val TAG = "CpuRepository"
@@ -75,7 +75,7 @@ class CpuRepositoryImpl @Inject constructor(private val settingsRepository: Sett
                 board = board,
                 architecture = architecture,
                 temperature = cpuTemperature,
-                coreDetails = coreDetails,
+                coreDetails = coreDetails.toImmutableList(),
             )
         }
     }

@@ -20,6 +20,8 @@ import com.rve.systemmonitor.ui.components.layout.ScreenLazyColumn
 import com.rve.systemmonitor.ui.utils.rememberLifecycleAwareState
 import com.rve.systemmonitor.ui.viewmodel.HomeUiState
 import com.rve.systemmonitor.ui.viewmodel.HomeViewModel
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun HomeScreen(isActive: Boolean, viewModel: HomeViewModel = hiltViewModel()) {
@@ -50,7 +52,7 @@ private fun HomeScreenContent(uiState: HomeUiState) {
                 headline = uiState.device.model,
                 subhead = "by ${uiState.device.manufacturer}",
                 iconRes = R.drawable.mobile_filled,
-                badges = listOf(uiState.device.device),
+                badges = listOf(uiState.device.device).toImmutableList(),
                 onHelpClick = { showHelpSheet = true },
             ),
             InfoCardData(
@@ -59,7 +61,7 @@ private fun HomeScreenContent(uiState: HomeUiState) {
                 subhead = uiState.os.dessertName,
                 iconRes = R.drawable.android_filled,
                 backgroundIconOffset = 45.dp,
-                badges = listOf("API ${uiState.os.sdk}", "Patch: ${uiState.os.securityPatch}"),
+                badges = listOf("API ${uiState.os.sdk}", "Patch: ${uiState.os.securityPatch}").toImmutableList(),
             ),
             InfoCardData(
                 title = "Display",
@@ -74,15 +76,15 @@ private fun HomeScreenContent(uiState: HomeUiState) {
                         add("HDR")
                         addAll(uiState.display.hdrTypes)
                     }
-                },
-                secondaryBadgeIndices = if (uiState.display.isHdrSupported) listOf(0, 1) else listOf(0),
+                }.toImmutableList(),
+                secondaryBadgeIndices = (if (uiState.display.isHdrSupported) listOf(0, 1) else listOf(0)).toImmutableList(),
             ),
             InfoCardData(
                 title = "Processor",
                 headline = uiState.cpu.model,
                 subhead = "by ${uiState.cpu.manufacturer}",
                 iconRes = R.drawable.memory_filled,
-                badges = listOf("${uiState.cpu.cores} Cores"),
+                badges = listOf("${uiState.cpu.cores} Cores").toImmutableList(),
             ),
             InfoCardData(
                 title = "Graphics",
@@ -92,9 +94,9 @@ private fun HomeScreenContent(uiState: HomeUiState) {
                 badges = listOf(
                     "OpenGL ES ${uiState.gpu.glesVersion}",
                     "Vulkan ${uiState.gpu.vulkanVersion}",
-                ),
+                ).toImmutableList(),
             ),
-        )
+        ).toImmutableList()
     }
 
     ScreenLazyColumn {
@@ -109,7 +111,7 @@ private fun HomeScreenContent(uiState: HomeUiState) {
 
 @Composable
 private fun HomeHelpContent() {
-    val helpItems = listOf(
+    val helpItems = persistentListOf(
         "Device & Operating System" to "Information such as model, manufacturer, and Android version is extracted from " +
             "the system's Build properties and secure patch levels.",
         "Display" to "Screen resolution, refresh rate, and density metrics are obtained via the " +

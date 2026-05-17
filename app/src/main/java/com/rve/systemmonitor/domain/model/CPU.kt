@@ -1,6 +1,8 @@
 package com.rve.systemmonitor.domain.model
 
 import androidx.compose.runtime.Immutable
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
 @Immutable
 data class CPU(
@@ -11,7 +13,7 @@ data class CPU(
     val board: String = "unknown",
     val architecture: String = "unknown",
     val temperature: Double = 0.0,
-    val coreDetails: List<CoreDetail> = emptyList(),
+    val coreDetails: ImmutableList<CoreDetail> = persistentListOf(),
 )
 
 @Immutable

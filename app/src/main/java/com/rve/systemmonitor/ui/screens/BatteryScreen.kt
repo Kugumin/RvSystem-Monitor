@@ -71,6 +71,8 @@ import com.rve.systemmonitor.ui.navigation.TRANSITION_DURATION
 import com.rve.systemmonitor.ui.utils.rememberLifecycleAwareState
 import com.rve.systemmonitor.ui.viewmodel.BatteryViewModel
 import kotlin.math.abs
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun BatteryScreen(isActive: Boolean, viewModel: BatteryViewModel = hiltViewModel()) {
@@ -89,7 +91,7 @@ fun BatteryScreen(isActive: Boolean, viewModel: BatteryViewModel = hiltViewModel
 @Composable
 private fun BatteryScreenContent(
     batteryInfo: Battery,
-    batteryHistory: List<BatteryDataPoint>,
+    batteryHistory: ImmutableList<BatteryDataPoint>,
     hasAlreadyAnimated: Boolean,
     onAnimated: () -> Unit,
 ) {
@@ -130,7 +132,7 @@ private fun BatteryScreenContent(
 }
 
 @Composable
-private fun ChargingSpeedCard(battery: Battery, history: List<BatteryDataPoint>, hasAnimated: Boolean, onAnimated: () -> Unit) {
+private fun ChargingSpeedCard(battery: Battery, history: ImmutableList<BatteryDataPoint>, hasAnimated: Boolean, onAnimated: () -> Unit) {
     val currentMA = abs(battery.current)
     val isCharging = battery.status == "Charging"
     val isDischarging = battery.status == "Discharging"
@@ -603,7 +605,7 @@ private fun formatUptime(millis: Long): String {
 
 @Composable
 private fun BatteryHelpContent() {
-    val helpItems = listOf(
+    val helpItems = persistentListOf(
         "Voltage & Temperature" to "Sourced from real-time system broadcasts via the Android BatteryManager API.",
         "Power Source & Status" to "Detected from the current charging state (AC, USB, or Wireless) via system intents.",
         "Charging Speed" to "Estimated based on real-time wattage: Fast Charging (15W+) and Hyper Charging (25W+).",

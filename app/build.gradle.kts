@@ -97,6 +97,11 @@ android {
         compose = true
         buildConfig = true
     }
+
+    composeCompiler {
+        enableStrongSkippingMode = true
+        stabilityConfigurationFile = rootProject.file("compose_stability.conf")
+    }
 }
 
 dependencies {
@@ -120,6 +125,7 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.serialization)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.collections.immutable)
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
     implementation(libs.androidx.datastore.preferences)
