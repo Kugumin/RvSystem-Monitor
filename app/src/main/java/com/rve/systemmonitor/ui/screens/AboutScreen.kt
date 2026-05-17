@@ -57,14 +57,32 @@ import com.rve.systemmonitor.ui.components.ExitUntilCollapsedMediumTopAppBar
 import com.rve.systemmonitor.ui.components.haptic.hapticClickable
 import com.rve.systemmonitor.ui.viewmodel.AboutViewModel
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AboutScreen(viewModel: AboutViewModel = hiltViewModel(), onNavigateBack: () -> Unit) {
-    val context = androidx.compose.ui.platform.LocalContext.current
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val contributors by viewModel.contributors.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
+
+    AboutScreenContent(
+        contributors = contributors,
+        isLoading = isLoading,
+        error = error,
+        onRetry = { viewModel.fetchContributors() },
+        onNavigateBack = onNavigateBack,
+    )
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun AboutScreenContent(
+    contributors: List<GitHubContributor>,
+    isLoading: Boolean,
+    error: String?,
+    onRetry: () -> Unit,
+    onNavigateBack: () -> Unit,
+) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     val openUrl = { url: String ->
         val intent = Intent(Intent.ACTION_VIEW, url.toUri())
@@ -177,7 +195,7 @@ fun AboutScreen(viewModel: AboutViewModel = hiltViewModel(), onNavigateBack: () 
                                         textAlign = TextAlign.Center,
                                     )
                                     Button(
-                                        onClick = { viewModel.fetchContributors() },
+                                        onClick = onRetry,
                                         shapes = ButtonDefaults.shapes(),
                                     ) {
                                         Text("Try Again")
@@ -241,7 +259,6 @@ fun AboutScreen(viewModel: AboutViewModel = hiltViewModel(), onNavigateBack: () 
         }
     }
 }
-
 @Composable
 fun ContributorSkeleton(shape: RoundedCornerShape) {
     val transition = rememberInfiniteTransition(label = "SkeletonTransition")

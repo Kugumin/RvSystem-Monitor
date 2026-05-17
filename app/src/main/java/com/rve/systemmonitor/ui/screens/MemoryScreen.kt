@@ -40,10 +40,10 @@ import com.rve.systemmonitor.ui.components.layout.ScreenLazyColumn
 import com.rve.systemmonitor.ui.components.row.MemoryStorageProgressRow
 import com.rve.systemmonitor.ui.components.row.TwoColumnInfoRow
 import com.rve.systemmonitor.ui.utils.rememberLifecycleAwareState
+import com.rve.systemmonitor.ui.viewmodel.MemoryUiState
 import com.rve.systemmonitor.ui.viewmodel.MemoryViewModel
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun MemoryScreen(isActive: Boolean, viewModel: MemoryViewModel = hiltViewModel()) {
     val uiState by rememberLifecycleAwareState(isActive, viewModel.uiState)
@@ -54,6 +54,14 @@ fun MemoryScreen(isActive: Boolean, viewModel: MemoryViewModel = hiltViewModel()
         }
     }
 
+    MemoryScreenContent(
+        uiState = uiState,
+    )
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun MemoryScreenContent(uiState: MemoryUiState) {
     var selectedDetail by remember { mutableStateOf<Pair<String, String>?>(null) }
 
     if (selectedDetail != null) {

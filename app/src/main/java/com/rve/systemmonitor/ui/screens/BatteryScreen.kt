@@ -72,14 +72,27 @@ import com.rve.systemmonitor.ui.utils.rememberLifecycleAwareState
 import com.rve.systemmonitor.ui.viewmodel.BatteryViewModel
 import kotlin.math.abs
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BatteryScreen(isActive: Boolean, viewModel: BatteryViewModel = hiltViewModel()) {
     val batteryInfo by rememberLifecycleAwareState(isActive, viewModel.batteryInfo)
     val batteryHistory by rememberLifecycleAwareState(isActive, viewModel.batteryHistory)
 
-    val hasAlreadyAnimated = remember { viewModel.hasAnimated }
+    BatteryScreenContent(
+        batteryInfo = batteryInfo,
+        batteryHistory = batteryHistory,
+        hasAlreadyAnimated = viewModel.hasAnimated,
+        onAnimated = { viewModel.markAsAnimated() },
+    )
+}
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BatteryScreenContent(
+    batteryInfo: Battery,
+    batteryHistory: List<BatteryDataPoint>,
+    hasAlreadyAnimated: Boolean,
+    onAnimated: () -> Unit,
+) {
     var showHelpSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
 
@@ -103,7 +116,7 @@ fun BatteryScreen(isActive: Boolean, viewModel: BatteryViewModel = hiltViewModel
                 battery = batteryInfo,
                 history = batteryHistory,
                 hasAnimated = hasAlreadyAnimated,
-                onAnimated = { viewModel.markAsAnimated() },
+                onAnimated = onAnimated,
             )
         }
 

@@ -39,11 +39,31 @@ import com.rve.systemmonitor.ui.components.ExitUntilCollapsedMediumTopAppBar
 import com.rve.systemmonitor.ui.components.haptic.hapticClickable
 import com.rve.systemmonitor.ui.viewmodel.SettingsViewModel
 
+@Composable
+fun AppSettingsScreen(
+    viewModel: SettingsViewModel = hiltViewModel(),
+    onNavigateBack: () -> Unit,
+    onNavigateToSetup: () -> Unit,
+) {
+    val autoUpdateEnabled by viewModel.autoUpdateEnabled.collectAsStateWithLifecycle()
+
+    AppSettingsScreenContent(
+        autoUpdateEnabled = autoUpdateEnabled,
+        onAutoUpdateChange = { viewModel.setAutoUpdateEnabled(it) },
+        onNavigateBack = onNavigateBack,
+        onNavigateToSetup = onNavigateToSetup,
+    )
+}
+
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun AppSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onNavigateBack: () -> Unit, onNavigateToSetup: () -> Unit) {
+private fun AppSettingsScreenContent(
+    autoUpdateEnabled: Boolean,
+    onAutoUpdateChange: (Boolean) -> Unit,
+    onNavigateBack: () -> Unit,
+    onNavigateToSetup: () -> Unit,
+) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-    val autoUpdateEnabled by viewModel.autoUpdateEnabled.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -89,7 +109,7 @@ fun AppSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onNavigate
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .hapticClickable { viewModel.setAutoUpdateEnabled(!autoUpdateEnabled) }
+                                .hapticClickable { onAutoUpdateChange(!autoUpdateEnabled) }
                                 .padding(horizontal = 20.dp, vertical = 20.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -130,7 +150,7 @@ fun AppSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onNavigate
 
                             Switch(
                                 checked = autoUpdateEnabled,
-                                onCheckedChange = { viewModel.setAutoUpdateEnabled(it) },
+                                onCheckedChange = onAutoUpdateChange,
                                 colors = SwitchDefaults.colors(
                                     checkedIconColor = MaterialTheme.colorScheme.primary,
                                 ),

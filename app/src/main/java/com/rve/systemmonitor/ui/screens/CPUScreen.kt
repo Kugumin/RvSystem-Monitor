@@ -48,7 +48,11 @@ import com.rve.systemmonitor.ui.viewmodel.CPUViewModel
 @Composable
 fun CPUScreen(isActive: Boolean, viewModel: CPUViewModel = hiltViewModel()) {
     val cpuInfo by rememberLifecycleAwareState(isActive, viewModel.cpuInfo)
+    CPUScreenContent(cpuInfo = cpuInfo)
+}
 
+@Composable
+private fun CPUScreenContent(cpuInfo: CPU) {
     ScreenLazyColumn {
         item {
             CPUOverviewCard(cpuInfo)

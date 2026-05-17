@@ -18,13 +18,18 @@ import com.rve.systemmonitor.ui.components.card.InfoOverviewCard
 import com.rve.systemmonitor.ui.components.dialog.HelpBottomSheetContent
 import com.rve.systemmonitor.ui.components.layout.ScreenLazyColumn
 import com.rve.systemmonitor.ui.utils.rememberLifecycleAwareState
+import com.rve.systemmonitor.ui.viewmodel.HomeUiState
 import com.rve.systemmonitor.ui.viewmodel.HomeViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(isActive: Boolean, viewModel: HomeViewModel = hiltViewModel()) {
     val uiState by rememberLifecycleAwareState(isActive, viewModel.uiState)
+    HomeScreenContent(uiState = uiState)
+}
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun HomeScreenContent(uiState: HomeUiState) {
     var showHelpSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
 
