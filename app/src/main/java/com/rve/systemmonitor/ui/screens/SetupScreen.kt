@@ -51,6 +51,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -75,6 +76,7 @@ import com.rve.systemmonitor.R
 import com.rve.systemmonitor.ui.components.haptic.rememberHapticOnClick
 import com.rve.systemmonitor.ui.viewmodel.SetupViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 private enum class SetupStep {
     OverlayPermission,
@@ -86,6 +88,7 @@ private enum class SetupStep {
 fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: () -> Unit) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val scope = rememberCoroutineScope()
     val autoUpdateEnabled by viewModel.autoUpdateEnabled.collectAsStateWithLifecycle()
     var setupStep by remember { mutableStateOf(SetupStep.OverlayPermission) }
     var isOverlayPermissionGranted by remember { mutableStateOf(Settings.canDrawOverlays(context)) }
@@ -239,8 +242,13 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: (
 
                     SetupStep.Updates -> {
                         {
-                            viewModel.completeSetup()
-                            onSetupCompleted()
+                            scope.launch {
+                                animationVisible = false
+                                delay(400)
+                                viewModel.completeSetup()
+                                onSetupCompleted()
+                            }
+                            Unit
                         }
                     }
                 }
