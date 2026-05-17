@@ -6,9 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
@@ -21,7 +19,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
@@ -165,18 +162,7 @@ private fun DetailedMemoryCard(ram: RAM, onItemClick: (String, String) -> Unit) 
 @Composable
 private fun StorageCard(storage: Storage) {
     OverviewCard(
-        backgroundIcon = {
-            Icon(
-                painter = painterResource(R.drawable.database_filled),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .size(160.dp)
-                    .offset(y = 30.dp)
-                    .alpha(0.20f),
-            )
-        },
+        iconResId = R.drawable.database_filled,
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             MemoryStorageProgressRow(
@@ -276,18 +262,7 @@ private fun MemoryDetailItem(
 @Composable
 private fun MemoryCard(ram: RAM, zram: ZRAM) {
     OverviewCard(
-        backgroundIcon = {
-            Icon(
-                painter = painterResource(R.drawable.memory_alt_filled),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .size(160.dp)
-                    .offset(y = 30.dp)
-                    .alpha(0.20f),
-            )
-        },
+        iconResId = R.drawable.memory_alt_filled,
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
             MemoryStorageProgressRow(

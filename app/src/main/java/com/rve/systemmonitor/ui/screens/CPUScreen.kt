@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.items
@@ -25,7 +24,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -86,18 +84,7 @@ private fun CPUOverviewCard(cpu: CPU) {
     }
 
     OverviewCard(
-        backgroundIcon = {
-            Icon(
-                painter = painterResource(R.drawable.memory),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .size(160.dp)
-                    .offset(y = 30.dp)
-                    .alpha(0.20f),
-            )
-        },
+        iconResId = R.drawable.memory,
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
