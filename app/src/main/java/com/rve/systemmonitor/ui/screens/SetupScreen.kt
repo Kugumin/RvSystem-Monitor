@@ -2,14 +2,21 @@ package com.rve.systemmonitor.ui.screens
 
 import android.content.Intent
 import android.provider.Settings
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -18,21 +25,23 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -46,6 +55,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -84,10 +94,18 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: (
     val spatialSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>()
     val effectsSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Float>()
     val spatialSpecInt = MaterialTheme.motionScheme.defaultSpatialSpec<IntOffset>()
+    val slowSpatialSpec = MaterialTheme.motionScheme.slowSpatialSpec<IntOffset>()
+    val slowEffectsSpec = MaterialTheme.motionScheme.slowEffectsSpec<Float>()
 
     LaunchedEffect(Unit) {
         delay(400)
         animationVisible = true
+    }
+
+    BackHandler(enabled = setupStep != SetupStep.OverlayPermission) {
+        if (setupStep == SetupStep.Updates) {
+            setupStep = SetupStep.OverlayPermission
+        }
     }
 
     DisposableEffect(lifecycleOwner, context) {
@@ -102,106 +120,119 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: (
         }
     }
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(24.dp),
+            .background(MaterialTheme.colorScheme.background),
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            contentAlignment = Alignment.Center,
         ) {
-            Box(
-                modifier = Modifier.size(200.dp),
-                contentAlignment = Alignment.Center,
+            this@Column.AnimatedVisibility(
+                visible = animationVisible,
+                enter = fadeIn(animationSpec = effectsSpec) +
+                    slideInVertically(
+                        initialOffsetY = { it / 2 },
+                        animationSpec = spatialSpecInt,
+                    ) +
+                    scaleIn(
+                        initialScale = 0.8f,
+                        animationSpec = spatialSpec,
+                    ),
+                exit = fadeOut(animationSpec = effectsSpec) +
+                    slideOutVertically(
+                        targetOffsetY = { it / 2 },
+                        animationSpec = spatialSpecInt,
+                    ) +
+                    scaleOut(
+                        targetScale = 0.8f,
+                        animationSpec = spatialSpec,
+                    ),
             ) {
-                this@Column.AnimatedVisibility(
-                    visible = animationVisible,
-                    enter = fadeIn(animationSpec = effectsSpec) +
-                        slideInVertically(
-                            initialOffsetY = { it / 2 },
-                            animationSpec = spatialSpecInt,
-                        ) +
-                        scaleIn(
-                            initialScale = 0.8f,
-                            animationSpec = spatialSpec,
-                        ),
-                    exit = fadeOut(animationSpec = effectsSpec) +
-                        slideOutVertically(
-                            targetOffsetY = { it / 2 },
-                            animationSpec = spatialSpecInt,
-                        ) +
-                        scaleOut(
-                            targetScale = 0.8f,
-                            animationSpec = spatialSpec,
-                        ),
-                ) {
-                    DotLottieAnimation(
-                        source = DotLottieSource.Res(R.raw.cat),
-                        autoplay = true,
-                        loop = true,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Crossfade(
-                targetState = setupStep,
-                animationSpec = MaterialTheme.motionScheme.slowEffectsSpec(),
-                label = "Setup Step Content",
-            ) { step ->
-                when (step) {
-                    SetupStep.OverlayPermission -> OverlayPermissionContent(
-                        isOverlayPermissionGranted = isOverlayPermissionGranted,
-                        onGrantPermission = {
-                            val intent = Intent(
-                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                "package:${context.packageName}".toUri(),
-                            )
-                            context.startActivity(intent)
-                        },
-                    )
-
-                    SetupStep.Updates -> UpdatesContent(
-                        autoUpdateEnabled = autoUpdateEnabled,
-                        onAutoUpdateChanged = viewModel::setAutoUpdateEnabled,
-                    )
-                }
+                DotLottieAnimation(
+                    source = DotLottieSource.Res(R.raw.cat),
+                    autoplay = true,
+                    loop = true,
+                    modifier = Modifier.size(280.dp),
+                )
             }
         }
 
-        Crossfade(
-            targetState = setupStep,
-            animationSpec = MaterialTheme.motionScheme.slowEffectsSpec(),
-            label = "Setup Footer",
-            modifier = Modifier.fillMaxSize(),
-        ) { step ->
-            Box(modifier = Modifier.fillMaxSize()) {
-                val footerText = when (step) {
-                    SetupStep.OverlayPermission -> if (isOverlayPermissionGranted) {
-                        "Permission granted. Continue to the next step."
-                    } else {
-                        "You can always change this in Settings"
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
+            color = MaterialTheme.colorScheme.surfaceContainerLow,
+            tonalElevation = 8.dp,
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .padding(top = 16.dp, bottom = 32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                StepIndicator(
+                    currentStep = setupStep.ordinal,
+                    totalSteps = SetupStep.entries.size,
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                AnimatedContent(
+                    targetState = setupStep,
+                    transitionSpec = {
+                        if (targetState.ordinal > initialState.ordinal) {
+                            (slideInHorizontally(animationSpec = slowSpatialSpec) { it } + fadeIn(animationSpec = slowEffectsSpec))
+                                .togetherWith(
+                                    slideOutHorizontally(animationSpec = slowSpatialSpec) {
+                                        -it
+                                    } + fadeOut(animationSpec = slowEffectsSpec),
+                                )
+                        } else {
+                            (slideInHorizontally(animationSpec = slowSpatialSpec) { -it } + fadeIn(animationSpec = slowEffectsSpec))
+                                .togetherWith(
+                                    slideOutHorizontally(animationSpec = slowSpatialSpec) {
+                                        it
+                                    } + fadeOut(animationSpec = slowEffectsSpec),
+                                )
+                        }
+                    },
+                    label = "Setup Step Content",
+                    modifier = Modifier.fillMaxWidth(),
+                ) { step ->
+                    when (step) {
+                        SetupStep.OverlayPermission -> OverlayPermissionContent(
+                            isOverlayPermissionGranted = isOverlayPermissionGranted,
+                        )
+
+                        SetupStep.Updates -> UpdatesContent(
+                            autoUpdateEnabled = autoUpdateEnabled,
+                            onAutoUpdateChanged = viewModel::setAutoUpdateEnabled,
+                        )
                     }
-
-                    SetupStep.Updates -> "You can change this later in App settings"
                 }
 
-                val nextButtonEnabled = when (step) {
-                    SetupStep.OverlayPermission -> isOverlayPermissionGranted
-                    SetupStep.Updates -> true
+                Spacer(modifier = Modifier.height(48.dp))
+
+                val buttonText = when (setupStep) {
+                    SetupStep.OverlayPermission -> if (isOverlayPermissionGranted) "Continue" else "Grant Permission"
+                    SetupStep.Updates -> "Finish Setup"
                 }
 
-                val onNextClick = when (step) {
+                val onButtonClick = when (setupStep) {
                     SetupStep.OverlayPermission -> {
                         {
-                            isOverlayPermissionGranted = Settings.canDrawOverlays(context)
                             if (isOverlayPermissionGranted) {
                                 setupStep = SetupStep.Updates
+                            } else {
+                                val intent = Intent(
+                                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                    "package:${context.packageName}".toUri(),
+                                )
+                                context.startActivity(intent)
                             }
                         }
                     }
@@ -214,16 +245,34 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: (
                     }
                 }
 
-                Box(
+                Button(
+                    onClick = rememberHapticOnClick(onButtonClick),
                     modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 80.dp),
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                    ),
                 ) {
-                    SetupNextButton(
-                        enabled = nextButtonEnabled,
-                        onClick = onNextClick,
-                        contentDescription = if (step == SetupStep.OverlayPermission) "Continue" else "Complete",
+                    Text(
+                        text = buttonText,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
                     )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                val footerText = when (setupStep) {
+                    SetupStep.OverlayPermission -> if (isOverlayPermissionGranted) {
+                        "Permission granted. Continue to the next step."
+                    } else {
+                        "Required to show the monitor overlay"
+                    }
+
+                    SetupStep.Updates -> "You can change this later in Settings"
                 }
 
                 Text(
@@ -231,9 +280,6 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: (
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 16.dp),
                 )
             }
         }
@@ -241,31 +287,45 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: (
 }
 
 @Composable
-private fun OverlayPermissionContent(isOverlayPermissionGranted: Boolean, onGrantPermission: () -> Unit) {
+private fun StepIndicator(currentStep: Int, totalSteps: Int) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        repeat(totalSteps) { index ->
+            val isSelected = index == currentStep
+            val width by animateDpAsState(
+                targetValue = if (isSelected) 32.dp else 8.dp,
+                animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
+                label = "Step Indicator Width",
+            )
+            val color by animateColorAsState(
+                targetValue = if (isSelected) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                },
+                animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec(),
+                label = "Step Indicator Color",
+            )
+
+            Box(
+                modifier = Modifier
+                    .height(8.dp)
+                    .width(width)
+                    .clip(CircleShape)
+                    .background(color),
+            )
+        }
+    }
+}
+
+@Composable
+private fun OverlayPermissionContent(isOverlayPermissionGranted: Boolean) {
     SetupStepContent(
         title = "Appear on Top",
-        description = "To show FPS, RAM usage, battery temperature, and CPU temperature while you use other apps, " +
+        description = "To show FPS, RAM usage, and temperatures while you use other apps, " +
             "RvSystem Monitor needs permission to display over them.",
-        action = {
-            Button(
-                onClick = rememberHapticOnClick(onGrantPermission),
-                enabled = !isOverlayPermissionGranted,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shapes = ButtonDefaults.shapes(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                ),
-            ) {
-                Text(
-                    text = if (isOverlayPermissionGranted) "Permission Granted" else "Grant Permission",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
-        },
     )
 }
 
@@ -276,14 +336,14 @@ private fun UpdatesContent(autoUpdateEnabled: Boolean, onAutoUpdateChanged: (Boo
 
     SetupStepContent(
         title = "Check for Updates",
-        description = "Choose whether RvSystem Monitor should automatically check for app updates on startup.",
+        description = "Automatically check for app updates on startup to stay up to date with the latest features.",
         action = {
             Card(
                 onClick = rememberHapticOnClick { onAutoUpdateChanged(!autoUpdateEnabled) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                 ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                 interactionSource = interactionSource,
@@ -291,7 +351,7 @@ private fun UpdatesContent(autoUpdateEnabled: Boolean, onAutoUpdateChanged: (Boo
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 20.dp),
+                        .padding(horizontal = 16.dp, vertical = 20.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
@@ -304,25 +364,25 @@ private fun UpdatesContent(autoUpdateEnabled: Boolean, onAutoUpdateChanged: (Boo
                             modifier = Modifier
                                 .size(48.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(MaterialTheme.colorScheme.primary),
+                                .background(MaterialTheme.colorScheme.tertiaryContainer),
                             contentAlignment = Alignment.Center,
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.update_rounded),
                                 contentDescription = "Update Icon",
-                                tint = MaterialTheme.colorScheme.onSecondary,
+                                tint = MaterialTheme.colorScheme.onTertiaryContainer,
                             )
                         }
 
                         Column {
                             Text(
-                                text = "Check for Updates",
+                                text = "Auto Update",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurface,
                             )
                             Text(
-                                text = "Automatically check for updates on startup",
+                                text = "Check on startup",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -359,7 +419,7 @@ private fun UpdatesContent(autoUpdateEnabled: Boolean, onAutoUpdateChanged: (Boo
 }
 
 @Composable
-private fun SetupStepContent(title: String, description: String, action: @Composable ColumnScope.() -> Unit) {
+private fun SetupStepContent(title: String, description: String, action: (@Composable ColumnScope.() -> Unit)? = null) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -367,11 +427,11 @@ private fun SetupStepContent(title: String, description: String, action: @Compos
             text = title,
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground,
+            color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center,
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         Text(
             text = description,
@@ -382,27 +442,9 @@ private fun SetupStepContent(title: String, description: String, action: @Compos
             modifier = Modifier.padding(horizontal = 8.dp),
         )
 
-        Spacer(modifier = Modifier.height(48.dp))
-
-        action()
-    }
-}
-
-@Composable
-private fun SetupNextButton(enabled: Boolean, onClick: () -> Unit, contentDescription: String) {
-    FilledIconButton(
-        onClick = rememberHapticOnClick(onClick),
-        enabled = enabled,
-        modifier = Modifier.size(56.dp),
-        shapes = IconButtonDefaults.shapes(),
-        colors = IconButtonDefaults.filledIconButtonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
-        ),
-    ) {
-        Icon(
-            painter = painterResource(R.drawable.arrow_forward_ios_new),
-            contentDescription = contentDescription,
-        )
+        if (action != null) {
+            Spacer(modifier = Modifier.height(32.dp))
+            action()
+        }
     }
 }
