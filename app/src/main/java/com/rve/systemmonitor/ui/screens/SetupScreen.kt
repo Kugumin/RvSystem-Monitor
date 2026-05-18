@@ -68,9 +68,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.lottiefiles.dotlottie.core.compose.runtime.DotLottieController
-import com.lottiefiles.dotlottie.core.compose.ui.DotLottieAnimation
-import com.lottiefiles.dotlottie.core.util.DotLottieSource
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.rve.systemmonitor.R
 import com.rve.systemmonitor.ui.components.haptic.rememberHapticOnClick
 import com.rve.systemmonitor.ui.viewmodel.SetupViewModel
@@ -94,14 +96,21 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: (
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
     var setupStep by remember { mutableStateOf(SetupStep.OverlayPermission) }
     var isOverlayPermissionGranted by remember { mutableStateOf(Settings.canDrawOverlays(context)) }
-    val dotLottieController = remember { DotLottieController() }
+
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.cat))
+    var isPlaying by remember { mutableStateOf(false) }
+    val progress by animateLottieCompositionAsState(
+        composition = composition,
+        isPlaying = isPlaying,
+        iterations = LottieConstants.IterateForever,
+    )
 
     val slowSpatialSpec = MaterialTheme.motionScheme.slowSpatialSpec<IntOffset>()
     val slowEffectsSpec = MaterialTheme.motionScheme.slowEffectsSpec<Float>()
 
     LaunchedEffect(Unit) {
         delay(400)
-        dotLottieController.play()
+        isPlaying = true
     }
 
     BackHandler(enabled = setupStep != SetupStep.OverlayPermission) {
@@ -135,12 +144,9 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: (
                 .fillMaxWidth(),
             contentAlignment = Alignment.Center,
         ) {
-            DotLottieAnimation(
-                source = DotLottieSource.Res(R.raw.cat),
-                autoplay = false,
-                loop = true,
-                controller = dotLottieController,
-                useFrameInterpolation = true,
+            LottieAnimation(
+                composition = composition,
+                progress = { progress },
                 modifier = Modifier.size(280.dp),
             )
         }
@@ -235,7 +241,7 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: (
 
                     SetupStep.Theme -> {
                         {
-                            dotLottieController.stop()
+                            isPlaying = false
                             viewModel.completeSetup()
                             onSetupCompleted()
                         }
