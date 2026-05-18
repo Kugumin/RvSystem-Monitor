@@ -17,6 +17,16 @@ object GpuUtils {
     @JvmStatic
     private external fun getVulkanVersionNative(): String
 
+    @JvmStatic
+    private external fun getGpuTemperatureNative(): Double
+
+    fun getGpuTemperature(): Double = runCatching {
+        getGpuTemperatureNative()
+    }.getOrElse {
+        Log.e(TAG, "getGpuTemperature error: ${it.message}", it)
+        0.0
+    }
+
     private var cachedGpuDetails: Pair<String, String>? = null
     private var cachedGlesVersion: String? = null
     private var cachedVulkanVersion: String? = null

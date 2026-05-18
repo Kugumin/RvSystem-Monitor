@@ -28,6 +28,8 @@ class SettingsRepositoryImpl @Inject constructor(application: Application) : Set
 
     override val memoryRefreshDelay: Flow<Long> = settingsPreferences.memoryRefreshDelayFlow
 
+    override val gpuRefreshDelay: Flow<Long> = settingsPreferences.gpuRefreshDelayFlow
+
     override val batteryRefreshDelay: Flow<Long> = settingsPreferences.batteryRefreshDelayFlow
 
     override val batteryGraphHistorySeconds: Flow<Int> = settingsPreferences.batteryGraphHistorySecondsFlow
@@ -62,6 +64,10 @@ class SettingsRepositoryImpl @Inject constructor(application: Application) : Set
 
     override suspend fun setMemoryRefreshDelay(delayMillis: Long) {
         settingsPreferences.saveMemoryRefreshDelay(delayMillis)
+    }
+
+    override suspend fun setGpuRefreshDelay(delayMillis: Long) {
+        settingsPreferences.saveGpuRefreshDelay(delayMillis)
     }
 
     override suspend fun setBatteryRefreshDelay(delayMillis: Long) {

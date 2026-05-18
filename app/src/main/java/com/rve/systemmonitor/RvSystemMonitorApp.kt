@@ -37,7 +37,7 @@ import com.rve.systemmonitor.ui.screens.MemoryScreen
 import kotlinx.coroutines.launch
 
 @Composable
-fun RvSystemMonitorApp(onNavigateToSettings: () -> Unit) {
+fun RvSystemMonitorApp(onNavigateToSettings: () -> Unit, onNavigateToGPU: () -> Unit) {
     val pagerState = rememberPagerState(pageCount = { 4 })
     val coroutineScope = rememberCoroutineScope()
 
@@ -116,6 +116,7 @@ fun RvSystemMonitorApp(onNavigateToSettings: () -> Unit) {
                     when (page) {
                         0 -> HomeScreen(
                             isActive = pagerState.settledPage == 0,
+                            onNavigateToGPU = onNavigateToGPU,
                         )
 
                         1 -> CPUScreen(

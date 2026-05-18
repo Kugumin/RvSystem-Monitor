@@ -8,4 +8,5 @@ data class GPU(
     val vendor: String = "unknown",
     val glesVersion: String = "unknown",
     val vulkanVersion: String = "unknown",
+    val temperature: Double = 0.0,
 )

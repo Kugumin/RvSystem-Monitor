@@ -21,6 +21,13 @@ jni_fn! {
 }
 
 jni_fn! {
+    fn Java_com_rve_systemmonitor_utils_GpuUtils_getGpuTemperatureNative(env) -> jdouble {
+        let _ = env;
+        Ok(kernel::cpu::get_gpu_temperature())
+    }
+}
+
+jni_fn! {
     fn Java_com_rve_systemmonitor_utils_MemoryUtils_getMemoryDataNative(env) -> jdoubleArray {
         let (ram, zram) = mm::memory::get_memory_data();
 

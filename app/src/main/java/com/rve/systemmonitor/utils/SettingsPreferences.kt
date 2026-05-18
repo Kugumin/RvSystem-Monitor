@@ -19,6 +19,7 @@ class SettingsPreferences(private val context: Context) {
         val IS_SETUP_COMPLETED_KEY = booleanPreferencesKey("is_setup_completed")
         val CPU_REFRESH_DELAY_KEY = longPreferencesKey("cpu_refresh_delay")
         val MEMORY_REFRESH_DELAY_KEY = longPreferencesKey("memory_refresh_delay")
+        val GPU_REFRESH_DELAY_KEY = longPreferencesKey("gpu_refresh_delay")
         val BATTERY_REFRESH_DELAY_KEY = longPreferencesKey("battery_refresh_delay")
         val BATTERY_GRAPH_HISTORY_KEY = intPreferencesKey("battery_graph_history")
         val HAPTIC_FEEDBACK_ENABLED_KEY = booleanPreferencesKey("haptic_feedback_enabled")
@@ -39,6 +40,7 @@ class SettingsPreferences(private val context: Context) {
     val isSetupCompletedFlow: Flow<Boolean> = context.dataStore.getValueFlow(IS_SETUP_COMPLETED_KEY, false)
     val cpuRefreshDelayFlow: Flow<Long> = context.dataStore.getValueFlow(CPU_REFRESH_DELAY_KEY, 3000L)
     val memoryRefreshDelayFlow: Flow<Long> = context.dataStore.getValueFlow(MEMORY_REFRESH_DELAY_KEY, 3000L)
+    val gpuRefreshDelayFlow: Flow<Long> = context.dataStore.getValueFlow(GPU_REFRESH_DELAY_KEY, 3000L)
     val batteryRefreshDelayFlow: Flow<Long> = context.dataStore.getValueFlow(BATTERY_REFRESH_DELAY_KEY, 1000L)
     val batteryGraphHistorySecondsFlow: Flow<Int> = context.dataStore.getValueFlow(BATTERY_GRAPH_HISTORY_KEY, 60)
 
@@ -47,6 +49,7 @@ class SettingsPreferences(private val context: Context) {
     suspend fun saveSetupCompleted(completed: Boolean) = context.dataStore.setValue(IS_SETUP_COMPLETED_KEY, completed)
     suspend fun saveCpuRefreshDelay(delayMillis: Long) = context.dataStore.setValue(CPU_REFRESH_DELAY_KEY, delayMillis)
     suspend fun saveMemoryRefreshDelay(delayMillis: Long) = context.dataStore.setValue(MEMORY_REFRESH_DELAY_KEY, delayMillis)
+    suspend fun saveGpuRefreshDelay(delayMillis: Long) = context.dataStore.setValue(GPU_REFRESH_DELAY_KEY, delayMillis)
     suspend fun saveBatteryRefreshDelay(delayMillis: Long) = context.dataStore.setValue(BATTERY_REFRESH_DELAY_KEY, delayMillis)
     suspend fun saveBatteryGraphHistorySeconds(seconds: Int) = context.dataStore.setValue(BATTERY_GRAPH_HISTORY_KEY, seconds)
     suspend fun saveHapticFeedbackEnabled(enabled: Boolean) = context.dataStore.setValue(HAPTIC_FEEDBACK_ENABLED_KEY, enabled)

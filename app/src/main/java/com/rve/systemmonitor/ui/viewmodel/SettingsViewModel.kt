@@ -57,6 +57,13 @@ class SettingsViewModel @Inject constructor(private val settingsRepository: Sett
             initialValue = 3000L,
         )
 
+    val gpuRefreshDelay: StateFlow<Long> = settingsRepository.gpuRefreshDelay
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = 3000L,
+        )
+
     val batteryRefreshDelay: StateFlow<Long> = settingsRepository.batteryRefreshDelay
         .stateIn(
             scope = viewModelScope,
@@ -111,6 +118,12 @@ class SettingsViewModel @Inject constructor(private val settingsRepository: Sett
     fun setMemoryRefreshDelay(delayMillis: Long) {
         viewModelScope.launch {
             settingsRepository.setMemoryRefreshDelay(delayMillis)
+        }
+    }
+
+    fun setGpuRefreshDelay(delayMillis: Long) {
+        viewModelScope.launch {
+            settingsRepository.setGpuRefreshDelay(delayMillis)
         }
     }
 

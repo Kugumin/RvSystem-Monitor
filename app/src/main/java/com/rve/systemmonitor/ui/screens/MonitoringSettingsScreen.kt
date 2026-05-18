@@ -67,6 +67,7 @@ fun MonitoringSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val cpuDelayMillis by viewModel.cpuRefreshDelay.collectAsStateWithLifecycle()
     val memoryDelayMillis by viewModel.memoryRefreshDelay.collectAsStateWithLifecycle()
+    val gpuDelayMillis by viewModel.gpuRefreshDelay.collectAsStateWithLifecycle()
     val batteryDelayMillis by viewModel.batteryRefreshDelay.collectAsStateWithLifecycle()
     val batteryGraphHistorySeconds by viewModel.batteryGraphHistorySeconds.collectAsStateWithLifecycle()
 
@@ -88,6 +89,14 @@ fun MonitoringSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
     )
     var memoryCurrentValue by rememberSaveable(memoryDelayMillis) { mutableFloatStateOf((memoryDelayMillis / 1000).toFloat()) }
     var memoryAnimateJob: Job? by remember { mutableStateOf(null) }
+
+    val gpuSliderState = rememberSliderState(
+        value = (gpuDelayMillis / 1000).toFloat(),
+        steps = 3,
+        valueRange = 1f..5f,
+    )
+    var gpuCurrentValue by rememberSaveable(gpuDelayMillis) { mutableFloatStateOf((gpuDelayMillis / 1000).toFloat()) }
+    var gpuAnimateJob: Job? by remember { mutableStateOf(null) }
 
     val batterySliderState = rememberSliderState(
         value = (batteryDelayMillis / 1000).toFloat(),
@@ -118,6 +127,13 @@ fun MonitoringSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
         if (!memorySliderState.isDragging) {
             memorySliderState.value = (memoryDelayMillis / 1000).toFloat()
             memoryCurrentValue = (memoryDelayMillis / 1000).toFloat()
+        }
+    }
+
+    LaunchedEffect(gpuDelayMillis) {
+        if (!gpuSliderState.isDragging) {
+            gpuSliderState.value = (gpuDelayMillis / 1000).toFloat()
+            gpuCurrentValue = (gpuDelayMillis / 1000).toFloat()
         }
     }
 
@@ -177,6 +193,28 @@ fun MonitoringSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
                 memorySliderState.value = value
             }
             viewModel.setMemoryRefreshDelay(memoryCurrentValue.toLong() * 1000)
+        }
+    }
+
+    gpuSliderState.shouldAutoSnap = false
+    gpuSliderState.onValueChange = rememberHapticOnValueChange { newValue ->
+        gpuCurrentValue = newValue
+        if (gpuSliderState.isDragging) {
+            gpuAnimateJob?.cancel()
+            gpuSliderState.value = newValue
+        }
+    }
+
+    gpuSliderState.onValueChangeFinished = {
+        gpuAnimateJob = coroutineScope.launch {
+            animate(
+                initialValue = gpuSliderState.value,
+                targetValue = gpuCurrentValue,
+                animationSpec = snapAnimationSpec,
+            ) { value, _ ->
+                gpuSliderState.value = value
+            }
+            viewModel.setGpuRefreshDelay(gpuCurrentValue.toLong() * 1000)
         }
     }
 
@@ -367,6 +405,124 @@ fun MonitoringSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
                                     track = {
                                         SliderDefaults.Track(
                                             sliderState = cpuSliderState,
+                                            modifier = Modifier.height(36.dp),
+                                            trackCornerSize = 12.dp,
+                                        )
+                                    },
+                                )
+                            }
+                        }
+                    }
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(24.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(20.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(MaterialTheme.colorScheme.primary),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.view_in_ar_filled),
+                                        contentDescription = "GPU Monitoring Icon",
+                                        tint = MaterialTheme.colorScheme.onPrimary,
+                                    )
+                                }
+
+                                Column {
+                                    Text(
+                                        text = "GPU Update Interval",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                    )
+                                    Text(
+                                        text = "Adjust how often GPU stats are refreshed",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                            }
+
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Text(
+                                        text = "Refresh Rate",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                    )
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = "${gpuCurrentValue.toInt()}s",
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.primary,
+                                        )
+                                        AnimatedVisibility(
+                                            visible = gpuCurrentValue != 3.0f,
+                                            enter = slideInHorizontally(
+                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
+                                            ) { it } + expandHorizontally(
+                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
+                                            ) + fadeIn(
+                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
+                                            ),
+                                            exit = slideOutHorizontally(
+                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
+                                            ) { it } + shrinkHorizontally(
+                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
+                                            ) + fadeOut(
+                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
+                                            ),
+                                        ) {
+                                            Row {
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                IconButton(
+                                                    onClick = rememberHapticOnClick {
+                                                        viewModel.setGpuRefreshDelay(3000L)
+                                                    },
+                                                    modifier = Modifier.size(24.dp),
+                                                ) {
+                                                    Icon(
+                                                        painter = painterResource(R.drawable.reset_settings_rounded),
+                                                        contentDescription = "Reset to default",
+                                                        modifier = Modifier.size(16.dp),
+                                                        tint = MaterialTheme.colorScheme.primary,
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                Slider(
+                                    state = gpuSliderState,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    track = {
+                                        SliderDefaults.Track(
+                                            sliderState = gpuSliderState,
                                             modifier = Modifier.height(36.dp),
                                             trackCornerSize = 12.dp,
                                         )

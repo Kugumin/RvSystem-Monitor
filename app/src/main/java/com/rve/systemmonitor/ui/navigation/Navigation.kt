@@ -14,6 +14,7 @@ import com.rve.systemmonitor.ui.components.ScreenWrapper
 import com.rve.systemmonitor.ui.screens.AboutScreen
 import com.rve.systemmonitor.ui.screens.AppSettingsScreen
 import com.rve.systemmonitor.ui.screens.AppearanceSettingsScreen
+import com.rve.systemmonitor.ui.screens.GPUScreen
 import com.rve.systemmonitor.ui.screens.MonitoringSettingsScreen
 import com.rve.systemmonitor.ui.screens.OverlaySettingsScreen
 import com.rve.systemmonitor.ui.screens.SettingsScreen
@@ -84,8 +85,21 @@ fun AppNavigation(isSetupCompleted: Boolean) {
             ScreenWrapper(navController = navController) {
                 RvSystemMonitorApp(
                     onNavigateToSettings = { navController.navigateSafely(Route.Settings) },
+                    onNavigateToGPU = { navController.navigateSafely(Route.GPU) },
                 )
             }
+        }
+
+        composable<Route.GPU>(
+            enterTransition = { enterTransition() },
+            exitTransition = { exitTransition() },
+            popEnterTransition = { popEnterTransition() },
+            popExitTransition = { popExitTransition() },
+        ) {
+            GPUScreen(
+                navController = navController,
+                onNavigateBack = { navController.popBackStack() },
+            )
         }
 
         composable<Route.Settings>(

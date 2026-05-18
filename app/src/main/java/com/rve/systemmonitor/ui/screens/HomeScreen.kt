@@ -24,14 +24,14 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 
 @Composable
-fun HomeScreen(isActive: Boolean, viewModel: HomeViewModel = hiltViewModel()) {
+fun HomeScreen(isActive: Boolean, onNavigateToGPU: () -> Unit, viewModel: HomeViewModel = hiltViewModel()) {
     val uiState by rememberLifecycleAwareState(isActive, viewModel.uiState)
-    HomeScreenContent(uiState = uiState)
+    HomeScreenContent(uiState = uiState, onNavigateToGPU = onNavigateToGPU)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun HomeScreenContent(uiState: HomeUiState) {
+private fun HomeScreenContent(uiState: HomeUiState, onNavigateToGPU: () -> Unit) {
     var showHelpSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
 
@@ -95,6 +95,7 @@ private fun HomeScreenContent(uiState: HomeUiState) {
                     "OpenGL ES ${uiState.gpu.glesVersion}",
                     "Vulkan ${uiState.gpu.vulkanVersion}",
                 ).toImmutableList(),
+                onClick = onNavigateToGPU,
             ),
         ).toImmutableList()
     }

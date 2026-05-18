@@ -59,6 +59,7 @@ data class InfoCardData(
     val badges: ImmutableList<String> = persistentListOf(),
     val secondaryBadgeIndices: ImmutableList<Int> = persistentListOf(0),
     val onHelpClick: (() -> Unit)? = null,
+    val onClick: (() -> Unit)? = null,
 )
 
 /**
@@ -70,7 +71,14 @@ data class InfoCardData(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun InfoOverviewCard(data: InfoCardData, modifier: Modifier = Modifier) {
+    val hapticOnClick = if (data.onClick != null) {
+        rememberHapticOnClick(data.onClick)
+    } else {
+        null
+    }
     Card(
+        onClick = { hapticOnClick?.invoke() },
+        enabled = data.onClick != null,
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
