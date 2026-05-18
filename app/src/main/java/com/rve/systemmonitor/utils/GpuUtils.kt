@@ -29,6 +29,7 @@ object GpuUtils {
 
     private var cachedGpuDetails: Pair<String, String>? = null
     private var cachedGlesVersion: String? = null
+    private var cachedDetailedGlesVersion: String? = null
     private var cachedVulkanVersion: String? = null
 
     fun getGpuDetails(): Pair<String, String> {
@@ -62,6 +63,10 @@ object GpuUtils {
             EGL14.eglMakeCurrent(display, surface, surface, context)
             val renderer = GLES20.glGetString(GLES20.GL_RENDERER) ?: "Unknown"
             val vendor = GLES20.glGetString(GLES20.GL_VENDOR) ?: "Unknown"
+            val fullVersion = GLES20.glGetString(GLES20.GL_VERSION)
+            if (fullVersion != null) {
+                cachedDetailedGlesVersion = fullVersion.removePrefix("OpenGL ES ").trim()
+            }
 
             EGL14.eglMakeCurrent(display, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT)
             EGL14.eglDestroySurface(display, surface)
@@ -75,6 +80,12 @@ object GpuUtils {
             Log.e(TAG, "getGpuDetails error: ${it.message}", it)
             Pair("Unknown", "Unknown")
         }
+    }
+
+    fun getDetailedGlesVersion(): String {
+        cachedDetailedGlesVersion?.let { return it }
+        getGpuDetails()
+        return cachedDetailedGlesVersion ?: "Unknown"
     }
 
     fun getGlesVersion(context: Context): String {

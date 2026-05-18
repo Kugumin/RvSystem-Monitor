@@ -112,7 +112,7 @@ private fun GPUScreenContent(gpuInfo: GPU) {
                 TwoColumnInfoRow {
                     InfoItem(
                         label = "OpenGL ES",
-                        value = gpuInfo.glesVersion,
+                        value = gpuInfo.detailedGlesVersion,
                         modifier = Modifier.weight(1f),
                     )
                     InfoItem(
