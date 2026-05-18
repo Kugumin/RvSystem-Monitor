@@ -31,6 +31,7 @@ object GpuUtils {
     private var cachedGlesVersion: String? = null
     private var cachedDetailedGlesVersion: String? = null
     private var cachedVulkanVersion: String? = null
+    private var cachedVulkanDriverVersion: String? = null
 
     fun getGpuDetails(): Pair<String, String> {
         cachedGpuDetails?.let { return it }
@@ -104,13 +105,26 @@ object GpuUtils {
 
     fun getVulkanVersion(context: Context): String {
         cachedVulkanVersion?.let { return it }
-        return runCatching {
+        updateVulkanInfo()
+        return cachedVulkanVersion ?: "Unknown"
+    }
+
+    fun getVulkanDriverVersion(): String {
+        cachedVulkanDriverVersion?.let { return it }
+        updateVulkanInfo()
+        return cachedVulkanDriverVersion ?: "Unknown"
+    }
+
+    private fun updateVulkanInfo() {
+        runCatching {
             val result = getVulkanVersionNative()
-            cachedVulkanVersion = result
-            result
-        }.getOrElse {
-            Log.e(TAG, "getVulkanVersion error: ${it.message}", it)
-            "Unknown"
+            val parts = result.split("|")
+            cachedVulkanVersion = parts.getOrNull(0) ?: "Unknown"
+            cachedVulkanDriverVersion = parts.getOrNull(1) ?: "Unknown"
+        }.onFailure {
+            Log.e(TAG, "updateVulkanInfo error: ${it.message}", it)
+            cachedVulkanVersion = "Unknown"
+            cachedVulkanDriverVersion = "Unknown"
         }
     }
 }

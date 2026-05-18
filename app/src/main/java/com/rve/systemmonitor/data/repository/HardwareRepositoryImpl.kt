@@ -56,6 +56,7 @@ class HardwareRepositoryImpl @Inject constructor(private val application: Applic
             glesVersion = GpuUtils.getGlesVersion(application),
             detailedGlesVersion = GpuUtils.getDetailedGlesVersion(),
             vulkanVersion = GpuUtils.getVulkanVersion(application),
+            vulkanDriverVersion = GpuUtils.getVulkanDriverVersion(),
             temperature = GpuUtils.getGpuTemperature(),
         )
     }

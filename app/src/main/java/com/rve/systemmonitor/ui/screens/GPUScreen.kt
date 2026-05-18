@@ -102,22 +102,26 @@ private fun GPUScreenContent(gpuInfo: GPU) {
 
                 TwoColumnInfoRow(modifier = Modifier.padding(bottom = 16.dp)) {
                     InfoItem(
-                        label = "Temperature",
-                        value = String.format(java.util.Locale.US, "%.1f °C", gpuInfo.temperature),
-                        modifier = Modifier.weight(1f),
-                    )
-                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.weight(1f))
-                }
-
-                TwoColumnInfoRow {
-                    InfoItem(
                         label = "OpenGL ES",
                         value = gpuInfo.detailedGlesVersion,
                         modifier = Modifier.weight(1f),
                     )
                     InfoItem(
+                        label = "Temperature",
+                        value = String.format(java.util.Locale.US, "%.1f °C", gpuInfo.temperature),
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+
+                TwoColumnInfoRow {
+                    InfoItem(
                         label = "Vulkan",
                         value = gpuInfo.vulkanVersion,
+                        modifier = Modifier.weight(1f),
+                    )
+                    InfoItem(
+                        label = "Vulkan Driver",
+                        value = gpuInfo.vulkanDriverVersion,
                         modifier = Modifier.weight(1f),
                     )
                 }

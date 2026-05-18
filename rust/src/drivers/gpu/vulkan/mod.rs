@@ -112,20 +112,17 @@ pub fn get_vulkan_version() -> String {
                     == 0
                 {
                     // VkPhysicalDeviceProperties is a large struct (~824+ bytes).
-                    // apiVersion is the first 4 bytes. We provide a buffer to avoid stack corruption.
-                    let mut properties_buffer = [0u8; 1024];
-                    vk_get_physical_device_properties(devices[0], properties_buffer.as_mut_ptr());
+                    // We extract only the fields we need from the start of the struct:
+                    // offset 0: apiVersion (u32)
+                    // offset 4: driverVersion (u32)
+                    let mut props = [0u8; 8];
+                    vk_get_physical_device_properties(devices[0], props.as_mut_ptr());
 
-                    // Extract apiVersion (first 4 bytes, little endian)
-                    let api_version = u32::from_le_bytes([
-                        properties_buffer[0],
-                        properties_buffer[1],
-                        properties_buffer[2],
-                        properties_buffer[3],
-                    ]);
+                    let api_version = u32::from_le_bytes(props[0..4].try_into().unwrap());
+                    let driver_version = u32::from_le_bytes(props[4..8].try_into().unwrap());
 
                     vk_destroy_instance(instance, ptr::null());
-                    return format_version(api_version);
+                    return format!("{}|{}", format_version(api_version), format_version(driver_version));
                 }
             }
             if !instance.is_null() {
@@ -133,7 +130,7 @@ pub fn get_vulkan_version() -> String {
             }
         }
 
-        query_instance_version(vk_enumerate_instance_version)
+        format!("{}|Unknown", query_instance_version(vk_enumerate_instance_version))
     }
 }
 
@@ -148,7 +145,7 @@ unsafe fn query_instance_version(func: Option<extern "system" fn(*mut u32) -> i3
 }
 
 fn format_version(version: u32) -> String {
-    let major = (version >> 22) & 0x7F;
+    let major = (version >> 22) & 0x3FF;
     let minor = (version >> 12) & 0x3FF;
     let patch = version & 0xFFF;
     format!("{}.{}.{}", major, minor, patch)
