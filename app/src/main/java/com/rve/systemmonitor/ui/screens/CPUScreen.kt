@@ -42,6 +42,7 @@ import com.rve.systemmonitor.ui.components.layout.ScreenLazyColumn
 import com.rve.systemmonitor.ui.components.row.TwoColumnInfoRow
 import com.rve.systemmonitor.ui.utils.rememberLifecycleAwareState
 import com.rve.systemmonitor.ui.viewmodel.CPUViewModel
+import java.util.Locale
 
 @Composable
 fun CPUScreen(isActive: Boolean, viewModel: CPUViewModel = hiltViewModel()) {
@@ -78,7 +79,7 @@ private fun CPUScreenContent(cpuInfo: CPU) {
 private fun CPUOverviewCard(cpu: CPU) {
     val peakFreqKhz = cpu.coreDetails.maxOfOrNull { it.maxFreqKhz } ?: 0L
     val peakFrequency = if (peakFreqKhz >= 1_000_000) {
-        String.format("%.2f GHz", peakFreqKhz / 1_000_000.0)
+        String.format(Locale.US, "%.2f GHz", peakFreqKhz / 1_000_000.0)
     } else {
         "${peakFreqKhz / 1000} MHz"
     }
@@ -115,7 +116,7 @@ private fun CPUOverviewCard(cpu: CPU) {
                     textColor = MaterialTheme.colorScheme.onPrimary,
                 )
                 BadgeChip(
-                    text = String.format("%.1f °C", cpu.temperature),
+                    text = String.format(Locale.US, "%.1f °C", cpu.temperature),
                     containerColor = MaterialTheme.colorScheme.primary,
                     textColor = MaterialTheme.colorScheme.onPrimary,
                 )
@@ -198,7 +199,7 @@ private fun CoreDetailCard(core: CoreDetail) {
             )
 
             BadgeChip(
-                text = String.format("%.1f °C", core.temperature),
+                text = String.format(Locale.US, "%.1f °C", core.temperature),
                 containerColor = MaterialTheme.colorScheme.primary,
                 textColor = MaterialTheme.colorScheme.onPrimary,
             )
