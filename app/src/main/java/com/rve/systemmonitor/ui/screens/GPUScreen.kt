@@ -1,8 +1,8 @@
 package com.rve.systemmonitor.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -22,6 +22,7 @@ import com.rve.systemmonitor.R
 import com.rve.systemmonitor.domain.model.GPU
 import com.rve.systemmonitor.ui.components.ExitUntilCollapsedMediumTopAppBar
 import com.rve.systemmonitor.ui.components.ScreenWrapper
+import com.rve.systemmonitor.ui.components.chip.BadgeChip
 import com.rve.systemmonitor.ui.components.card.OverviewCard
 import com.rve.systemmonitor.ui.components.card.StandardCard
 import com.rve.systemmonitor.ui.components.item.InfoItem
@@ -63,15 +64,23 @@ private fun GPUScreenContent(gpuInfo: GPU) {
             OverviewCard(
                 iconResId = R.drawable.view_in_ar_filled,
             ) {
-                Column {
-                    Text(
-                        text = gpuInfo.renderer,
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Text(
-                        text = "by ${gpuInfo.vendor}",
-                        style = MaterialTheme.typography.titleMedium,
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Column {
+                        Text(
+                            text = gpuInfo.renderer,
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Text(
+                            text = "by ${gpuInfo.vendor}",
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                    }
+
+                    BadgeChip(
+                        text = String.format(java.util.Locale.US, "%.1f °C", gpuInfo.temperature),
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        textColor = MaterialTheme.colorScheme.onPrimary,
                     )
                 }
             }
@@ -107,18 +116,13 @@ private fun GPUScreenContent(gpuInfo: GPU) {
                         modifier = Modifier.weight(1f),
                     )
                     InfoItem(
-                        label = "Temperature",
-                        value = String.format(java.util.Locale.US, "%.1f °C", gpuInfo.temperature),
+                        label = "Vulkan",
+                        value = gpuInfo.vulkanVersion,
                         modifier = Modifier.weight(1f),
                     )
                 }
 
                 TwoColumnInfoRow {
-                    InfoItem(
-                        label = "Vulkan",
-                        value = gpuInfo.vulkanVersion,
-                        modifier = Modifier.weight(1f),
-                    )
                     InfoItem(
                         label = "Vulkan Driver",
                         value = gpuInfo.vulkanDriverVersion,
