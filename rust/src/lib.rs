@@ -14,6 +14,13 @@ pub mod macros;
 pub mod mm;
 
 jni_fn! {
+    fn Java_com_rve_systemmonitor_utils_DeviceUtils_getRustLibraryVersionNative(env) -> jstring {
+        let version = env!("CARGO_PKG_VERSION");
+        Ok(env.new_string(version)?.into_raw())
+    }
+}
+
+jni_fn! {
     fn Java_com_rve_systemmonitor_utils_GpuUtils_getVulkanVersionNative(env) -> jstring {
         let version = drivers::gpu::vulkan::get_vulkan_version();
         Ok(env.new_string(version)?.into_raw())

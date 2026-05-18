@@ -17,6 +17,7 @@ import com.rve.systemmonitor.ui.screens.AppearanceSettingsScreen
 import com.rve.systemmonitor.ui.screens.GPUScreen
 import com.rve.systemmonitor.ui.screens.MonitoringSettingsScreen
 import com.rve.systemmonitor.ui.screens.OverlaySettingsScreen
+import com.rve.systemmonitor.ui.screens.RustLibraryScreen
 import com.rve.systemmonitor.ui.screens.SettingsScreen
 import com.rve.systemmonitor.ui.screens.SetupScreen
 
@@ -115,7 +116,21 @@ fun AppNavigation(isSetupCompleted: Boolean) {
                     onNavigateToAppearance = { navController.navigateSafely(Route.AppearanceSettings) },
                     onNavigateToMonitoring = { navController.navigateSafely(Route.MonitoringSettings) },
                     onNavigateToOverlay = { navController.navigateSafely(Route.OverlaySettings) },
+                    onNavigateToRustLibrary = { navController.navigateSafely(Route.RustLibrary) },
                     onNavigateToAbout = { navController.navigateSafely(Route.About) },
+                )
+            }
+        }
+
+        composable<Route.RustLibrary>(
+            enterTransition = { enterTransition() },
+            exitTransition = { exitTransition() },
+            popEnterTransition = { popEnterTransition() },
+            popExitTransition = { popExitTransition() },
+        ) {
+            ScreenWrapper(navController = navController) {
+                RustLibraryScreen(
+                    onNavigateBack = { navController.popBackStack() },
                 )
             }
         }

@@ -47,6 +47,7 @@ fun SettingsScreen(
     onNavigateToAppearance: () -> Unit,
     onNavigateToMonitoring: () -> Unit,
     onNavigateToOverlay: () -> Unit,
+    onNavigateToRustLibrary: () -> Unit,
     onNavigateToAbout: () -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -76,6 +77,12 @@ fun SettingsScreen(
                 subtitle = "Update intervals and graph history",
                 iconRes = R.drawable.dvr_filled,
                 onClick = onNavigateToMonitoring,
+            ),
+            SettingsItem(
+                title = "Rust Library",
+                subtitle = "Native core specifications and API reference",
+                iconRes = R.drawable.ic_rust_logo,
+                onClick = onNavigateToRustLibrary,
             ),
             SettingsItem(
                 title = "About",

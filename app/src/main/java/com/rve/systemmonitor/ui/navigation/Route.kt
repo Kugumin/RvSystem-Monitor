@@ -18,6 +18,9 @@ sealed interface Route {
     data object AppSettings : Route
 
     @Serializable
+    data object RustLibrary : Route
+
+    @Serializable
     data object About : Route
     @Serializable
     data object GPU : Route

@@ -26,4 +26,17 @@ object DeviceUtils {
         Log.e(TAG, "getDevice: ${it.message}", it)
         "unknown"
     }
+
+    fun getRustLibraryVersion(): String = runCatching {
+        getRustLibraryVersionNative()
+    }.getOrElse {
+        Log.e(TAG, "getRustLibraryVersion: ${it.message}", it)
+        "unknown"
+    }
+
+    private external fun getRustLibraryVersionNative(): String
+
+    init {
+        NativeLoader.load()
+    }
 }
