@@ -1,6 +1,7 @@
 package com.rve.systemmonitor.domain.model
 
 import androidx.compose.runtime.Immutable
+import java.util.Locale
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 
@@ -32,7 +33,7 @@ data class CoreDetail(
 
     private fun formatFrequency(freqKhz: Long): String {
         return if (freqKhz >= 1_000_000) {
-            String.format("%.2f GHz", freqKhz / 1_000_000.0)
+            String.format(Locale.US, "%.2f GHz", freqKhz / 1_000_000.0)
         } else {
             "${freqKhz / 1000} MHz"
         }
