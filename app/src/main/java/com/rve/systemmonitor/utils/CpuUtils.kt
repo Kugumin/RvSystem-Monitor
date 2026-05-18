@@ -2,6 +2,7 @@ package com.rve.systemmonitor.utils
 
 import android.os.Build
 import android.util.Log
+import java.util.Locale
 
 object CpuUtils {
     private const val TAG = "CpuUtils"
@@ -61,7 +62,7 @@ object CpuUtils {
     fun formatFrequency(freqKhz: Long): String {
 
         return if (freqKhz >= 1_000_000) {
-            String.format("%.2f GHz", freqKhz / 1_000_000.0)
+            String.format(Locale.US, "%.2f GHz", freqKhz / 1_000_000.0)
         } else {
             "${freqKhz / 1000} MHz"
         }
