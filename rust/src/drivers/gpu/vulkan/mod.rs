@@ -112,10 +112,9 @@ pub fn get_vulkan_version() -> String {
                     == 0
                 {
                     // VkPhysicalDeviceProperties is a large struct (~824+ bytes).
-                    // We extract only the fields we need from the start of the struct:
-                    // offset 0: apiVersion (u32)
-                    // offset 4: driverVersion (u32)
-                    let mut props = [0u8; 8];
+                    // We extract apiVersion (offset 0) and driverVersion (offset 4).
+                    // We use a 1024-byte buffer to safely accommodate the full struct and avoid stack corruption.
+                    let mut props = [0u8; 1024];
                     vk_get_physical_device_properties(devices[0], props.as_mut_ptr());
 
                     let api_version = u32::from_le_bytes(props[0..4].try_into().unwrap());
