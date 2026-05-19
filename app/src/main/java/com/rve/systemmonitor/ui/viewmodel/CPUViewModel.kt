@@ -15,9 +15,9 @@ import kotlinx.coroutines.flow.stateIn
 
 @HiltViewModel
 class CPUViewModel @Inject constructor(cpuRepository: CpuRepository) : ViewModel() {
-    private val cpuStatic = kotlinx.coroutines.flow.flow {
+    private val cpuStatic = flow {
         emit(cpuRepository.getCpuInfo())
-    }.flowOn(kotlinx.coroutines.Dispatchers.IO)
+    }.flowOn(Dispatchers.IO)
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
