@@ -77,10 +77,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rve.systemmonitor.R
 import com.rve.systemmonitor.service.SystemOverlayService
 import com.rve.systemmonitor.ui.components.ExitUntilCollapsedMediumTopAppBar
+import com.rve.systemmonitor.ui.components.card.SettingsSliderCard
 import com.rve.systemmonitor.ui.components.haptic.hapticClickable
 import com.rve.systemmonitor.ui.components.haptic.rememberHapticOnClick
 import com.rve.systemmonitor.ui.components.haptic.rememberHapticOnValueChange
 import com.rve.systemmonitor.ui.viewmodel.OverlaySettingsViewModel
+import java.util.Locale
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -514,152 +516,27 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                         modifier = Modifier.padding(start = 8.dp),
                     )
 
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = cardBgAlpha),
-                        ),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .padding(20.dp)
-                                .graphicsLayer { alpha = appearanceAlpha },
-                            verticalArrangement = Arrangement.spacedBy(16.dp),
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(
-                                            if (isOverlayActive)
-                                                MaterialTheme.colorScheme.primary
-                                            else
-                                                MaterialTheme.colorScheme.primary.copy(alpha = 0.38f),
-                                        ),
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.acute_filled),
-                                        contentDescription = "Update Interval Icon",
-                                        tint = if (isOverlayActive)
-                                            MaterialTheme.colorScheme.onPrimary
-                                        else
-                                            MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.38f),
-                                    )
-                                }
-
-                                Column {
-                                    Text(
-                                        text = "Update Interval",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = if (isOverlayActive)
-                                            MaterialTheme.colorScheme.onSurface
-                                        else
-                                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
-                                    )
-                                    Text(
-                                        text = "Adjust how often metrics refresh on the floating overlay",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = if (isOverlayActive)
-                                            MaterialTheme.colorScheme.onSurfaceVariant
-                                        else
-                                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
-                                    )
-                                }
+                    SettingsSliderCard(
+                        title = "Update Interval",
+                        description = "Adjust how often metrics refresh on the floating overlay",
+                        iconRes = R.drawable.acute_filled,
+                        sliderState = delaySliderState,
+                        currentDisplayValue = overlayCurrentValue,
+                        displayValueFormatter = { value ->
+                            if (value % 1f == 0f) {
+                                value.toInt().toString() + "s"
+                            } else {
+                                String.format(Locale.US, "%.1fs", value)
                             }
-
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Text(
-                                        text = "Refresh Rate",
-                                        style = MaterialTheme.typography.labelLarge,
-                                        color = if (isOverlayActive)
-                                            MaterialTheme.colorScheme.onSurface
-                                        else
-                                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
-                                    )
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        val displayValue = if (overlayCurrentValue % 1f == 0f) {
-                                            overlayCurrentValue.toInt().toString()
-                                        } else {
-                                            overlayCurrentValue.toString()
-                                        }
-                                        Text(
-                                            text = "${displayValue}s",
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.Bold,
-                                            color = if (isOverlayActive)
-                                                MaterialTheme.colorScheme.primary
-                                            else
-                                                MaterialTheme.colorScheme.primary.copy(alpha = 0.38f),
-                                        )
-                                        AnimatedVisibility(
-                                            visible = isOverlayActive && overlayCurrentValue != 1.0f,
-                                            enter = slideInHorizontally(
-                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
-                                            ) { it } + expandHorizontally(
-                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
-                                            ) + fadeIn(
-                                                animationSpec = MaterialTheme.motionScheme.slowEffectsSpec(),
-                                            ),
-                                            exit = slideOutHorizontally(
-                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
-                                            ) { it } + shrinkHorizontally(
-                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
-                                            ) + fadeOut(
-                                                animationSpec = MaterialTheme.motionScheme.slowEffectsSpec(),
-                                            ),
-                                        ) {
-                                            Row {
-                                                Spacer(modifier = Modifier.width(8.dp))
-                                                IconButton(
-                                                    onClick = rememberHapticOnClick {
-                                                        viewModel.setOverlayUpdateInterval(1000L)
-                                                        if (isServiceRunning) updateService(interval = 1000L)
-                                                    },
-                                                    modifier = Modifier.size(24.dp),
-                                                ) {
-                                                    Icon(
-                                                        painter = painterResource(R.drawable.reset_settings_rounded),
-                                                        contentDescription = "Reset to default",
-                                                        modifier = Modifier.size(16.dp),
-                                                        tint = MaterialTheme.colorScheme.primary,
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                Slider(
-                                    state = delaySliderState,
-                                    enabled = isOverlayActive,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    track = {
-                                        SliderDefaults.Track(
-                                            sliderState = delaySliderState,
-                                            modifier = Modifier.height(36.dp),
-                                            trackCornerSize = 12.dp,
-                                        )
-                                    },
-                                )
-                            }
-                        }
-                    }
+                        },
+                        onReset = {
+                            viewModel.setOverlayUpdateInterval(1000L)
+                            if (isServiceRunning) updateService(interval = 1000L)
+                        },
+                        isResetVisible = overlayCurrentValue != 1.0f,
+                        enabled = isOverlayActive,
+                        alpha = appearanceAlpha,
+                    )
                 }
             }
 

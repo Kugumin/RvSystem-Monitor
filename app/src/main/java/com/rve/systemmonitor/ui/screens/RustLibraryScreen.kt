@@ -25,6 +25,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,7 +42,6 @@ import com.rve.systemmonitor.ui.components.ExitUntilCollapsedMediumTopAppBar
 import com.rve.systemmonitor.utils.DeviceUtils
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import androidx.compose.runtime.Immutable
 
 @Immutable
 private data class JniMethod(val name: String, val returnType: String, val parameters: String = "env: JNIEnv", val description: String)

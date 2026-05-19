@@ -330,6 +330,11 @@ class SystemOverlayService : Service() {
                         windowManager?.updateViewLayout(v, params)
                         return true
                     }
+
+                    MotionEvent.ACTION_UP -> {
+                        v.performClick()
+                        return true
+                    }
                 }
                 return false
             }

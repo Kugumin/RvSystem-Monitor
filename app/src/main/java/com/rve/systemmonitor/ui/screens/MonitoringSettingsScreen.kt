@@ -1,37 +1,16 @@
 package com.rve.systemmonitor.ui.screens
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animate
-import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkHorizontally
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberSliderState
@@ -44,18 +23,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rve.systemmonitor.R
 import com.rve.systemmonitor.ui.components.ExitUntilCollapsedMediumTopAppBar
-import com.rve.systemmonitor.ui.components.haptic.rememberHapticOnClick
+import com.rve.systemmonitor.ui.components.card.SettingsSliderCard
 import com.rve.systemmonitor.ui.components.haptic.rememberHapticOnValueChange
 import com.rve.systemmonitor.ui.viewmodel.SettingsViewModel
 import kotlinx.coroutines.Job
@@ -296,602 +272,69 @@ fun MonitoringSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
                         modifier = Modifier.padding(start = 8.dp),
                     )
 
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
-                        ),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(20.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp),
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(MaterialTheme.colorScheme.primary),
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.memory_filled),
-                                        contentDescription = "CPU Monitoring Icon",
-                                        tint = MaterialTheme.colorScheme.onPrimary,
-                                    )
-                                }
+                    SettingsSliderCard(
+                        title = "CPU Update Interval",
+                        description = "Adjust how often CPU stats are refreshed",
+                        iconRes = R.drawable.memory_filled,
+                        sliderState = cpuSliderState,
+                        currentDisplayValue = cpuCurrentValue,
+                        displayValueFormatter = { "${it.toInt()}s" },
+                        onReset = { viewModel.setCpuRefreshDelay(3000L) },
+                        isResetVisible = cpuCurrentValue != 3.0f,
+                    )
 
-                                Column {
-                                    Text(
-                                        text = "CPU Update Interval",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                    )
-                                    Text(
-                                        text = "Adjust how often CPU stats are refreshed",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
+                    SettingsSliderCard(
+                        title = "GPU Update Interval",
+                        description = "Adjust how often GPU stats are refreshed",
+                        iconRes = R.drawable.view_in_ar_filled,
+                        sliderState = gpuSliderState,
+                        currentDisplayValue = gpuCurrentValue,
+                        displayValueFormatter = { "${it.toInt()}s" },
+                        onReset = { viewModel.setGpuRefreshDelay(3000L) },
+                        isResetVisible = gpuCurrentValue != 3.0f,
+                    )
+
+                    SettingsSliderCard(
+                        title = "Memory Update Interval",
+                        description = "Adjust how often Memory stats are refreshed",
+                        iconRes = R.drawable.memory_alt_filled,
+                        sliderState = memorySliderState,
+                        currentDisplayValue = memoryCurrentValue,
+                        displayValueFormatter = { "${it.toInt()}s" },
+                        onReset = { viewModel.setMemoryRefreshDelay(3000L) },
+                        isResetVisible = memoryCurrentValue != 3.0f,
+                    )
+
+                    SettingsSliderCard(
+                        title = "Battery Update Interval",
+                        description = "Adjust how often uptime and current (mA) are refreshed",
+                        iconRes = R.drawable.battery_android_full,
+                        sliderState = batterySliderState,
+                        currentDisplayValue = batteryCurrentValue,
+                        displayValueFormatter = { "${it.toInt()}s" },
+                        onReset = { viewModel.setBatteryRefreshDelay(1000L) },
+                        isResetVisible = batteryCurrentValue != 1.0f,
+                    )
+
+                    SettingsSliderCard(
+                        title = "Battery Graph History",
+                        description = "Set how much data to show on the graph",
+                        iconRes = R.drawable.timeline_rounded,
+                        sliderState = historySliderState,
+                        currentDisplayValue = historyCurrentValue,
+                        displayValueFormatter = { value ->
+                            if (value >= 60) {
+                                val minutes = value.toInt() / 60
+                                val seconds = value.toInt() % 60
+                                if (seconds == 0) "${minutes}m" else "${minutes}m ${seconds}s"
+                            } else {
+                                "${value.toInt()}s"
                             }
-
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Text(
-                                        text = "Refresh Rate",
-                                        style = MaterialTheme.typography.labelLarge,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                    )
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(
-                                            text = "${cpuCurrentValue.toInt()}s",
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.primary,
-                                        )
-                                        AnimatedVisibility(
-                                            visible = cpuCurrentValue != 3.0f,
-                                            enter = slideInHorizontally(
-                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
-                                            ) { it } + expandHorizontally(
-                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
-                                            ) + fadeIn(
-                                                animationSpec = MaterialTheme.motionScheme.slowEffectsSpec(),
-                                            ),
-                                            exit = slideOutHorizontally(
-                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
-                                            ) { it } + shrinkHorizontally(
-                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
-                                            ) + fadeOut(
-                                                animationSpec = MaterialTheme.motionScheme.slowEffectsSpec(),
-                                            ),
-                                        ) {
-                                            Row {
-                                                Spacer(modifier = Modifier.width(8.dp))
-                                                IconButton(
-                                                    onClick = rememberHapticOnClick {
-                                                        viewModel.setCpuRefreshDelay(3000L)
-                                                    },
-                                                    modifier = Modifier.size(24.dp),
-                                                ) {
-                                                    Icon(
-                                                        painter = painterResource(R.drawable.reset_settings_rounded),
-                                                        contentDescription = "Reset to default",
-                                                        modifier = Modifier.size(16.dp),
-                                                        tint = MaterialTheme.colorScheme.primary,
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                Slider(
-                                    state = cpuSliderState,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    track = {
-                                        SliderDefaults.Track(
-                                            sliderState = cpuSliderState,
-                                            modifier = Modifier.height(36.dp),
-                                            trackCornerSize = 12.dp,
-                                        )
-                                    },
-                                )
-                            }
-                        }
-                    }
-
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
-                        ),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(20.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp),
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(MaterialTheme.colorScheme.primary),
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.view_in_ar_filled),
-                                        contentDescription = "GPU Monitoring Icon",
-                                        tint = MaterialTheme.colorScheme.onPrimary,
-                                    )
-                                }
-
-                                Column {
-                                    Text(
-                                        text = "GPU Update Interval",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                    )
-                                    Text(
-                                        text = "Adjust how often GPU stats are refreshed",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
-                            }
-
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Text(
-                                        text = "Refresh Rate",
-                                        style = MaterialTheme.typography.labelLarge,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                    )
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(
-                                            text = "${gpuCurrentValue.toInt()}s",
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.primary,
-                                        )
-                                        AnimatedVisibility(
-                                            visible = gpuCurrentValue != 3.0f,
-                                            enter = slideInHorizontally(
-                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
-                                            ) { it } + expandHorizontally(
-                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
-                                            ) + fadeIn(
-                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
-                                            ),
-                                            exit = slideOutHorizontally(
-                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
-                                            ) { it } + shrinkHorizontally(
-                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
-                                            ) + fadeOut(
-                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
-                                            ),
-                                        ) {
-                                            Row {
-                                                Spacer(modifier = Modifier.width(8.dp))
-                                                IconButton(
-                                                    onClick = rememberHapticOnClick {
-                                                        viewModel.setGpuRefreshDelay(3000L)
-                                                    },
-                                                    modifier = Modifier.size(24.dp),
-                                                ) {
-                                                    Icon(
-                                                        painter = painterResource(R.drawable.reset_settings_rounded),
-                                                        contentDescription = "Reset to default",
-                                                        modifier = Modifier.size(16.dp),
-                                                        tint = MaterialTheme.colorScheme.primary,
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                Slider(
-                                    state = gpuSliderState,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    track = {
-                                        SliderDefaults.Track(
-                                            sliderState = gpuSliderState,
-                                            modifier = Modifier.height(36.dp),
-                                            trackCornerSize = 12.dp,
-                                        )
-                                    },
-                                )
-                            }
-                        }
-                    }
-
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
-                        ),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(20.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp),
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(MaterialTheme.colorScheme.primary),
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.memory_alt_filled),
-                                        contentDescription = "Memory Monitoring Icon",
-                                        tint = MaterialTheme.colorScheme.onPrimary,
-                                    )
-                                }
-
-                                Column {
-                                    Text(
-                                        text = "Memory Update Interval",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                    )
-                                    Text(
-                                        text = "Adjust how often Memory stats are refreshed",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
-                            }
-
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Text(
-                                        text = "Refresh Rate",
-                                        style = MaterialTheme.typography.labelLarge,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                    )
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(
-                                            text = "${memoryCurrentValue.toInt()}s",
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.primary,
-                                        )
-                                        AnimatedVisibility(
-                                            visible = memoryCurrentValue != 3.0f,
-                                            enter = slideInHorizontally(
-                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
-                                            ) { it } + expandHorizontally(
-                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
-                                            ) + fadeIn(
-                                                animationSpec = MaterialTheme.motionScheme.slowEffectsSpec(),
-                                            ),
-                                            exit = slideOutHorizontally(
-                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
-                                            ) { it } + shrinkHorizontally(
-                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
-                                            ) + fadeOut(
-                                                animationSpec = MaterialTheme.motionScheme.slowEffectsSpec(),
-                                            ),
-                                        ) {
-                                            Row {
-                                                Spacer(modifier = Modifier.width(8.dp))
-                                                IconButton(
-                                                    onClick = rememberHapticOnClick {
-                                                        viewModel.setMemoryRefreshDelay(3000L)
-                                                    },
-                                                    modifier = Modifier.size(24.dp),
-                                                ) {
-                                                    Icon(
-                                                        painter = painterResource(R.drawable.reset_settings_rounded),
-                                                        contentDescription = "Reset to default",
-                                                        modifier = Modifier.size(16.dp),
-                                                        tint = MaterialTheme.colorScheme.primary,
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                Slider(
-                                    state = memorySliderState,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    track = {
-                                        SliderDefaults.Track(
-                                            sliderState = memorySliderState,
-                                            modifier = Modifier.height(36.dp),
-                                            trackCornerSize = 12.dp,
-                                        )
-                                    },
-                                )
-                            }
-                        }
-                    }
-
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
-                        ),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(20.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp),
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(MaterialTheme.colorScheme.primary),
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.battery_android_full),
-                                        contentDescription = "Battery Monitoring Icon",
-                                        tint = MaterialTheme.colorScheme.onPrimary,
-                                    )
-                                }
-
-                                Column {
-                                    Text(
-                                        text = "Battery Update Interval",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                    )
-                                    Text(
-                                        text = "Adjust how often uptime and current (mA) are refreshed",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
-                            }
-
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Text(
-                                        text = "Refresh Rate",
-                                        style = MaterialTheme.typography.labelLarge,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                    )
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(
-                                            text = "${batteryCurrentValue.toInt()}s",
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.primary,
-                                        )
-                                        AnimatedVisibility(
-                                            visible = batteryCurrentValue != 1.0f,
-                                            enter = slideInHorizontally(
-                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
-                                            ) { it } + expandHorizontally(
-                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
-                                            ) + fadeIn(
-                                                animationSpec = MaterialTheme.motionScheme.slowEffectsSpec(),
-                                            ),
-                                            exit = slideOutHorizontally(
-                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
-                                            ) { it } + shrinkHorizontally(
-                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
-                                            ) + fadeOut(
-                                                animationSpec = MaterialTheme.motionScheme.slowEffectsSpec(),
-                                            ),
-                                        ) {
-                                            Row {
-                                                Spacer(modifier = Modifier.width(8.dp))
-                                                IconButton(
-                                                    onClick = rememberHapticOnClick {
-                                                        viewModel.setBatteryRefreshDelay(1000L)
-                                                    },
-                                                    modifier = Modifier.size(24.dp),
-                                                ) {
-                                                    Icon(
-                                                        painter = painterResource(R.drawable.reset_settings_rounded),
-                                                        contentDescription = "Reset to default",
-                                                        modifier = Modifier.size(16.dp),
-                                                        tint = MaterialTheme.colorScheme.primary,
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                Slider(
-                                    state = batterySliderState,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    track = {
-                                        SliderDefaults.Track(
-                                            sliderState = batterySliderState,
-                                            modifier = Modifier.height(36.dp),
-                                            trackCornerSize = 12.dp,
-                                        )
-                                    },
-                                )
-                            }
-                        }
-                    }
-
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
-                        ),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(20.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp),
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(MaterialTheme.colorScheme.primary),
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.timeline_rounded),
-                                        contentDescription = "Graph History Icon",
-                                        tint = MaterialTheme.colorScheme.onPrimary,
-                                    )
-                                }
-
-                                Column {
-                                    Text(
-                                        text = "Battery Graph History",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                    )
-                                    Text(
-                                        text = "Set how much data to show on the graph",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
-                            }
-
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Text(
-                                        text = "History Duration",
-                                        style = MaterialTheme.typography.labelLarge,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                    )
-                                    val durationText = if (historyCurrentValue >= 60) {
-                                        val minutes = historyCurrentValue.toInt() / 60
-                                        val seconds = historyCurrentValue.toInt() % 60
-                                        if (seconds == 0) "${minutes}m" else "${minutes}m ${seconds}s"
-                                    } else {
-                                        "${historyCurrentValue.toInt()}s"
-                                    }
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(
-                                            text = durationText,
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.primary,
-                                        )
-                                        AnimatedVisibility(
-                                            visible = historyCurrentValue != 60.0f,
-                                            enter = slideInHorizontally(
-                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
-                                            ) { it } + expandHorizontally(
-                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
-                                            ) + fadeIn(
-                                                animationSpec = MaterialTheme.motionScheme.slowEffectsSpec(),
-                                            ),
-                                            exit = slideOutHorizontally(
-                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
-                                            ) { it } + shrinkHorizontally(
-                                                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
-                                            ) + fadeOut(
-                                                animationSpec = MaterialTheme.motionScheme.slowEffectsSpec(),
-                                            ),
-                                        ) {
-                                            Row {
-                                                Spacer(modifier = Modifier.width(8.dp))
-                                                IconButton(
-                                                    onClick = rememberHapticOnClick {
-                                                        viewModel.setBatteryGraphHistorySeconds(60)
-                                                    },
-                                                    modifier = Modifier.size(24.dp),
-                                                ) {
-                                                    Icon(
-                                                        painter = painterResource(R.drawable.reset_settings_rounded),
-                                                        contentDescription = "Reset to default",
-                                                        modifier = Modifier.size(16.dp),
-                                                        tint = MaterialTheme.colorScheme.primary,
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                Slider(
-                                    state = historySliderState,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    track = {
-                                        SliderDefaults.Track(
-                                            sliderState = historySliderState,
-                                            modifier = Modifier.height(36.dp),
-                                            trackCornerSize = 12.dp,
-                                        )
-                                    },
-                                )
-                            }
-                        }
-                    }
+                        },
+                        onReset = { viewModel.setBatteryGraphHistorySeconds(60) },
+                        isResetVisible = historyCurrentValue != 60.0f,
+                        valueLabel = "History Duration",
+                    )
                 }
             }
         }

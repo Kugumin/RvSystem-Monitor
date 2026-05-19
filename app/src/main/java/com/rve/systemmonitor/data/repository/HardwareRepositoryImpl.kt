@@ -12,9 +12,9 @@ import com.rve.systemmonitor.utils.DisplayUtils
 import com.rve.systemmonitor.utils.GpuUtils
 import com.rve.systemmonitor.utils.OSUtils
 import com.rve.systemmonitor.utils.StorageUtils
-import kotlinx.collections.immutable.toImmutableList
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.collections.immutable.toImmutableList
 
 @Singleton
 class HardwareRepositoryImpl @Inject constructor(private val application: Application) : HardwareRepository {

@@ -29,6 +29,7 @@ import com.rve.systemmonitor.ui.components.item.InfoItem
 import com.rve.systemmonitor.ui.components.layout.ScreenLazyColumn
 import com.rve.systemmonitor.ui.components.row.TwoColumnInfoRow
 import com.rve.systemmonitor.ui.viewmodel.GPUViewModel
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -78,7 +79,7 @@ private fun GPUScreenContent(gpuInfo: GPU) {
                     }
 
                     BadgeChip(
-                        text = String.format(java.util.Locale.US, "%.1f °C", gpuInfo.temperature),
+                        text = String.format(Locale.US, "%.1f °C", gpuInfo.temperature),
                         containerColor = MaterialTheme.colorScheme.primary,
                         textColor = MaterialTheme.colorScheme.onPrimary,
                     )

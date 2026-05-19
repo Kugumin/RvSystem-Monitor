@@ -4,6 +4,7 @@ import android.content.Context
 import android.hardware.display.DisplayManager
 import android.util.Log
 import android.view.Display
+import java.util.Locale
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -44,7 +45,7 @@ object DisplayUtils {
 
         val diagonal = sqrt(widthInches.pow(2.0) + heightInches.pow(2.0))
 
-        "%.2f".format(java.util.Locale.US, diagonal).toDouble()
+        "%.2f".format(Locale.US, diagonal).toDouble()
     }.getOrElse {
         Log.e(TAG, "getScreenSizeInches: ${it.message}", it)
         0.0

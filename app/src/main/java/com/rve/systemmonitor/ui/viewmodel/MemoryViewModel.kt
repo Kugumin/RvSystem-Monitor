@@ -2,11 +2,11 @@ package com.rve.systemmonitor.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.rve.systemmonitor.domain.repository.HardwareRepository
-import com.rve.systemmonitor.domain.repository.MemoryRepository
 import com.rve.systemmonitor.domain.model.RAM
 import com.rve.systemmonitor.domain.model.Storage
 import com.rve.systemmonitor.domain.model.ZRAM
+import com.rve.systemmonitor.domain.repository.HardwareRepository
+import com.rve.systemmonitor.domain.repository.MemoryRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
