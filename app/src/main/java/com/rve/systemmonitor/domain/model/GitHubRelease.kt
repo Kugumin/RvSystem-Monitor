@@ -1,9 +1,11 @@
 package com.rve.systemmonitor.domain.model
 
+import androidx.compose.runtime.Immutable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
+@Immutable
 data class GitHubRelease(
     @SerialName("tag_name")
     val tagName: String,

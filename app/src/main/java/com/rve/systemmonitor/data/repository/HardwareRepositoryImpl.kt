@@ -12,6 +12,7 @@ import com.rve.systemmonitor.utils.DisplayUtils
 import com.rve.systemmonitor.utils.GpuUtils
 import com.rve.systemmonitor.utils.OSUtils
 import com.rve.systemmonitor.utils.StorageUtils
+import kotlinx.collections.immutable.toImmutableList
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -44,7 +45,7 @@ class HardwareRepositoryImpl @Inject constructor(private val application: Applic
             densityDpi = DisplayUtils.getDensityDpi(application),
             screenSizeInches = DisplayUtils.getScreenSizeInches(application),
             isHdrSupported = isHdr,
-            hdrTypes = hdrTypes,
+            hdrTypes = hdrTypes.toImmutableList(),
         )
     }
 

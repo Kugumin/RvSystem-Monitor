@@ -39,7 +39,11 @@ import androidx.compose.ui.unit.sp
 import com.rve.systemmonitor.R
 import com.rve.systemmonitor.ui.components.ExitUntilCollapsedMediumTopAppBar
 import com.rve.systemmonitor.utils.DeviceUtils
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
+import androidx.compose.runtime.Immutable
 
+@Immutable
 private data class JniMethod(val name: String, val returnType: String, val parameters: String = "env: JNIEnv", val description: String)
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -117,7 +121,7 @@ fun RustLibraryScreen(onNavigateBack: () -> Unit) {
                 "jdoubleArray",
                 description = "Batched retrieval of temperatures and frequencies for UI synchronization.",
             ),
-        ).sortedBy { it.name }
+        ).sortedBy { it.name }.toImmutableList()
     }
 
     Scaffold(
@@ -206,7 +210,7 @@ fun RustLibraryScreen(onNavigateBack: () -> Unit) {
 }
 
 @Composable
-private fun MethodSummaryTable(methods: List<JniMethod>) {
+private fun MethodSummaryTable(methods: ImmutableList<JniMethod>) {
     Column(
         modifier = Modifier
             .fillMaxWidth()

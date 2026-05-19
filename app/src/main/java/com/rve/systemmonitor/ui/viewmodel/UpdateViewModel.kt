@@ -1,5 +1,6 @@
 package com.rve.systemmonitor.ui.viewmodel
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rve.systemmonitor.BuildConfig
@@ -105,11 +106,23 @@ class UpdateViewModel @Inject constructor(
     }
 }
 
+@Immutable
 sealed class UpdateUiState {
+    @Immutable
     data object Idle : UpdateUiState()
+
+    @Immutable
     data object Checking : UpdateUiState()
+
+    @Immutable
     data class UpdateAvailable(val release: GitHubRelease) : UpdateUiState()
+
+    @Immutable
     data class Downloading(val progress: Float) : UpdateUiState()
+
+    @Immutable
     data class ReadyToInstall(val file: File) : UpdateUiState()
+
+    @Immutable
     data class Error(val message: String) : UpdateUiState()
 }
