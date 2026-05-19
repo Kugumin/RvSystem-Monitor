@@ -6,6 +6,7 @@ import com.rve.systemmonitor.domain.repository.HardwareRepository
 import com.rve.systemmonitor.domain.repository.MemoryRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
@@ -15,8 +16,13 @@ class MemoryViewModel @Inject constructor(
     private val memoryRepository: MemoryRepository,
     private val hardwareRepository: HardwareRepository,
 ) : ViewModel() {
-    private val cachedStorage = hardwareRepository.getStorageInfo()
-    private val storageInfo = kotlinx.coroutines.flow.MutableStateFlow(cachedStorage)
+    private val storageInfo = kotlinx.coroutines.flow.MutableStateFlow(com.rve.systemmonitor.domain.model.Storage())
+
+    init {
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            storageInfo.value = hardwareRepository.getStorageInfo()
+        }
+    }
 
     private val memoryStream = memoryRepository.getMemoryInfo()
         .stateIn(
@@ -48,6 +54,8 @@ class MemoryViewModel @Inject constructor(
     )
 
     fun refreshStorage() {
-        storageInfo.value = hardwareRepository.getStorageInfo()
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            storageInfo.value = hardwareRepository.getStorageInfo()
+        }
     }
 }

@@ -6,14 +6,23 @@ import com.rve.systemmonitor.domain.model.CPU
 import com.rve.systemmonitor.domain.repository.CpuRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 
 @HiltViewModel
 class CPUViewModel @Inject constructor(cpuRepository: CpuRepository) : ViewModel() {
-    private val cachedCpuStatic = cpuRepository.getCpuInfo()
+    private val cpuStatic = kotlinx.coroutines.flow.flow {
+        emit(cpuRepository.getCpuInfo())
+    }.flowOn(kotlinx.coroutines.Dispatchers.IO)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = CPU(),
+        )
 
     private val cpuStream = cpuRepository.getCpuStream()
         .stateIn(
@@ -22,14 +31,9 @@ class CPUViewModel @Inject constructor(cpuRepository: CpuRepository) : ViewModel
             initialValue = CPU(),
         )
 
-    private val cpuStatic = flowOf(cachedCpuStatic)
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = CPU(),
-        )
-
     val cpuInfo = combine(cpuStream, cpuStatic) { stream, static ->
+        if (static.cores == 0) return@combine stream
+
         stream.copy(
             manufacturer = static.manufacturer,
             model = static.model,

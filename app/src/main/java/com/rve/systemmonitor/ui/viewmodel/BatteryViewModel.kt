@@ -10,11 +10,13 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.flow.stateIn
@@ -23,16 +25,16 @@ import kotlinx.coroutines.flow.stateIn
 @HiltViewModel
 class BatteryViewModel @Inject constructor(private val batteryRepository: BatteryRepository, settingsRepository: SettingsRepository) :
     ViewModel() {
-    private val cachedBatteryStatic = batteryRepository.getBatteryInfo()
-
-    private val batteryStream = batteryRepository.getBatteryStream()
+    private val batteryStatic = flow {
+        emit(batteryRepository.getBatteryInfo())
+    }.flowOn(Dispatchers.IO)
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = batteryRepository.getBatteryInfo(),
+            initialValue = Battery(),
         )
 
-    private val batteryStatic = flowOf(cachedBatteryStatic)
+    private val batteryStream = batteryRepository.getBatteryStream()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -43,6 +45,8 @@ class BatteryViewModel @Inject constructor(private val batteryRepository: Batter
         batteryStream,
         batteryStatic,
     ) { stream, static ->
+        if (static.capacity == 0.0) return@combine stream
+
         stream.copy(
             health = static.health,
             technology = static.technology,
@@ -53,7 +57,7 @@ class BatteryViewModel @Inject constructor(private val batteryRepository: Batter
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = batteryRepository.getBatteryInfo(),
+        initialValue = Battery(),
     )
     val graphHistorySeconds: StateFlow<Int> = settingsRepository.batteryGraphHistorySeconds
         .stateIn(
@@ -74,7 +78,7 @@ class BatteryViewModel @Inject constructor(private val batteryRepository: Batter
             }
             _historyList.toImmutableList()
         }
-        .combine(graphHistorySeconds) { history, maxHistory ->
+        .combine(graphHistorySeconds) { history: ImmutableList<BatteryDataPoint>, maxHistory: Int ->
             if (history.size > maxHistory) history.takeLast(maxHistory).toImmutableList() else history
         }
         .stateIn(

@@ -111,7 +111,7 @@ fun RvSystemMonitorApp(onNavigateToSettings: () -> Unit, onNavigateToGPU: () -> 
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier.layerBackdrop(backdrop),
-                    beyondViewportPageCount = 0,
+                    beyondViewportPageCount = 1,
                 ) { page ->
                     when (page) {
                         0 -> HomeScreen(
