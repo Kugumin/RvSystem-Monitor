@@ -18,3 +18,23 @@ macro_rules! jni_fn {
         }
     };
 }
+
+#[macro_export]
+macro_rules! jni_double_array {
+    ($env:ident, $data:expr) => {{
+        let data = $data;
+        let output = $env.new_double_array(data.len())?;
+        output.set_region($env, 0, &data)?;
+        Ok(output.into_raw())
+    }};
+}
+
+#[macro_export]
+macro_rules! jni_long_array {
+    ($env:ident, $data:expr) => {{
+        let data = $data;
+        let output = $env.new_long_array(data.len())?;
+        output.set_region($env, 0, &data)?;
+        Ok(output.into_raw())
+    }};
+}

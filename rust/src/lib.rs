@@ -56,9 +56,7 @@ jni_fn! {
             zram.used_percentage,
         ];
 
-        let output = env.new_double_array(14)?;
-        output.set_region(env, 0, &data)?;
-        Ok(output.into_raw())
+        jni_double_array!(env, data)
     }
 }
 
@@ -78,9 +76,7 @@ jni_fn! {
             ram.slab,
         ];
 
-        let output = env.new_double_array(9)?;
-        output.set_region(env, 0, &data)?;
-        Ok(output.into_raw())
+        jni_double_array!(env, data)
     }
 }
 
@@ -97,9 +93,7 @@ jni_fn! {
             zram.used_percentage,
         ];
 
-        let output = env.new_double_array(5)?;
-        output.set_region(env, 0, &data)?;
-        Ok(output.into_raw())
+        jni_double_array!(env, data)
     }
 }
 
@@ -112,9 +106,7 @@ jni_fn! {
             frequencies.push(kernel::cpu::get_core_frequency(i, "cur"));
         }
 
-        let output = env.new_long_array(cores as usize)?;
-        output.set_region(env, 0, &frequencies)?;
-        Ok(output.into_raw())
+        jni_long_array!(env, frequencies)
     }
 }
 
@@ -155,9 +147,7 @@ jni_fn! {
             temps.push(kernel::cpu::get_core_temperature(i));
         }
 
-        let output = env.new_double_array(cores as usize)?;
-        output.set_region(env, 0, &temps)?;
-        Ok(output.into_raw())
+        jni_double_array!(env, temps)
     }
 }
 
@@ -173,8 +163,6 @@ jni_fn! {
             data.push(kernel::cpu::get_core_temperature(i as i32));
         }
 
-        let output = env.new_double_array(data.len())?;
-        output.set_region(env, 0, &data)?;
-        Ok(output.into_raw())
+        jni_double_array!(env, data)
     }
 }

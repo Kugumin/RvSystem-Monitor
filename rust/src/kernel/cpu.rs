@@ -100,63 +100,50 @@ fn get_thermal_map() -> &'static HashMap<String, PathBuf> {
 static CPU_THERMAL_FD: OnceCell<Mutex<Option<File>>> = OnceCell::new();
 static GPU_THERMAL_FD: OnceCell<Mutex<Option<File>>> = OnceCell::new();
 
-fn get_cpu_thermal_fd() -> &'static Mutex<Option<File>> {
-    CPU_THERMAL_FD.get_or_init(|| {
-        let map = get_thermal_map();
-        let priority = [
-            "cpu-thermal",
-            "soc-thermal",
-            "cpu",
-            "soc",
-            "thermal-cpufreq",
-        ];
-        let mut best_path = None;
-        for zone in priority {
-            if let Some(path) = map.get(zone) {
-                best_path = Some(path.clone());
+fn get_thermal_fd_from_priority(
+    map: &HashMap<String, PathBuf>,
+    priority: &[&str],
+) -> Mutex<Option<File>> {
+    let mut best_path = None;
+    for zone in priority {
+        if let Some(path) = map.get(*zone) {
+            best_path = Some(path.clone());
+            break;
+        }
+    }
+    if best_path.is_none() {
+        for (tz_type, temp_path) in map {
+            if priority.iter().any(|p| tz_type.contains(p)) {
+                best_path = Some(temp_path.clone());
                 break;
             }
         }
-        if best_path.is_none() {
-            for (tz_type, temp_path) in map {
-                if priority.iter().any(|p| tz_type.contains(p)) {
-                    best_path = Some(temp_path.clone());
-                    break;
-                }
-            }
-        }
-        let file = best_path.and_then(|p| File::open(p).ok());
-        Mutex::new(file)
+    }
+    let file = best_path.and_then(|p| File::open(p).ok());
+    Mutex::new(file)
+}
+
+fn get_cpu_thermal_fd() -> &'static Mutex<Option<File>> {
+    CPU_THERMAL_FD.get_or_init(|| {
+        get_thermal_fd_from_priority(
+            get_thermal_map(),
+            &["cpu-thermal", "soc-thermal", "cpu", "soc", "thermal-cpufreq"],
+        )
     })
 }
 
 fn get_gpu_thermal_fd() -> &'static Mutex<Option<File>> {
     GPU_THERMAL_FD.get_or_init(|| {
-        let map = get_thermal_map();
-        let priority = [
-            "gpu-thermal",
-            "gpu0-thermal",
-            "gpuss-0-usr",
-            "gpu",
-            "tsens_tz_sensor9",
-        ];
-        let mut best_path = None;
-        for zone in priority {
-            if let Some(path) = map.get(zone) {
-                best_path = Some(path.clone());
-                break;
-            }
-        }
-        if best_path.is_none() {
-            for (tz_type, temp_path) in map {
-                if priority.iter().any(|p| tz_type.contains(p)) {
-                    best_path = Some(temp_path.clone());
-                    break;
-                }
-            }
-        }
-        let file = best_path.and_then(|p| File::open(p).ok());
-        Mutex::new(file)
+        get_thermal_fd_from_priority(
+            get_thermal_map(),
+            &[
+                "gpu-thermal",
+                "gpu0-thermal",
+                "gpuss-0-usr",
+                "gpu",
+                "tsens_tz_sensor9",
+            ],
+        )
     })
 }
 
@@ -189,6 +176,15 @@ pub fn get_core_count() -> i32 {
     std::thread::available_parallelism()
         .map(|n| n.get() as i32)
         .unwrap_or(0)
+}
+
+fn read_temp(file_opt: &mut Option<File>, buf: &mut String) -> f64 {
+    if let Some(file) = file_opt.as_mut()
+        && let Some(temp) = read_fd_parsed::<f64>(file, buf)
+    {
+        return if temp > 1000.0 { temp / 1000.0 } else { temp };
+    }
+    0.0
 }
 
 pub fn get_core_frequency(core_id: i32, freq_type: &str) -> i64 {
@@ -254,32 +250,23 @@ pub fn get_core_governor(core_id: i32) -> String {
 pub fn get_cpu_temperature() -> f64 {
     let mut buf = String::with_capacity(16);
     let mut fd_mutex = get_cpu_thermal_fd().lock().unwrap();
-    if let Some(file) = fd_mutex.as_mut()
-        && let Some(temp) = read_fd_parsed::<f64>(file, &mut buf)
-    {
-        return if temp > 1000.0 { temp / 1000.0 } else { temp };
-    }
-    0.0
+    read_temp(&mut fd_mutex, &mut buf)
 }
 
 pub fn get_gpu_temperature() -> f64 {
     let mut buf = String::with_capacity(16);
     let mut fd_mutex = get_gpu_thermal_fd().lock().unwrap();
-    if let Some(file) = fd_mutex.as_mut()
-        && let Some(temp) = read_fd_parsed::<f64>(file, &mut buf)
-    {
-        return if temp > 1000.0 { temp / 1000.0 } else { temp };
-    }
-    0.0
+    read_temp(&mut fd_mutex, &mut buf)
 }
 
 pub fn get_core_temperature(core_id: i32) -> f64 {
     let mut buf = String::with_capacity(16);
     let mut fds_mutex = get_core_thermal_fds().lock().unwrap();
-    if let Some(Some(file)) = fds_mutex.get_mut(core_id as usize)
-        && let Some(temp) = read_fd_parsed::<f64>(file, &mut buf)
-    {
-        return if temp > 1000.0 { temp / 1000.0 } else { temp };
+    if let Some(slot) = fds_mutex.get_mut(core_id as usize) {
+        let temp = read_temp(slot, &mut buf);
+        if temp != 0.0 {
+            return temp;
+        }
     }
     get_cpu_temperature()
 }

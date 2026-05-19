@@ -51,6 +51,11 @@ fn format_to_two_decimals(value: f64) -> f64 {
     (value * 100.0).round() / 100.0
 }
 
+/// Formats a float from bytes to GB with two decimal places.
+fn to_gb_formatted(bytes: f64) -> f64 {
+    format_to_two_decimals(bytes / GB_FACTOR)
+}
+
 /// Helper to parse the KB value from the rest of a meminfo line without extra allocations
 fn parse_kb(rest: &str) -> f64 {
     rest.split_whitespace()
@@ -74,9 +79,8 @@ pub fn get_memory_data() -> (RamData, ZramData) {
     let mut slab_bytes = 0_f64;
 
     if let Ok(file) = File::open("/proc/meminfo") {
-        let reader = io::BufReader::new(file);
+        let mut reader = io::BufReader::new(file);
         let mut line = String::with_capacity(64);
-        let mut reader = reader;
 
         while reader.read_line(&mut line).unwrap_or(0) > 0 {
             if let Some((key, rest)) = line.split_once(':') {
@@ -108,15 +112,15 @@ pub fn get_memory_data() -> (RamData, ZramData) {
     };
 
     let ram_data = RamData {
-        total: format_to_two_decimals(mem_total_bytes / GB_FACTOR),
-        available: format_to_two_decimals(mem_available_bytes / GB_FACTOR),
-        used: format_to_two_decimals(ram_used_bytes / GB_FACTOR),
+        total: to_gb_formatted(mem_total_bytes),
+        available: to_gb_formatted(mem_available_bytes),
+        used: to_gb_formatted(ram_used_bytes),
         used_percentage: format_to_two_decimals(ram_percentage),
-        cached: format_to_two_decimals(cached_bytes / GB_FACTOR),
-        buffers: format_to_two_decimals(buffers_bytes / GB_FACTOR),
-        active: format_to_two_decimals(active_bytes / GB_FACTOR),
-        inactive: format_to_two_decimals(inactive_bytes / GB_FACTOR),
-        slab: format_to_two_decimals(slab_bytes / GB_FACTOR),
+        cached: to_gb_formatted(cached_bytes),
+        buffers: to_gb_formatted(buffers_bytes),
+        active: to_gb_formatted(active_bytes),
+        inactive: to_gb_formatted(inactive_bytes),
+        slab: to_gb_formatted(slab_bytes),
     };
 
     let swap_used_bytes = swap_total_bytes - swap_free_bytes;
@@ -128,9 +132,9 @@ pub fn get_memory_data() -> (RamData, ZramData) {
 
     let zram_data = ZramData {
         is_active: swap_total_bytes > 0.0,
-        total: format_to_two_decimals(swap_total_bytes / GB_FACTOR),
-        available: format_to_two_decimals(swap_free_bytes / GB_FACTOR),
-        used: format_to_two_decimals(swap_used_bytes / GB_FACTOR),
+        total: to_gb_formatted(swap_total_bytes),
+        available: to_gb_formatted(swap_free_bytes),
+        used: to_gb_formatted(swap_used_bytes),
         used_percentage: format_to_two_decimals(swap_percentage),
     };
 

@@ -121,7 +121,11 @@ pub fn get_vulkan_version() -> String {
                     let driver_version = u32::from_le_bytes(props[4..8].try_into().unwrap());
 
                     vk_destroy_instance(instance, ptr::null());
-                    return format!("{}|{}", format_version(api_version), format_version(driver_version));
+                    return format!(
+                        "{}|{}",
+                        format_version(api_version),
+                        format_version(driver_version)
+                    );
                 }
             }
             if !instance.is_null() {
@@ -129,7 +133,10 @@ pub fn get_vulkan_version() -> String {
             }
         }
 
-        format!("{}|Unknown", query_instance_version(vk_enumerate_instance_version))
+        format!(
+            "{}|Unknown",
+            query_instance_version(vk_enumerate_instance_version)
+        )
     }
 }
 
