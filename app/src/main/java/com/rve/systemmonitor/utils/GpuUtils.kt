@@ -27,13 +27,15 @@ object GpuUtils {
         0.0
     }
 
-    private var cachedGpuDetails: Pair<String, String>? = null
+    private var cachedGpuDetails: Triple<String, String, Pair<Int, Int>>? = null
     private var cachedGlesVersion: String? = null
     private var cachedDetailedGlesVersion: String? = null
     private var cachedVulkanVersion: String? = null
     private var cachedVulkanDriverVersion: String? = null
+    private var cachedVulkanDeviceType: String? = null
+    private var cachedShadingLanguageVersion: String? = null
 
-    fun getGpuDetails(): Pair<String, String> {
+    fun getGpuDetails(): Triple<String, String, Pair<Int, Int>> {
         cachedGpuDetails?.let { return it }
         return runCatching {
             val display = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY)
@@ -69,18 +71,39 @@ object GpuUtils {
                 cachedDetailedGlesVersion = fullVersion.removePrefix("OpenGL ES ").trim()
             }
 
+            cachedShadingLanguageVersion = GLES20.glGetString(GLES20.GL_SHADING_LANGUAGE_VERSION)
+                ?.removePrefix("OpenGL ES GLSL ES ")?.trim()
+
+            val maxTexSize = IntArray(1)
+            GLES20.glGetIntegerv(GLES20.GL_MAX_TEXTURE_SIZE, maxTexSize, 0)
+
+            val extensions = GLES20.glGetString(GLES20.GL_EXTENSIONS) ?: ""
+            val extCount = if (extensions.isEmpty()) 0 else extensions.split(" ").size
+
             EGL14.eglMakeCurrent(display, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT)
             EGL14.eglDestroySurface(display, surface)
             EGL14.eglDestroyContext(display, context)
             EGL14.eglTerminate(display)
 
-            val result = Pair(renderer, vendor)
+            val result = Triple(renderer, vendor, Pair(maxTexSize[0], extCount))
             cachedGpuDetails = result
             result
         }.getOrElse {
             Log.e(TAG, "getGpuDetails error: ${it.message}", it)
-            Pair("Unknown", "Unknown")
+            Triple("Unknown", "Unknown", Pair(0, 0))
         }
+    }
+
+    fun getShadingLanguageVersion(): String {
+        cachedShadingLanguageVersion?.let { return it }
+        getGpuDetails()
+        return cachedShadingLanguageVersion ?: "Unknown"
+    }
+
+    fun getVulkanDeviceType(): String {
+        cachedVulkanDeviceType?.let { return it }
+        updateVulkanInfo()
+        return cachedVulkanDeviceType ?: "Unknown"
     }
 
     fun getDetailedGlesVersion(): String {
@@ -121,10 +144,21 @@ object GpuUtils {
             val parts = result.split("|")
             cachedVulkanVersion = parts.getOrNull(0) ?: "Unknown"
             cachedVulkanDriverVersion = parts.getOrNull(1) ?: "Unknown"
+            cachedVulkanDeviceType = parts.getOrNull(2) ?: "Unknown"
         }.onFailure {
             Log.e(TAG, "updateVulkanInfo error: ${it.message}", it)
             cachedVulkanVersion = "Unknown"
             cachedVulkanDriverVersion = "Unknown"
+            cachedVulkanDeviceType = "Unknown"
         }
+    }
+
+    fun getGpuMemoryInfo(context: Context): Long {
+        return runCatching {
+            val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            val memInfo = ActivityManager.MemoryInfo()
+            activityManager.getMemoryInfo(memInfo)
+            memInfo.totalMem / (1024 * 1024)
+        }.getOrElse { 0L }
     }
 }

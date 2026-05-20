@@ -3,6 +3,10 @@ package com.rve.systemmonitor.ui.screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -13,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -90,7 +95,7 @@ private fun GPUScreenContent(gpuInfo: GPU) {
         item {
             StandardCard {
                 Text(
-                    text = "Graphics Details",
+                    text = "OpenGL ES",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
@@ -99,38 +104,87 @@ private fun GPUScreenContent(gpuInfo: GPU) {
 
                 TwoColumnInfoRow(modifier = Modifier.padding(bottom = 16.dp)) {
                     InfoItem(
-                        label = "Renderer",
-                        value = gpuInfo.renderer,
-                        modifier = Modifier.weight(1f),
-                    )
-                    InfoItem(
-                        label = "Vendor",
-                        value = gpuInfo.vendor,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-
-                TwoColumnInfoRow(modifier = Modifier.padding(bottom = 16.dp)) {
-                    InfoItem(
-                        label = "OpenGL ES",
+                        label = "Version",
                         value = gpuInfo.detailedGlesVersion,
                         modifier = Modifier.weight(1f),
                     )
                     InfoItem(
-                        label = "Vulkan",
-                        value = gpuInfo.vulkanVersion,
+                        label = "Shader Version",
+                        value = gpuInfo.shadingLanguageVersion,
                         modifier = Modifier.weight(1f),
                     )
                 }
 
                 TwoColumnInfoRow {
                     InfoItem(
-                        label = "Vulkan Driver",
-                        value = gpuInfo.vulkanDriverVersion,
+                        label = "Max Texture Size",
+                        value = if (gpuInfo.maxTextureSize > 0) "${gpuInfo.maxTextureSize} px" else "Unknown",
+                        modifier = Modifier.weight(1f),
+                    )
+                    InfoItem(
+                        label = "Extensions",
+                        value = "${gpuInfo.extensionsCount}",
                         modifier = Modifier.weight(1f),
                     )
                 }
             }
+        }
+
+        item {
+            StandardCard {
+                Text(
+                    text = "Vulkan",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(bottom = 16.dp),
+                )
+
+                TwoColumnInfoRow(modifier = Modifier.padding(bottom = 16.dp)) {
+                    InfoItem(
+                        label = "API Version",
+                        value = gpuInfo.vulkanVersion,
+                        modifier = Modifier.weight(1f),
+                    )
+                    InfoItem(
+                        label = "Driver Version",
+                        value = gpuInfo.vulkanDriverVersion,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+
+                TwoColumnInfoRow {
+                    InfoItem(
+                        label = "Device Type",
+                        value = gpuInfo.deviceType,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
+        }
+
+        item {
+            StandardCard {
+                Text(
+                    text = "Memory Information",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(bottom = 16.dp),
+                )
+
+                TwoColumnInfoRow {
+                    InfoItem(
+                        label = "Shared Memory",
+                        value = if (gpuInfo.totalMemoryMb > 0) "${gpuInfo.totalMemoryMb} MB" else "Unknown",
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }

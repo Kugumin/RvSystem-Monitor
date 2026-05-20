@@ -11,4 +11,9 @@ data class GPU(
     val vulkanVersion: String = "unknown",
     val vulkanDriverVersion: String = "unknown",
     val temperature: Double = 0.0,
+    val maxTextureSize: Int = 0,
+    val extensionsCount: Int = 0,
+    val deviceType: String = "unknown",
+    val shadingLanguageVersion: String = "unknown",
+    val totalMemoryMb: Long = 0,
 )

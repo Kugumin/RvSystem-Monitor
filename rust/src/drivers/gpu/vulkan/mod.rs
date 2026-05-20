@@ -119,12 +119,14 @@ pub fn get_vulkan_version() -> String {
 
                     let api_version = u32::from_le_bytes(props[0..4].try_into().unwrap());
                     let driver_version = u32::from_le_bytes(props[4..8].try_into().unwrap());
+                    let device_type = u32::from_le_bytes(props[16..20].try_into().unwrap());
 
                     vk_destroy_instance(instance, ptr::null());
                     return format!(
-                        "{}|{}",
+                        "{}|{}|{}",
                         format_version(api_version),
-                        format_version(driver_version)
+                        format_version(driver_version),
+                        format_device_type(device_type)
                     );
                 }
             }
@@ -134,9 +136,19 @@ pub fn get_vulkan_version() -> String {
         }
 
         format!(
-            "{}|Unknown",
+            "{}|Unknown|Unknown",
             query_instance_version(vk_enumerate_instance_version)
         )
+    }
+}
+
+fn format_device_type(device_type: u32) -> String {
+    match device_type {
+        1 => "Integrated".to_string(),
+        2 => "Discrete".to_string(),
+        3 => "Virtual".to_string(),
+        4 => "CPU".to_string(),
+        _ => "Other".to_string(),
     }
 }
 

@@ -50,7 +50,8 @@ class HardwareRepositoryImpl @Inject constructor(private val application: Applic
     }
 
     override fun getGpuInfo(): GPU {
-        val (renderer, vendor) = GpuUtils.getGpuDetails()
+        val (renderer, vendor, caps) = GpuUtils.getGpuDetails()
+        val (maxTexSize, extCount) = caps
         return GPU(
             renderer = renderer,
             vendor = vendor,
@@ -59,6 +60,11 @@ class HardwareRepositoryImpl @Inject constructor(private val application: Applic
             vulkanVersion = GpuUtils.getVulkanVersion(application),
             vulkanDriverVersion = GpuUtils.getVulkanDriverVersion(),
             temperature = GpuUtils.getGpuTemperature(),
+            maxTextureSize = maxTexSize,
+            extensionsCount = extCount,
+            deviceType = GpuUtils.getVulkanDeviceType(),
+            shadingLanguageVersion = GpuUtils.getShadingLanguageVersion(),
+            totalMemoryMb = GpuUtils.getGpuMemoryInfo(application),
         )
     }
 
