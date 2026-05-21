@@ -4,7 +4,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,7 +34,7 @@ fun HomeScreen(isActive: Boolean, onNavigateToGPU: () -> Unit, viewModel: HomeVi
 @Composable
 private fun HomeScreenContent(uiState: HomeUiState, onNavigateToGPU: () -> Unit) {
     var showHelpSheet by remember { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
 
     if (showHelpSheet) {
         ModalBottomSheet(
