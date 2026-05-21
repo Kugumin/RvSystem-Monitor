@@ -10,6 +10,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 
@@ -62,40 +63,38 @@ class UpdateRepositoryImpl @Inject constructor(private val gitHubService: GitHub
 
     override fun downloadApk(url: String): Flow<DownloadStatus> = flow {
         emit(DownloadStatus.Downloading(0f))
-        try {
-            val response = gitHubService.downloadFile(url)
-            if (response.isSuccessful) {
-                val body = response.body()
-                if (body != null) {
-                    val file = File(application.cacheDir, "update.apk")
-                    val totalBytes = body.contentLength()
+        val response = gitHubService.downloadFile(url)
+        if (response.isSuccessful) {
+            val body = response.body()
+            if (body != null) {
+                val file = File(application.cacheDir, "update.apk")
+                val totalBytes = body.contentLength()
 
-                    body.byteStream().use { input ->
-                        file.outputStream().use { output ->
-                            val buffer = ByteArray(8192)
-                            var bytesRead: Int
-                            var totalBytesRead = 0L
+                body.byteStream().use { input ->
+                    file.outputStream().use { output ->
+                        val buffer = ByteArray(8192)
+                        var bytesRead: Int
+                        var totalBytesRead = 0L
 
-                            while (input.read(buffer).also { bytesRead = it } != -1) {
-                                output.write(buffer, 0, bytesRead)
-                                totalBytesRead += bytesRead
-                                if (totalBytes > 0) {
-                                    emit(DownloadStatus.Downloading((totalBytesRead.toFloat() / totalBytes).coerceIn(0f, 1f)))
-                                }
+                        while (input.read(buffer).also { bytesRead = it } != -1) {
+                            output.write(buffer, 0, bytesRead)
+                            totalBytesRead += bytesRead
+                            if (totalBytes > 0) {
+                                emit(DownloadStatus.Downloading((totalBytesRead.toFloat() / totalBytes).coerceIn(0f, 1f)))
                             }
                         }
                     }
-                    emit(DownloadStatus.Downloading(1f))
-                    emit(DownloadStatus.Finished(file))
-                } else {
-                    emit(DownloadStatus.Error("Empty response body"))
                 }
+                emit(DownloadStatus.Downloading(1f))
+                emit(DownloadStatus.Finished(file))
             } else {
-                emit(DownloadStatus.Error("Failed to download file: ${response.code()}"))
+                emit(DownloadStatus.Error("Empty response body"))
             }
-        } catch (e: Exception) {
-            if (e is CancellationException) throw e
-            emit(DownloadStatus.Error(e.message ?: "Unknown error"))
+        } else {
+            emit(DownloadStatus.Error("Failed to download file: ${response.code()}"))
         }
+    }.catch { e ->
+        if (e is CancellationException) throw e
+        emit(DownloadStatus.Error(e.message ?: "Unknown error"))
     }.flowOn(Dispatchers.IO)
 }

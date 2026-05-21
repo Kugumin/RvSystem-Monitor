@@ -6,7 +6,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
+import android.util.Log
 import com.rve.systemmonitor.R
+import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -19,11 +21,17 @@ object BatteryUtils {
     fun getBatteryFlow(context: Context): Flow<Intent> = callbackFlow {
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
-                trySend(intent)
+                trySend(intent).onFailure { error ->
+                    Log.w("BatteryUtils", "Failed to send battery intent: ${error?.message}")
+                }
             }
         }
         val sticky = context.registerReceiver(receiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-        if (sticky != null) trySend(sticky)
+        if (sticky != null) {
+            trySend(sticky).onFailure { error ->
+                Log.w("BatteryUtils", "Failed to send initial battery intent: ${error?.message}")
+            }
+        }
         awaitClose { context.unregisterReceiver(receiver) }
     }
 
