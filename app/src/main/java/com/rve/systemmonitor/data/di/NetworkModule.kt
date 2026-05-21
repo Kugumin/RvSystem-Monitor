@@ -8,6 +8,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import kotlinx.serialization.json.Json
+import okhttp3.Cache
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -22,7 +23,7 @@ object NetworkModule {
     @Singleton
     fun provideOkHttpClient(application: Application): OkHttpClient {
         val cacheSize = (5 * 1024 * 1024).toLong() // 5 MB
-        val cache = okhttp3.Cache(application.cacheDir, cacheSize)
+        val cache = Cache(application.cacheDir, cacheSize)
 
         return OkHttpClient.Builder()
             .cache(cache)

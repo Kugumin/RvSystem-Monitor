@@ -9,6 +9,7 @@ import com.rve.systemmonitor.utils.FlowUtils
 import com.rve.systemmonitor.utils.MemoryUtils
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -19,7 +20,7 @@ import kotlinx.coroutines.flow.shareIn
 @Singleton
 class MemoryRepositoryImpl @Inject constructor(
     private val settingsRepository: SettingsRepository,
-    @param:ApplicationScope private val externalScope: kotlinx.coroutines.CoroutineScope
+    @param:ApplicationScope private val externalScope: CoroutineScope
 ) : MemoryRepository {
     private val TAG = "MemoryRepository"
 

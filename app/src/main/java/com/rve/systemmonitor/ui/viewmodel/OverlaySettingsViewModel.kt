@@ -1,5 +1,6 @@
 package com.rve.systemmonitor.ui.viewmodel
 
+import android.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rve.systemmonitor.domain.repository.OverlayRepository
@@ -94,7 +95,7 @@ class OverlaySettingsViewModel @Inject constructor(private val overlayRepository
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = android.graphics.Color.GREEN,
+            initialValue = Color.GREEN,
         )
 
     val isVerticalLayout: StateFlow<Boolean> = overlayRepository.isVerticalLayout

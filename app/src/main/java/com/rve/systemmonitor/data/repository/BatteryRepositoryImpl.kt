@@ -12,10 +12,12 @@ import com.rve.systemmonitor.utils.BatteryUtils
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.abs
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
@@ -26,7 +28,7 @@ import kotlinx.coroutines.flow.shareIn
 class BatteryRepositoryImpl @Inject constructor(
     private val application: Application,
     private val settingsRepository: SettingsRepository,
-    @param:ApplicationScope private val externalScope: kotlinx.coroutines.CoroutineScope
+    @param:ApplicationScope private val externalScope: CoroutineScope
 ) :
     BatteryRepository {
 
@@ -81,7 +83,7 @@ class BatteryRepositoryImpl @Inject constructor(
         }.flowOn(Dispatchers.IO)
             .shareIn(
                 scope = externalScope,
-                started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
+                started = SharingStarted.WhileSubscribed(5000),
                 replay = 1,
             )
     }

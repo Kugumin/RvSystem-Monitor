@@ -10,6 +10,7 @@ import com.rve.systemmonitor.utils.FlowUtils
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -20,7 +21,7 @@ import kotlinx.coroutines.flow.shareIn
 @Singleton
 class CpuRepositoryImpl @Inject constructor(
     private val settingsRepository: SettingsRepository,
-    @param:ApplicationScope private val externalScope: kotlinx.coroutines.CoroutineScope
+    @param:ApplicationScope private val externalScope: CoroutineScope
 ) : CpuRepository {
     private val TAG = "CpuRepository"
 

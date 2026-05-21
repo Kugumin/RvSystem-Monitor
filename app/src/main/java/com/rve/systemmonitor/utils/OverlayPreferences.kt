@@ -1,5 +1,6 @@
 package com.rve.systemmonitor.utils
 
+import android.graphics.Color
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -41,7 +42,7 @@ class OverlayPreferences(private val context: Context) {
     val overlayTextSizeFlow: Flow<Float> = context.overlayDataStore.getValueFlow(OVERLAY_TEXT_SIZE_KEY, 14f)
     val overlayBgOpacityFlow: Flow<Float> = context.overlayDataStore.getValueFlow(OVERLAY_BG_OPACITY_KEY, 0.5f)
     val overlayPaddingFlow: Flow<Int> = context.overlayDataStore.getValueFlow(OVERLAY_PADDING_KEY, 16)
-    val overlayTextColorFlow: Flow<Int> = context.overlayDataStore.getValueFlow(OVERLAY_TEXT_COLOR_KEY, android.graphics.Color.GREEN)
+    val overlayTextColorFlow: Flow<Int> = context.overlayDataStore.getValueFlow(OVERLAY_TEXT_COLOR_KEY, Color.GREEN)
     val isVerticalLayoutFlow: Flow<Boolean> = context.overlayDataStore.getValueFlow(IS_VERTICAL_LAYOUT_KEY, false)
     val overlayCornerRadiusFlow: Flow<Int> = context.overlayDataStore.getValueFlow(OVERLAY_CORNER_RADIUS_KEY, 8)
 
