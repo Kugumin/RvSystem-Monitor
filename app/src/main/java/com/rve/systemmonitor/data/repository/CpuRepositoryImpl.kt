@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.shareIn
 @Singleton
 class CpuRepositoryImpl @Inject constructor(
     private val settingsRepository: SettingsRepository,
-    @param:ApplicationScope private val externalScope: CoroutineScope
+    @param:ApplicationScope private val externalScope: CoroutineScope,
 ) : CpuRepository {
     private val TAG = "CpuRepository"
 

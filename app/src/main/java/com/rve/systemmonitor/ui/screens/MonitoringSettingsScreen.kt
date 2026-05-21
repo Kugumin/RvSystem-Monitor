@@ -25,6 +25,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -242,7 +243,7 @@ fun MonitoringSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             ExitUntilCollapsedMediumTopAppBar(
-                title = "Monitoring",
+                title = stringResource(R.string.title_monitoring),
                 onNavigateBack = onNavigateBack,
                 scrollBehavior = scrollBehavior,
             )
@@ -265,7 +266,7 @@ fun MonitoringSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     Text(
-                        text = "Refresh Intervals",
+                        text = stringResource(R.string.monitoring_refresh_intervals),
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
@@ -273,8 +274,8 @@ fun MonitoringSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
                     )
 
                     SettingsSliderCard(
-                        title = "CPU Update Interval",
-                        description = "Adjust how often CPU stats are refreshed",
+                        title = stringResource(R.string.monitoring_cpu_interval),
+                        description = stringResource(R.string.monitoring_cpu_interval_desc),
                         iconRes = R.drawable.memory_filled,
                         sliderState = cpuSliderState,
                         currentDisplayValue = cpuCurrentValue,
@@ -284,8 +285,8 @@ fun MonitoringSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
                     )
 
                     SettingsSliderCard(
-                        title = "GPU Update Interval",
-                        description = "Adjust how often GPU stats are refreshed",
+                        title = stringResource(R.string.monitoring_gpu_interval),
+                        description = stringResource(R.string.monitoring_gpu_interval_desc),
                         iconRes = R.drawable.view_in_ar_filled,
                         sliderState = gpuSliderState,
                         currentDisplayValue = gpuCurrentValue,
@@ -295,8 +296,8 @@ fun MonitoringSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
                     )
 
                     SettingsSliderCard(
-                        title = "Memory Update Interval",
-                        description = "Adjust how often Memory stats are refreshed",
+                        title = stringResource(R.string.monitoring_memory_interval),
+                        description = stringResource(R.string.monitoring_memory_interval_desc),
                         iconRes = R.drawable.memory_alt_filled,
                         sliderState = memorySliderState,
                         currentDisplayValue = memoryCurrentValue,
@@ -306,8 +307,8 @@ fun MonitoringSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
                     )
 
                     SettingsSliderCard(
-                        title = "Battery Update Interval",
-                        description = "Adjust how often uptime and current (mA) are refreshed",
+                        title = stringResource(R.string.monitoring_battery_interval),
+                        description = stringResource(R.string.monitoring_battery_interval_desc),
                         iconRes = R.drawable.battery_android_full,
                         sliderState = batterySliderState,
                         currentDisplayValue = batteryCurrentValue,
@@ -317,8 +318,8 @@ fun MonitoringSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
                     )
 
                     SettingsSliderCard(
-                        title = "Battery Graph History",
-                        description = "Set how much data to show on the graph",
+                        title = stringResource(R.string.monitoring_battery_graph_history),
+                        description = stringResource(R.string.monitoring_battery_graph_desc),
                         iconRes = R.drawable.timeline_rounded,
                         sliderState = historySliderState,
                         currentDisplayValue = historyCurrentValue,
@@ -333,7 +334,7 @@ fun MonitoringSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
                         },
                         onReset = { viewModel.setBatteryGraphHistorySeconds(60) },
                         isResetVisible = historyCurrentValue != 60.0f,
-                        valueLabel = "History Duration",
+                        valueLabel = stringResource(R.string.monitoring_history_duration),
                     )
                 }
             }

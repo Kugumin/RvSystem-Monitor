@@ -63,6 +63,7 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -97,7 +98,7 @@ fun AppearanceSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             ExitUntilCollapsedMediumTopAppBar(
-                title = "Appearance",
+                title = stringResource(R.string.title_appearance),
                 onNavigateBack = onNavigateBack,
                 scrollBehavior = scrollBehavior,
             )
@@ -127,7 +128,7 @@ fun AppearanceSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(
-                        text = "Visual Style",
+                        text = stringResource(R.string.label_visual_style),
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
@@ -164,20 +165,20 @@ fun AppearanceSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
                                     ) {
                                         Icon(
                                             painter = painterResource(R.drawable.brightness_medium_filled),
-                                            contentDescription = "Theme Icon",
+                                            contentDescription = stringResource(R.string.cd_theme_icon),
                                             tint = MaterialTheme.colorScheme.onPrimary,
                                         )
                                     }
 
                                     Column {
                                         Text(
-                                            text = "App Theme",
+                                            text = stringResource(R.string.settings_app_theme),
                                             style = MaterialTheme.typography.titleMedium,
                                             fontWeight = FontWeight.SemiBold,
                                             color = MaterialTheme.colorScheme.onSurface,
                                         )
                                         Text(
-                                            text = "Choose your preferred visual style",
+                                            text = stringResource(R.string.settings_app_theme_description),
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
@@ -185,9 +186,9 @@ fun AppearanceSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
                                 }
 
                                 val themeOptions = listOf(
-                                    ThemeMode.LIGHT to "Light",
-                                    ThemeMode.SYSTEM to "System",
-                                    ThemeMode.DARK to "Dark",
+                                    ThemeMode.LIGHT to R.string.theme_light,
+                                    ThemeMode.SYSTEM to R.string.theme_system,
+                                    ThemeMode.DARK to R.string.theme_dark,
                                 )
 
                                 SingleChoiceSegmentedButtonRow(
@@ -195,7 +196,7 @@ fun AppearanceSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
                                         .fillMaxWidth()
                                         .padding(horizontal = 20.dp),
                                 ) {
-                                    themeOptions.forEachIndexed { index, (mode, label) ->
+                                    themeOptions.forEachIndexed { index, (mode, labelRes) ->
                                         SegmentedButton(
                                             shape = SegmentedButtonDefaults.itemShape(
                                                 index = index,
@@ -205,7 +206,7 @@ fun AppearanceSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
                                             selected = currentTheme == mode,
                                         ) {
                                             Text(
-                                                text = label,
+                                                text = stringResource(labelRes),
                                                 style = MaterialTheme.typography.labelLarge,
                                                 fontWeight = if (currentTheme == mode) FontWeight.Bold else FontWeight.Normal,
                                             )
@@ -249,7 +250,7 @@ fun AppearanceSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
                                     ) {
                                         Icon(
                                             painter = painterResource(R.drawable.night_mode_filled),
-                                            contentDescription = "Amoled Icon",
+                                            contentDescription = stringResource(R.string.cd_amoled_icon),
                                             tint = if (amoledEnabled) MaterialTheme.colorScheme.onPrimary
                                             else MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.38f),
                                         )
@@ -257,15 +258,15 @@ fun AppearanceSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
 
                                     Column {
                                         Text(
-                                            text = "Amoled Mode",
+                                            text = stringResource(R.string.settings_amoled_mode),
                                             style = MaterialTheme.typography.titleMedium,
                                             fontWeight = FontWeight.SemiBold,
                                             color = if (amoledEnabled) MaterialTheme.colorScheme.onSurface
                                             else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
                                         )
                                         Text(
-                                            text = if (amoledEnabled) "Pure black background for OLED screens"
-                                            else "Dark mode is required to use Amoled mode",
+                                            text = if (amoledEnabled) stringResource(R.string.settings_amoled_description_enabled)
+                                            else stringResource(R.string.settings_amoled_description_disabled),
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = if (amoledEnabled) MaterialTheme.colorScheme.onSurfaceVariant
                                             else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
@@ -332,20 +333,20 @@ fun AppearanceSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
                                         ) {
                                             Icon(
                                                 painter = painterResource(R.drawable.mobile_vibrate_filled),
-                                                contentDescription = "Haptic Icon",
+                                                contentDescription = stringResource(R.string.cd_haptic_icon),
                                                 tint = MaterialTheme.colorScheme.onSecondary,
                                             )
                                         }
 
                                         Column {
                                             Text(
-                                                text = "Haptic Feedback",
+                                                text = stringResource(R.string.settings_haptic_feedback),
                                                 style = MaterialTheme.typography.titleMedium,
                                                 fontWeight = FontWeight.SemiBold,
                                                 color = MaterialTheme.colorScheme.onSurface,
                                             )
                                             Text(
-                                                text = "Subtle vibrations on interaction",
+                                                text = stringResource(R.string.settings_haptic_description),
                                                 style = MaterialTheme.typography.bodyMedium,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             )
@@ -393,7 +394,7 @@ fun AppearanceSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
                                         modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 8.dp, top = 8.dp),
                                     ) {
                                         Text(
-                                            text = "Vibration Intensity",
+                                            text = stringResource(R.string.settings_vibration_intensity),
                                             style = MaterialTheme.typography.titleSmall,
                                             fontWeight = FontWeight.SemiBold,
                                             color = MaterialTheme.colorScheme.onSurface,
@@ -401,15 +402,15 @@ fun AppearanceSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
                                         )
 
                                         val intensityOptions = listOf(
-                                            VibrationIntensity.LIGHT to "Light",
-                                            VibrationIntensity.MEDIUM to "Medium",
-                                            VibrationIntensity.STRONG to "Strong",
+                                            VibrationIntensity.LIGHT to R.string.vibration_light,
+                                            VibrationIntensity.MEDIUM to R.string.vibration_medium,
+                                            VibrationIntensity.STRONG to R.string.vibration_strong,
                                         )
 
                                         SingleChoiceSegmentedButtonRow(
                                             modifier = Modifier.fillMaxWidth(),
                                         ) {
-                                            intensityOptions.forEachIndexed { index, (intensity, label) ->
+                                            intensityOptions.forEachIndexed { index, (intensity, labelRes) ->
                                                 SegmentedButton(
                                                     shape = SegmentedButtonDefaults.itemShape(
                                                         index = index,
@@ -423,7 +424,7 @@ fun AppearanceSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onN
                                                     selected = vibrationIntensity == intensity,
                                                 ) {
                                                     Text(
-                                                        text = label,
+                                                        text = stringResource(labelRes),
                                                         style = MaterialTheme.typography.labelLarge,
                                                         fontWeight = if (vibrationIntensity ==
                                                             intensity
@@ -543,13 +544,13 @@ private fun AppearanceHero(hapticEnabled: Boolean, vibrationIntensity: Vibration
                     modifier = Modifier.fillMaxWidth(0.73f),
                 ) {
                     Text(
-                        text = "Appearance",
+                        text = stringResource(R.string.title_appearance),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.ExtraBold,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
                     Text(
-                        text = "Make it pretty enough to flex in screenshots.",
+                        text = stringResource(R.string.appearance_hero_subtitle),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
                     )

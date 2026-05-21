@@ -30,7 +30,9 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.rve.systemmonitor.R
@@ -51,42 +53,43 @@ fun SettingsScreen(
     onNavigateToAbout: () -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val context = LocalContext.current
 
-    val settingsItems = remember {
+    val settingsItems = remember(context) {
         listOf(
             SettingsItem(
-                title = "App",
-                subtitle = "General application settings",
+                title = context.getString(R.string.settings_item_app),
+                subtitle = context.getString(R.string.settings_item_app_desc),
                 iconRes = R.drawable.build_filled,
                 onClick = onNavigateToApp,
             ),
             SettingsItem(
-                title = "Appearance",
-                subtitle = "Theme, haptics, and visual style",
+                title = context.getString(R.string.settings_item_appearance),
+                subtitle = context.getString(R.string.settings_item_appearance_desc),
                 iconRes = R.drawable.brightness_medium_filled,
                 onClick = onNavigateToAppearance,
             ),
             SettingsItem(
-                title = "Floating Overlay",
-                subtitle = "Global system monitor floating overlay",
+                title = context.getString(R.string.settings_item_overlay),
+                subtitle = context.getString(R.string.settings_item_overlay_desc),
                 iconRes = R.drawable.layers_filled,
                 onClick = onNavigateToOverlay,
             ),
             SettingsItem(
-                title = "Monitoring",
-                subtitle = "Update intervals and graph history",
+                title = context.getString(R.string.settings_item_monitoring),
+                subtitle = context.getString(R.string.settings_item_monitoring_desc),
                 iconRes = R.drawable.dvr_filled,
                 onClick = onNavigateToMonitoring,
             ),
             SettingsItem(
-                title = "Rust Library",
-                subtitle = "Native core specifications and API reference",
+                title = context.getString(R.string.settings_item_rust_library),
+                subtitle = context.getString(R.string.settings_item_rust_library_desc),
                 iconRes = R.drawable.ic_rust_logo,
                 onClick = onNavigateToRustLibrary,
             ),
             SettingsItem(
-                title = "About",
-                subtitle = "Developer and project information",
+                title = context.getString(R.string.settings_item_about),
+                subtitle = context.getString(R.string.settings_item_about_desc),
                 iconRes = R.drawable.info_filled,
                 onClick = onNavigateToAbout,
             ),
@@ -97,7 +100,7 @@ fun SettingsScreen(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             ExitUntilCollapsedMediumTopAppBar(
-                title = "Settings",
+                title = stringResource(R.string.title_settings),
                 onNavigateBack = onNavigateBack,
                 scrollBehavior = scrollBehavior,
             )

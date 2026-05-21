@@ -47,6 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
@@ -79,7 +80,7 @@ fun UpdateDialog(
 
             UpdateDialogSurface(
                 iconRes = R.drawable.download_2_filled,
-                title = "Update available",
+                title = stringResource(R.string.update_available_title),
                 subtitle = uiState.release.name.ifBlank { uiState.release.tagName },
                 onDismiss = onDismiss,
                 secondaryAction = {
@@ -88,14 +89,14 @@ fun UpdateDialog(
                         modifier = Modifier.weight(1f),
                         shapes = ButtonDefaults.shapes(),
                     ) {
-                        Text("Pause")
+                        Text(stringResource(R.string.button_pause))
                     }
                     OutlinedButton(
                         onClick = rememberHapticOnClick(onDismiss),
                         modifier = Modifier.weight(1f),
                         shapes = ButtonDefaults.shapes(),
                     ) {
-                        Text("Later")
+                        Text(stringResource(R.string.button_later))
                     }
                 },
                 primaryAction = {
@@ -104,7 +105,7 @@ fun UpdateDialog(
                         modifier = Modifier.weight(1f),
                         shapes = ButtonDefaults.shapes(),
                     ) {
-                        Text("Download")
+                        Text(stringResource(R.string.button_download))
                     }
                 },
             ) {
@@ -128,8 +129,8 @@ fun UpdateDialog(
 
             UpdateDialogSurface(
                 iconRes = R.drawable.update_rounded,
-                title = "Downloading update",
-                subtitle = "Keep the app open until the APK is ready.",
+                title = stringResource(R.string.downloading_update_title),
+                subtitle = stringResource(R.string.downloading_update_subtitle),
                 canDismiss = false,
                 onBlockedDismiss = { showCancelConfirmation = true },
                 primaryAction = {
@@ -138,7 +139,7 @@ fun UpdateDialog(
                         modifier = Modifier.fillMaxWidth(),
                         shapes = ButtonDefaults.shapes(),
                     ) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.button_cancel))
                     }
                 },
             ) {
@@ -157,7 +158,7 @@ fun UpdateDialog(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
-                            text = "Download progress",
+                            text = stringResource(R.string.download_progress_label),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -185,8 +186,8 @@ fun UpdateDialog(
         is UpdateUiState.ReadyToInstall -> {
             UpdateDialogSurface(
                 iconRes = R.drawable.apk_install_filled,
-                title = "Update ready",
-                subtitle = "The APK has been downloaded and can be installed now.",
+                title = stringResource(R.string.update_ready_title),
+                subtitle = stringResource(R.string.update_ready_subtitle),
                 onDismiss = onDismiss,
                 secondaryAction = {
                     OutlinedButton(
@@ -194,7 +195,7 @@ fun UpdateDialog(
                         modifier = Modifier.weight(1f),
                         shapes = ButtonDefaults.shapes(),
                     ) {
-                        Text("Later")
+                        Text(stringResource(R.string.button_later))
                     }
                 },
                 primaryAction = {
@@ -206,13 +207,13 @@ fun UpdateDialog(
                         modifier = Modifier.weight(1f),
                         shapes = ButtonDefaults.shapes(),
                     ) {
-                        Text("Install")
+                        Text(stringResource(R.string.button_install))
                     }
                 },
             ) {
                 StatusMessage(
                     title = uiState.file.name,
-                    description = "Android will open the package installer for this file.",
+                    description = stringResource(R.string.install_description),
                 )
             }
         }
@@ -220,8 +221,8 @@ fun UpdateDialog(
         is UpdateUiState.Error -> {
             UpdateDialogSurface(
                 iconRes = R.drawable.close_rounded,
-                title = "Update failed",
-                subtitle = "The update could not be completed.",
+                title = stringResource(R.string.update_failed_title),
+                subtitle = stringResource(R.string.update_failed_subtitle),
                 isError = true,
                 onDismiss = onDismiss,
                 primaryAction = {
@@ -230,12 +231,12 @@ fun UpdateDialog(
                         modifier = Modifier.fillMaxWidth(),
                         shapes = ButtonDefaults.shapes(),
                     ) {
-                        Text("Close")
+                        Text(stringResource(R.string.button_close))
                     }
                 },
             ) {
                 StatusMessage(
-                    title = "Error details",
+                    title = stringResource(R.string.error_details_title),
                     description = uiState.message,
                     isError = true,
                 )
@@ -365,13 +366,13 @@ private fun CancelDownloadConfirmationDialog(onDismiss: () -> Unit, onConfirm: (
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = "Cancel download?",
+                        text = stringResource(R.string.cancel_download_dialog_title),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                     Text(
-                        text = "The update download is still running. If you cancel now, you will need to start it again later.",
+                        text = stringResource(R.string.cancel_download_dialog_message),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -386,14 +387,14 @@ private fun CancelDownloadConfirmationDialog(onDismiss: () -> Unit, onConfirm: (
                         modifier = Modifier.weight(1f),
                         shapes = ButtonDefaults.shapes(),
                     ) {
-                        Text("Keep")
+                        Text(stringResource(R.string.button_keep))
                     }
                     Button(
                         onClick = rememberHapticOnClick(onConfirm),
                         modifier = Modifier.weight(1f),
                         shapes = ButtonDefaults.shapes(),
                     ) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.button_cancel))
                     }
                 }
             }
@@ -420,7 +421,7 @@ private fun ReleaseSummary(release: GitHubRelease) {
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text(
-                    text = "What's new",
+                    text = stringResource(R.string.whats_new_title),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -436,8 +437,8 @@ private fun ReleaseSummary(release: GitHubRelease) {
             }
         } else {
             StatusMessage(
-                title = "What's new",
-                description = "No changelog was provided for this version.",
+                title = stringResource(R.string.whats_new_title),
+                description = stringResource(R.string.no_changelog_message),
             )
         }
     }
@@ -511,10 +512,10 @@ fun installApk(context: Context, file: File) {
 @Composable
 private fun PauseUpdatesDialog(onDismiss: () -> Unit, onConfirm: (Int) -> Unit) {
     val options = listOf(
-        3 to "3 hours",
-        6 to "6 hours",
-        12 to "12 hours",
-        24 to "24 hours",
+        3 to stringResource(R.string.pause_3_hours),
+        6 to stringResource(R.string.pause_6_hours),
+        12 to stringResource(R.string.pause_12_hours),
+        24 to stringResource(R.string.pause_24_hours),
     )
 
     var selectedOption by remember { mutableIntStateOf(options.first().first) }
@@ -535,7 +536,7 @@ private fun PauseUpdatesDialog(onDismiss: () -> Unit, onConfirm: (Int) -> Unit) 
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Text(
-                    text = "Pause for...",
+                    text = stringResource(R.string.pause_for_dialog_title),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -580,14 +581,14 @@ private fun PauseUpdatesDialog(onDismiss: () -> Unit, onConfirm: (Int) -> Unit) 
                         onClick = rememberHapticOnClick(onDismiss),
                         shapes = ButtonDefaults.shapes(),
                     ) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.button_cancel))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = rememberHapticOnClick { onConfirm(selectedOption) },
                         shapes = ButtonDefaults.shapes(),
                     ) {
-                        Text("Pause")
+                        Text(stringResource(R.string.button_pause))
                     }
                 }
             }

@@ -33,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.rve.systemmonitor.R
@@ -94,7 +95,7 @@ object AppBars {
                     ),
                     tooltip = {
                         PlainTooltip {
-                            Text("Settings")
+                            Text(stringResource(R.string.cd_settings))
                         }
                     },
                     state = rememberTooltipState(),
@@ -104,7 +105,7 @@ object AppBars {
                     ) {
                         Icon(
                             painterResource(R.drawable.settings_filled),
-                            contentDescription = "Settings",
+                            contentDescription = stringResource(R.string.cd_settings),
                         )
                     }
                 }
@@ -146,7 +147,7 @@ fun ExitUntilCollapsedMediumTopAppBar(title: String, onNavigateBack: () -> Unit,
                 ),
                 tooltip = {
                     PlainTooltip {
-                        Text("Back")
+                        Text(stringResource(R.string.cd_back))
                     }
                 },
                 state = rememberTooltipState(),
@@ -161,7 +162,7 @@ fun ExitUntilCollapsedMediumTopAppBar(title: String, onNavigateBack: () -> Unit,
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.arrow_back_ios_new),
-                                contentDescription = "Back",
+                                contentDescription = stringResource(R.string.cd_back),
                             )
                         }
                     } else {
@@ -170,7 +171,7 @@ fun ExitUntilCollapsedMediumTopAppBar(title: String, onNavigateBack: () -> Unit,
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.arrow_back_ios_new),
-                                contentDescription = "Back",
+                                contentDescription = stringResource(R.string.cd_back),
                             )
                         }
                     }

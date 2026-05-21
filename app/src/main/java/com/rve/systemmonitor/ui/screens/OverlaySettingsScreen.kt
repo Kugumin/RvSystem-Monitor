@@ -66,6 +66,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -240,7 +241,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             ExitUntilCollapsedMediumTopAppBar(
-                title = "Floating Overlay Settings",
+                title = stringResource(R.string.title_floating_overlay_settings),
                 onNavigateBack = onNavigateBack,
                 scrollBehavior = scrollBehavior,
             )
@@ -259,7 +260,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
         ) {
             item {
                 MetricToggleCard(
-                    title = "Enable Floating Overlay",
+                    title = stringResource(R.string.overlay_enable_title),
                     isEnabled = isOverlayEnabled,
                     hasPermission = hasOverlayPermission,
                     showPermissionWarning = true,
@@ -285,7 +286,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Text(
-                        text = "Metrics",
+                        text = stringResource(R.string.overlay_label_metrics),
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
@@ -293,8 +294,8 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                     )
 
                     MetricToggleCard(
-                        title = "FPS",
-                        description = "Show real-time frame rate",
+                        title = stringResource(R.string.overlay_fps),
+                        description = stringResource(R.string.overlay_fps_desc),
                         icon = R.drawable.sixty_fps_select_rounded,
                         isEnabled = isFpsEnabled,
                         hasPermission = hasOverlayPermission,
@@ -315,8 +316,8 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                     )
 
                     MetricToggleCard(
-                        title = "RAM Usage (GB)",
-                        description = "Show real-time used and total RAM in GB",
+                        title = stringResource(R.string.overlay_ram_gb),
+                        description = stringResource(R.string.overlay_ram_gb_desc),
                         icon = R.drawable.memory_alt_filled,
                         isEnabled = isRamGbEnabled,
                         hasPermission = hasOverlayPermission,
@@ -337,8 +338,8 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                     )
 
                     MetricToggleCard(
-                        title = "RAM Percentage",
-                        description = "Show real-time percentage RAM usage",
+                        title = stringResource(R.string.overlay_ram_percentage),
+                        description = stringResource(R.string.overlay_ram_percentage_desc),
                         icon = R.drawable.memory_alt_filled,
                         isEnabled = isRamPercentageEnabled,
                         hasPermission = hasOverlayPermission,
@@ -359,8 +360,8 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                     )
 
                     MetricToggleCard(
-                        title = "Battery Temperature",
-                        description = "Show real-time battery temperature",
+                        title = stringResource(R.string.overlay_battery_temp),
+                        description = stringResource(R.string.overlay_battery_temp_desc),
                         icon = R.drawable.device_thermostat_filled,
                         isEnabled = isBatteryTempEnabled,
                         hasPermission = hasOverlayPermission,
@@ -381,8 +382,8 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                     )
 
                     MetricToggleCard(
-                        title = "CPU Temperature",
-                        description = "Show real-time CPU temperature",
+                        title = stringResource(R.string.overlay_cpu_temp),
+                        description = stringResource(R.string.overlay_cpu_temp_desc),
                         icon = R.drawable.device_thermostat_filled,
                         isEnabled = isCpuTempEnabled,
                         hasPermission = hasOverlayPermission,
@@ -409,7 +410,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         Text(
-                            text = "Layout",
+                            text = stringResource(R.string.overlay_label_layout),
                             style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold,
@@ -421,7 +422,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             LayoutOptionCard(
-                                title = "Horizontal",
+                                title = stringResource(R.string.overlay_layout_horizontal),
                                 isSelected = !isVerticalLayout,
                                 enabled = isOverlayActive,
                                 onClick = {
@@ -461,7 +462,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                             }
 
                             LayoutOptionCard(
-                                title = "Vertical",
+                                title = stringResource(R.string.overlay_layout_vertical),
                                 isSelected = isVerticalLayout,
                                 enabled = isOverlayActive,
                                 onClick = {
@@ -509,16 +510,15 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     Text(
-                        text = "Configuration",
+                        text = stringResource(R.string.overlay_label_configuration),
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(start = 8.dp),
                     )
-
                     SettingsSliderCard(
-                        title = "Update Interval",
-                        description = "Adjust how often metrics refresh on the floating overlay",
+                        title = stringResource(R.string.overlay_update_interval),
+                        description = stringResource(R.string.overlay_update_interval_desc),
                         iconRes = R.drawable.acute_filled,
                         sliderState = delaySliderState,
                         currentDisplayValue = overlayCurrentValue,
@@ -546,7 +546,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     Text(
-                        text = "Appearance",
+                        text = stringResource(R.string.overlay_label_appearance),
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
@@ -567,7 +567,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                                 .graphicsLayer { alpha = appearanceAlpha },
                         ) {
                             Text(
-                                text = "Text Color",
+                                text = stringResource(R.string.overlay_text_color),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurface,
@@ -627,7 +627,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                             verticalArrangement = Arrangement.spacedBy(20.dp),
                         ) {
                             AppearanceSlider(
-                                label = "Text Size",
+                                label = stringResource(R.string.overlay_text_size),
                                 value = textSize,
                                 defaultValue = 14f,
                                 valueRange = 10f..24f,
@@ -642,7 +642,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                             )
 
                             AppearanceSlider(
-                                label = "Background Opacity",
+                                label = stringResource(R.string.overlay_bg_opacity),
                                 value = bgOpacity,
                                 defaultValue = 0.5f,
                                 valueRange = 0f..1f,
@@ -657,7 +657,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                             )
 
                             AppearanceSlider(
-                                label = "Padding",
+                                label = stringResource(R.string.overlay_padding),
                                 value = padding.toFloat(),
                                 defaultValue = 16f,
                                 valueRange = 0f..32f,
@@ -672,7 +672,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                             )
 
                             AppearanceSlider(
-                                label = "Corner Radius",
+                                label = stringResource(R.string.overlay_corner_radius),
                                 value = cornerRadius.toFloat(),
                                 defaultValue = 8f,
                                 valueRange = 0f..64f,
@@ -748,7 +748,7 @@ private fun AppearanceSlider(
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.reset_settings_rounded),
-                                contentDescription = "Reset to default",
+                                contentDescription = stringResource(R.string.cd_reset_to_default),
                                 modifier = Modifier.size(16.dp),
                                 tint = MaterialTheme.colorScheme.primary,
                             )
@@ -889,7 +889,7 @@ private fun MetricToggleCard(
                 ) {
                     Icon(
                         painter = painterResource(icon),
-                        contentDescription = "$title Icon",
+                        contentDescription = stringResource(R.string.cd_metric_icon, title),
                         tint = if (enabled && hasPermission)
                             MaterialTheme.colorScheme.onPrimary
                         else
@@ -910,7 +910,7 @@ private fun MetricToggleCard(
                 )
                 if (!hasPermission && showPermissionWarning) {
                     Text(
-                        text = "Requires 'Draw over other apps' permission",
+                        text = stringResource(R.string.overlay_permission_required),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error,
                     )

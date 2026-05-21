@@ -10,8 +10,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.rve.systemmonitor.R
 import com.rve.systemmonitor.ui.components.item.HelpItem
 import kotlinx.collections.immutable.ImmutableList
 
@@ -23,7 +25,11 @@ import kotlinx.collections.immutable.ImmutableList
  * @param modifier The [Modifier] to be applied to the container.
  */
 @Composable
-fun HelpBottomSheetContent(modifier: Modifier = Modifier, title: String = "Data Sources", helpItems: ImmutableList<Pair<String, String>>) {
+fun HelpBottomSheetContent(
+    modifier: Modifier = Modifier,
+    title: String = stringResource(R.string.help_default_title),
+    helpItems: ImmutableList<Pair<String, String>>,
+) {
     Column(
         modifier = modifier
             .fillMaxWidth()

@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -65,7 +66,7 @@ private fun AppSettingsScreenContent(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             ExitUntilCollapsedMediumTopAppBar(
-                title = "App",
+                title = stringResource(R.string.title_app),
                 onNavigateBack = onNavigateBack,
                 scrollBehavior = scrollBehavior,
             )
@@ -87,7 +88,7 @@ private fun AppSettingsScreenContent(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(
-                        text = "Updates",
+                        text = stringResource(R.string.label_updates),
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
@@ -124,20 +125,20 @@ private fun AppSettingsScreenContent(
                                 ) {
                                     Icon(
                                         painter = painterResource(R.drawable.update_rounded),
-                                        contentDescription = "Update Icon",
+                                        contentDescription = stringResource(R.string.cd_update_icon),
                                         tint = MaterialTheme.colorScheme.onSecondary,
                                     )
                                 }
 
                                 Column {
                                     Text(
-                                        text = "Check for Updates",
+                                        text = stringResource(R.string.settings_check_for_updates),
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.SemiBold,
                                         color = MaterialTheme.colorScheme.onSurface,
                                     )
                                     Text(
-                                        text = "Automatically check for updates on startup",
+                                        text = stringResource(R.string.settings_check_updates_description),
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
@@ -176,7 +177,7 @@ private fun AppSettingsScreenContent(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(
-                        text = "Testing",
+                        text = stringResource(R.string.label_testing),
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
@@ -213,20 +214,20 @@ private fun AppSettingsScreenContent(
                                 ) {
                                     Icon(
                                         painter = painterResource(R.drawable.home_storage_gear_filled),
-                                        contentDescription = "Setup Icon",
+                                        contentDescription = stringResource(R.string.cd_setup_icon),
                                         tint = MaterialTheme.colorScheme.onSecondary,
                                     )
                                 }
 
                                 Column {
                                     Text(
-                                        text = "Test Setup Flow",
+                                        text = stringResource(R.string.settings_test_setup_flow),
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.SemiBold,
                                         color = MaterialTheme.colorScheme.onSurface,
                                     )
                                     Text(
-                                        text = "Launch setup without resetting app settings",
+                                        text = stringResource(R.string.settings_test_setup_description),
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
@@ -235,7 +236,7 @@ private fun AppSettingsScreenContent(
 
                             Icon(
                                 painter = painterResource(R.drawable.arrow_forward_ios_new),
-                                contentDescription = "Open setup flow",
+                                contentDescription = stringResource(R.string.cd_open_setup_flow),
                                 modifier = Modifier.size(20.dp),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             )

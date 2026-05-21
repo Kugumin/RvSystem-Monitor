@@ -4,6 +4,7 @@ package com.rve.systemmonitor.data.repository
 
 import android.app.Application
 import android.os.SystemClock
+import com.rve.systemmonitor.R
 import com.rve.systemmonitor.data.di.ApplicationScope
 import com.rve.systemmonitor.domain.model.Battery
 import com.rve.systemmonitor.domain.repository.BatteryRepository
@@ -23,14 +24,14 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.shareIn
+
 @OptIn(ExperimentalCoroutinesApi::class)
 @Singleton
 class BatteryRepositoryImpl @Inject constructor(
     private val application: Application,
     private val settingsRepository: SettingsRepository,
-    @param:ApplicationScope private val externalScope: CoroutineScope
-) :
-    BatteryRepository {
+    @param:ApplicationScope private val externalScope: CoroutineScope,
+) : BatteryRepository {
 
     private val staticBatteryInfo by lazy {
         val intent = BatteryUtils.getBatteryIntent(application)
@@ -38,13 +39,13 @@ class BatteryRepositoryImpl @Inject constructor(
         if (intent != null) {
             val design = BatteryUtils.getCapacity(application)
             BatteryInfo(
-                health = BatteryUtils.getHealth(intent),
+                healthRes = BatteryUtils.getHealthRes(intent),
                 technology = BatteryUtils.getTechnology(intent),
                 designCapacity = design,
                 deepSleep = deepSleep,
             )
         } else {
-            BatteryInfo("Unknown", "Unknown", -1.0, deepSleep)
+            BatteryInfo(R.string.value_unknown, "Unknown", -1.0, deepSleep)
         }
     }
 
@@ -67,8 +68,13 @@ class BatteryRepositoryImpl @Inject constructor(
 
             Battery(
                 level = level,
-                health = staticBatteryInfo.health,
-                status = BatteryUtils.getStatus(intent),
+                healthRes = staticBatteryInfo.healthRes,
+                status = if (level == 100 && BatteryUtils.getStatusRes(intent) == R.string.battery_status_charging) {
+                    "Full"
+                } else {
+                    "Unknown"
+                }, // Simplified status for internal logic
+                statusRes = BatteryUtils.getStatusRes(intent),
                 technology = staticBatteryInfo.technology,
                 voltage = voltage,
                 temperature = BatteryUtils.getTemperature(intent),
@@ -78,7 +84,7 @@ class BatteryRepositoryImpl @Inject constructor(
                 deepSleep = staticBatteryInfo.deepSleep,
                 current = currentNow,
                 wattage = calculateWattage(currentNow, voltage),
-                powerSource = BatteryUtils.getPowerSource(intent),
+                powerSourceRes = BatteryUtils.getPowerSourceRes(intent),
             )
         }.flowOn(Dispatchers.IO)
             .shareIn(
@@ -88,7 +94,7 @@ class BatteryRepositoryImpl @Inject constructor(
             )
     }
 
-    private data class BatteryInfo(val health: String, val technology: String, val designCapacity: Double, val deepSleep: Long)
+    private data class BatteryInfo(val healthRes: Int, val technology: String, val designCapacity: Double, val deepSleep: Long)
 
     override fun getBatteryInfo(): Battery {
         val intent = BatteryUtils.getBatteryIntent(application)
@@ -99,8 +105,8 @@ class BatteryRepositoryImpl @Inject constructor(
 
             Battery(
                 level = level,
-                health = staticBatteryInfo.health,
-                status = BatteryUtils.getStatus(intent),
+                healthRes = staticBatteryInfo.healthRes,
+                statusRes = BatteryUtils.getStatusRes(intent),
                 technology = staticBatteryInfo.technology,
                 voltage = voltage,
                 temperature = BatteryUtils.getTemperature(intent),
@@ -110,7 +116,7 @@ class BatteryRepositoryImpl @Inject constructor(
                 deepSleep = staticBatteryInfo.deepSleep,
                 current = current,
                 wattage = calculateWattage(current, voltage),
-                powerSource = BatteryUtils.getPowerSource(intent),
+                powerSourceRes = BatteryUtils.getPowerSourceRes(intent),
             )
         } else {
             Battery()
@@ -120,9 +126,6 @@ class BatteryRepositoryImpl @Inject constructor(
     override fun getBatteryStream(): Flow<Battery> = sharedBatteryStream
 
     private fun calculateWattage(currentMA: Int, voltageMV: Int): Double {
-        // P (W) = I (A) * V (V)
-        // mA -> A: currentMA / 1000.0
-        // mV -> V: voltageMV / 1000.0
         return (abs(currentMA) / 1000.0) * (voltageMV / 1000.0)
     }
 }

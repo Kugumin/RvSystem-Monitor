@@ -2,6 +2,7 @@ package com.rve.systemmonitor.utils
 
 import android.os.Build
 import android.util.Log
+import com.rve.systemmonitor.R
 
 object OSUtils {
     private const val TAG = "OSUtils"
@@ -20,12 +21,12 @@ object OSUtils {
         0
     }
 
-    fun getDessertName(sdkInt: Int): String {
+    fun getDessertNameRes(sdkInt: Int): Int {
         return when (sdkInt) {
-            36 -> "Baklava"
-            35 -> "Vanilla Ice Cream"
-            34 -> "Upside Down Cake"
-            else -> "unknown"
+            36 -> R.string.dessert_name_baklava
+            35 -> R.string.dessert_name_vanilla_ice_cream
+            34 -> R.string.dessert_name_upside_down_cake
+            else -> R.string.value_unknown
         }
     }
 

@@ -4,6 +4,7 @@ import android.content.Context
 import android.hardware.display.DisplayManager
 import android.util.Log
 import android.view.Display
+import com.rve.systemmonitor.R
 import java.util.Locale
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -59,10 +60,10 @@ object DisplayUtils {
             val types = mutableListOf<String>()
             for (type in supportedTypes) {
                 when (type) {
-                    Display.HdrCapabilities.HDR_TYPE_DOLBY_VISION -> types.add("Dolby Vision")
-                    Display.HdrCapabilities.HDR_TYPE_HDR10 -> types.add("HDR10")
-                    Display.HdrCapabilities.HDR_TYPE_HLG -> types.add("HLG")
-                    Display.HdrCapabilities.HDR_TYPE_HDR10_PLUS -> types.add("HDR10+")
+                    Display.HdrCapabilities.HDR_TYPE_DOLBY_VISION -> types.add(context.getString(R.string.hdr_type_dolby_vision))
+                    Display.HdrCapabilities.HDR_TYPE_HDR10 -> types.add(context.getString(R.string.hdr_type_hdr10))
+                    Display.HdrCapabilities.HDR_TYPE_HLG -> types.add(context.getString(R.string.hdr_type_hlg))
+                    Display.HdrCapabilities.HDR_TYPE_HDR10_PLUS -> types.add(context.getString(R.string.hdr_type_hdr10_plus))
                 }
             }
 

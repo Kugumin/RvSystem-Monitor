@@ -33,7 +33,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import com.kyant.backdrop.Backdrop
@@ -52,29 +54,32 @@ object BottomNavBar {
     @Composable
     fun BottomNavigationBar(pagerState: PagerState, coroutineScope: CoroutineScope, backdrop: Backdrop, modifier: Modifier = Modifier) {
         val backgroundColor = MaterialTheme.colorScheme.background.copy(alpha = 0.5f)
+        val context = LocalContext.current
 
-        val items = listOf(
-            NavItem(
-                label = "Home",
-                iconUnselected = R.drawable.home,
-                iconSelected = R.drawable.home_filled,
-            ),
-            NavItem(
-                label = "CPU",
-                iconUnselected = R.drawable.memory,
-                iconSelected = R.drawable.memory_filled,
-            ),
-            NavItem(
-                label = "Memory",
-                iconUnselected = R.drawable.memory_alt,
-                iconSelected = R.drawable.memory_alt_filled,
-            ),
-            NavItem(
-                label = "Battery",
-                iconUnselected = R.drawable.battery_android_0,
-                iconSelected = R.drawable.battery_android_full,
-            ),
-        )
+        val items = remember(context) {
+            listOf(
+                NavItem(
+                    label = context.getString(R.string.nav_label_home),
+                    iconUnselected = R.drawable.home,
+                    iconSelected = R.drawable.home_filled,
+                ),
+                NavItem(
+                    label = context.getString(R.string.nav_label_cpu),
+                    iconUnselected = R.drawable.memory,
+                    iconSelected = R.drawable.memory_filled,
+                ),
+                NavItem(
+                    label = context.getString(R.string.nav_label_memory),
+                    iconUnselected = R.drawable.memory_alt,
+                    iconSelected = R.drawable.memory_alt_filled,
+                ),
+                NavItem(
+                    label = context.getString(R.string.nav_label_battery),
+                    iconUnselected = R.drawable.battery_android_0,
+                    iconSelected = R.drawable.battery_android_full,
+                ),
+            )
+        }
 
         Box(
             modifier = modifier

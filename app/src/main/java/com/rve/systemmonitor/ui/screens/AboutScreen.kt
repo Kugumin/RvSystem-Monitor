@@ -44,6 +44,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -95,7 +96,7 @@ private fun AboutScreenContent(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             ExitUntilCollapsedMediumTopAppBar(
-                title = "About",
+                title = stringResource(R.string.title_about),
                 onNavigateBack = onNavigateBack,
                 scrollBehavior = scrollBehavior,
             )
@@ -118,15 +119,15 @@ private fun AboutScreenContent(
             item {
                 Column {
                     Text(
-                        text = "Project Owner",
+                        text = stringResource(R.string.label_project_owner),
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 12.dp, start = 8.dp),
                     )
                     ProfileCard(
-                        name = "Radika",
-                        role = "Lead Developer & Architect",
+                        name = stringResource(R.string.about_owner_name),
+                        role = stringResource(R.string.about_owner_role),
                         githubUsername = "Rve27",
                         onClick = { openUrl("https://github.com/Rve27") },
                     )
@@ -136,7 +137,7 @@ private fun AboutScreenContent(
             item {
                 Column {
                     Text(
-                        text = "Contributors",
+                        text = stringResource(R.string.label_contributors),
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
@@ -191,7 +192,7 @@ private fun AboutScreenContent(
                                         modifier = Modifier.size(48.dp),
                                     )
                                     Text(
-                                        text = "No internet connection",
+                                        text = stringResource(R.string.error_no_internet),
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.error,
                                         textAlign = TextAlign.Center,
@@ -200,7 +201,7 @@ private fun AboutScreenContent(
                                         onClick = onRetry,
                                         shapes = ButtonDefaults.shapes(),
                                     ) {
-                                        Text("Try Again")
+                                        Text(stringResource(R.string.action_try_again))
                                     }
                                 }
                             }
@@ -210,7 +211,7 @@ private fun AboutScreenContent(
 
                                 if (otherContributors.isEmpty() && !loading) {
                                     Text(
-                                        text = "No other contributors found yet.",
+                                        text = stringResource(R.string.contributors_empty),
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier.padding(start = 8.dp),
@@ -317,11 +318,11 @@ fun ContributorSkeleton(shape: RoundedCornerShape) {
 @Composable
 fun HeroCard() {
     val badgeItem = listOf(
-        "Free",
-        "Open Source",
-        "Rust",
-        "Kotlin",
-        "Material 3 Expressive",
+        stringResource(R.string.badge_free),
+        stringResource(R.string.badge_open_source),
+        stringResource(R.string.badge_rust),
+        stringResource(R.string.badge_kotlin),
+        stringResource(R.string.badge_material3_expressive),
     )
 
     Card(
@@ -356,13 +357,13 @@ fun HeroCard() {
                 }
                 Column {
                     Text(
-                        text = "RvSystem Monitor",
+                        text = stringResource(R.string.app_title),
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSecondaryContainer,
                         fontWeight = FontWeight.ExtraBold,
                     )
                     Text(
-                        text = "High-performance system monitoring for Android",
+                        text = stringResource(R.string.about_app_description),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSecondaryContainer.copy(0.8f),
                     )
@@ -424,7 +425,7 @@ fun ProfileCard(name: String, role: String, githubUsername: String, onClick: () 
         ) {
             AsyncImage(
                 model = "https://github.com/$githubUsername.png",
-                contentDescription = "Avatar",
+                contentDescription = stringResource(R.string.cd_avatar),
                 modifier = Modifier
                     .size(64.dp)
                     .clip(CircleShape),
@@ -495,7 +496,7 @@ fun ContributorRow(contributor: GitHubContributor, onClick: () -> Unit) {
                 }
             }
             Text(
-                text = "${contributor.contributions} contributions",
+                text = stringResource(R.string.contributors_count, contributor.contributions),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

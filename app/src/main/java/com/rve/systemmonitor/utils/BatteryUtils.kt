@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
+import com.rve.systemmonitor.R
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -32,35 +33,35 @@ object BatteryUtils {
         return if (level != -1 && scale != -1) (level * 100 / scale.toFloat()).toInt() else -1
     }
 
-    fun getHealth(intent: Intent): String {
+    fun getHealthRes(intent: Intent): Int {
         return when (intent.getIntExtra(BatteryManager.EXTRA_HEALTH, BatteryManager.BATTERY_HEALTH_UNKNOWN)) {
-            BatteryManager.BATTERY_HEALTH_GOOD -> "Good"
-            BatteryManager.BATTERY_HEALTH_OVERHEAT -> "Overheat"
-            BatteryManager.BATTERY_HEALTH_DEAD -> "Dead"
-            BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE -> "Over Voltage"
-            BatteryManager.BATTERY_HEALTH_UNSPECIFIED_FAILURE -> "Unspecified Failure"
-            BatteryManager.BATTERY_HEALTH_COLD -> "Cold"
-            else -> "Unknown"
+            BatteryManager.BATTERY_HEALTH_GOOD -> R.string.battery_health_good
+            BatteryManager.BATTERY_HEALTH_OVERHEAT -> R.string.battery_health_overheat
+            BatteryManager.BATTERY_HEALTH_DEAD -> R.string.battery_health_dead
+            BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE -> R.string.battery_health_over_voltage
+            BatteryManager.BATTERY_HEALTH_UNSPECIFIED_FAILURE -> R.string.battery_health_unspecified_failure
+            BatteryManager.BATTERY_HEALTH_COLD -> R.string.battery_health_cold
+            else -> R.string.value_unknown
         }
     }
 
-    fun getStatus(intent: Intent): String {
+    fun getStatusRes(intent: Intent): Int {
         return when (intent.getIntExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_UNKNOWN)) {
-            BatteryManager.BATTERY_STATUS_CHARGING -> "Charging"
-            BatteryManager.BATTERY_STATUS_DISCHARGING -> "Discharging"
-            BatteryManager.BATTERY_STATUS_FULL -> "Full"
-            BatteryManager.BATTERY_STATUS_NOT_CHARGING -> "Not Charging"
-            else -> "Unknown"
+            BatteryManager.BATTERY_STATUS_CHARGING -> R.string.battery_status_charging
+            BatteryManager.BATTERY_STATUS_DISCHARGING -> R.string.battery_status_discharging
+            BatteryManager.BATTERY_STATUS_FULL -> R.string.battery_status_full
+            BatteryManager.BATTERY_STATUS_NOT_CHARGING -> R.string.battery_status_not_charging
+            else -> R.string.value_unknown
         }
     }
 
-    fun getPowerSource(intent: Intent): String {
+    fun getPowerSourceRes(intent: Intent): Int {
         return when (intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1)) {
-            BatteryManager.BATTERY_PLUGGED_AC -> "AC Charger"
-            BatteryManager.BATTERY_PLUGGED_USB -> "USB Port"
-            BatteryManager.BATTERY_PLUGGED_WIRELESS -> "Wireless"
-            0 -> "Battery"
-            else -> "Unknown"
+            BatteryManager.BATTERY_PLUGGED_AC -> R.string.battery_power_source_ac
+            BatteryManager.BATTERY_PLUGGED_USB -> R.string.battery_power_source_usb
+            BatteryManager.BATTERY_PLUGGED_WIRELESS -> R.string.battery_power_source_wireless
+            0 -> R.string.battery_power_source_battery
+            else -> R.string.value_unknown
         }
     }
 

@@ -50,9 +50,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -139,9 +141,9 @@ private fun ChargingSpeedCard(battery: Battery, history: ImmutableList<BatteryDa
     val isDischarging = battery.status == "Discharging"
 
     val speedLabel = when {
-        isCharging -> "Charging Speed"
-        isDischarging -> "Discharging Speed"
-        else -> "Current Speed"
+        isCharging -> stringResource(R.string.battery_charging_speed)
+        isDischarging -> stringResource(R.string.battery_discharging_speed)
+        else -> stringResource(R.string.battery_current_speed)
     }
 
     val accentColor = MaterialTheme.colorScheme.primary
@@ -277,7 +279,7 @@ private fun ChargingSpeedCard(battery: Battery, history: ImmutableList<BatteryDa
                     if (currentSessionHistory.size >= 2) {
                         val sign = if (isDischarging) "-" else ""
                         Text(
-                            text = "MAX: $sign${actualMax.toInt()} mA",
+                            text = stringResource(R.string.battery_graph_max, "$sign${actualMax.toInt()}"),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                             modifier = Modifier
@@ -285,7 +287,7 @@ private fun ChargingSpeedCard(battery: Battery, history: ImmutableList<BatteryDa
                                 .padding(top = 4.dp, start = 4.dp),
                         )
                         Text(
-                            text = "MIN: $sign${minValInHistory.toInt()} mA",
+                            text = stringResource(R.string.battery_graph_min, "$sign${minValInHistory.toInt()}"),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                             modifier = Modifier
@@ -300,10 +302,10 @@ private fun ChargingSpeedCard(battery: Battery, history: ImmutableList<BatteryDa
 
                                 val statusLabel = when (point.status) {
                                     "Charging",
-                                    -> "CHARGING"
+                                    -> stringResource(R.string.battery_status_charging_label)
 
                                     "Discharging",
-                                    -> "DISCHARGING"
+                                    -> stringResource(R.string.battery_status_discharging_label)
 
                                     else -> point.status.uppercase()
                                 }
@@ -339,6 +341,7 @@ private fun ChargingSpeedCard(battery: Battery, history: ImmutableList<BatteryDa
 @Composable
 private fun BatteryOverviewCard(battery: Battery) {
     val isCharging = battery.status == "Charging"
+    val context = LocalContext.current
 
     val batteryIcon = remember(battery.level, isCharging, battery.wattage) {
         if (isCharging) {
@@ -361,15 +364,15 @@ private fun BatteryOverviewCard(battery: Battery) {
         }
     }
 
-    val displayStatus = remember(battery.status, battery.wattage) {
+    val displayStatus = remember(battery.status, battery.wattage, battery.statusRes) {
         if (isCharging) {
             when {
-                battery.wattage >= 25.0 -> "Hyper Charging"
-                battery.wattage >= 15.0 -> "Fast Charging"
-                else -> "Charging"
+                battery.wattage >= 25.0 -> context.getString(R.string.battery_hyper_charging)
+                battery.wattage >= 15.0 -> context.getString(R.string.battery_fast_charging)
+                else -> context.getString(R.string.battery_charging)
             }
         } else {
-            battery.status
+            context.getString(battery.statusRes)
         }
     }
 
@@ -467,7 +470,7 @@ private fun BatteryOverviewCard(battery: Battery) {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 BadgeChip(
-                    text = battery.health,
+                    text = stringResource(battery.healthRes),
                     containerColor = MaterialTheme.colorScheme.primary,
                     textColor = MaterialTheme.colorScheme.onPrimary,
                 )
@@ -491,7 +494,7 @@ private fun BatteryDetailsCard(battery: Battery, onHelpClick: () -> Unit) {
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
-                    text = "Battery Details",
+                    text = stringResource(R.string.battery_details_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                 )
@@ -501,7 +504,7 @@ private fun BatteryDetailsCard(battery: Battery, onHelpClick: () -> Unit) {
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.help_filled),
-                        contentDescription = "Help",
+                        contentDescription = stringResource(R.string.cd_help),
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(20.dp),
                     )
@@ -510,12 +513,12 @@ private fun BatteryDetailsCard(battery: Battery, onHelpClick: () -> Unit) {
 
             TwoColumnInfoRow {
                 InfoItem(
-                    label = "Voltage",
+                    label = stringResource(R.string.battery_label_voltage),
                     value = "${battery.voltage} mV",
                     modifier = Modifier.weight(1f),
                 )
                 InfoItem(
-                    label = "Temperature",
+                    label = stringResource(R.string.battery_label_temperature),
                     value = "${battery.temperature} °C",
                     modifier = Modifier.weight(1f),
                 )
@@ -524,12 +527,12 @@ private fun BatteryDetailsCard(battery: Battery, onHelpClick: () -> Unit) {
             TwoColumnInfoRow {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Power Source",
+                        text = stringResource(R.string.battery_label_power_source),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                     AnimatedContent(
-                        targetState = battery.powerSource,
+                        targetState = battery.powerSourceRes,
                         transitionSpec = {
                             (
                                 slideInHorizontally(
@@ -548,9 +551,9 @@ private fun BatteryDetailsCard(battery: Battery, onHelpClick: () -> Unit) {
                             )
                         },
                         label = "PowerSourceAnimation",
-                    ) { powerSource ->
+                    ) { powerSourceRes ->
                         Text(
-                            text = powerSource,
+                            text = stringResource(powerSourceRes),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = FontWeight.SemiBold,
@@ -558,20 +561,20 @@ private fun BatteryDetailsCard(battery: Battery, onHelpClick: () -> Unit) {
                     }
                 }
                 InfoItem(
-                    label = "Cycle Count",
-                    value = if (battery.cycleCount >= 0) "${battery.cycleCount}" else "Unknown",
+                    label = stringResource(R.string.battery_label_cycle_count),
+                    value = if (battery.cycleCount >= 0) "${battery.cycleCount}" else stringResource(R.string.value_unknown),
                     modifier = Modifier.weight(1f),
                 )
             }
 
             TwoColumnInfoRow {
                 InfoItem(
-                    label = "Design Capacity",
-                    value = if (battery.capacity > 0) "${battery.capacity.toInt()} mAh" else "Unknown",
+                    label = stringResource(R.string.battery_label_design_capacity),
+                    value = if (battery.capacity > 0) "${battery.capacity.toInt()} mAh" else stringResource(R.string.value_unknown),
                     modifier = Modifier.weight(1f),
                 )
                 InfoItem(
-                    label = "Uptime",
+                    label = stringResource(R.string.battery_label_uptime),
                     value = formatUptime(battery.uptime),
                     modifier = Modifier.weight(1f),
                 )
@@ -579,7 +582,7 @@ private fun BatteryDetailsCard(battery: Battery, onHelpClick: () -> Unit) {
 
             TwoColumnInfoRow {
                 InfoItem(
-                    label = "Deep Sleep",
+                    label = stringResource(R.string.battery_label_deep_sleep),
                     value = formatUptime(battery.deepSleep),
                     modifier = Modifier.weight(1f),
                 )
@@ -607,14 +610,14 @@ private fun formatUptime(millis: Long): String {
 @Composable
 private fun BatteryHelpContent() {
     val helpItems = persistentListOf(
-        "Voltage & Temperature" to "Sourced from real-time system broadcasts via the Android BatteryManager API.",
-        "Power Source & Status" to "Detected from the current charging state (AC, USB, or Wireless) via system intents.",
-        "Charging Speed" to "Estimated based on real-time wattage: Fast Charging (15W+) and Hyper Charging (25W+).",
-        "Wattage (Power)" to "Calculated in real-time by multiplying Voltage (V) and Current (A).",
-        "Current (mA)" to "Direct hardware reading from the battery's charge counter property.",
-        "Design Capacity" to "Extracted from Android PowerProfile. Indicates the factory-rated capacity of the battery.",
-        "Cycle Count" to "Native Android 14+ property indicating total charge cycles completed.",
-        "Uptime & Deep Sleep" to "Uptime is the total time since boot. Deep Sleep is the time the CPU was in a low-power state.",
+        stringResource(R.string.battery_help_voltage_temp_title) to stringResource(R.string.battery_help_voltage_temp_desc),
+        stringResource(R.string.battery_help_power_source_title) to stringResource(R.string.battery_help_power_source_desc),
+        stringResource(R.string.battery_help_charging_speed_title) to stringResource(R.string.battery_help_charging_speed_desc),
+        stringResource(R.string.battery_help_wattage_title) to stringResource(R.string.battery_help_wattage_desc),
+        stringResource(R.string.battery_help_current_title) to stringResource(R.string.battery_help_current_desc),
+        stringResource(R.string.battery_help_design_capacity_title) to stringResource(R.string.battery_help_design_capacity_desc),
+        stringResource(R.string.battery_help_cycle_count_title) to stringResource(R.string.battery_help_cycle_count_desc),
+        stringResource(R.string.battery_help_uptime_title) to stringResource(R.string.battery_help_uptime_desc),
     )
 
     HelpBottomSheetContent(helpItems = helpItems)

@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -48,7 +49,7 @@ fun GPUScreen(navController: NavController, onNavigateBack: () -> Unit, viewMode
         Scaffold(
             topBar = {
                 ExitUntilCollapsedMediumTopAppBar(
-                    title = "Graphics Info",
+                    title = stringResource(R.string.title_graphics_info),
                     onNavigateBack = onNavigateBack,
                     scrollBehavior = scrollBehavior,
                 )
@@ -78,7 +79,7 @@ private fun GPUScreenContent(gpuInfo: GPU) {
                             fontWeight = FontWeight.Bold,
                         )
                         Text(
-                            text = "by ${gpuInfo.vendor}",
+                            text = stringResource(R.string.label_by, gpuInfo.vendor),
                             style = MaterialTheme.typography.titleMedium,
                         )
                     }
@@ -95,7 +96,7 @@ private fun GPUScreenContent(gpuInfo: GPU) {
         item {
             StandardCard {
                 Text(
-                    text = "OpenGL ES",
+                    text = stringResource(R.string.gpu_opengl_es),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
@@ -104,12 +105,12 @@ private fun GPUScreenContent(gpuInfo: GPU) {
 
                 TwoColumnInfoRow(modifier = Modifier.padding(bottom = 16.dp)) {
                     InfoItem(
-                        label = "Version",
+                        label = stringResource(R.string.gpu_label_version),
                         value = gpuInfo.detailedGlesVersion,
                         modifier = Modifier.weight(1f),
                     )
                     InfoItem(
-                        label = "Shader Version",
+                        label = stringResource(R.string.gpu_label_shader_version),
                         value = gpuInfo.shadingLanguageVersion,
                         modifier = Modifier.weight(1f),
                     )
@@ -117,12 +118,16 @@ private fun GPUScreenContent(gpuInfo: GPU) {
 
                 TwoColumnInfoRow {
                     InfoItem(
-                        label = "Max Texture Size",
-                        value = if (gpuInfo.maxTextureSize > 0) "${gpuInfo.maxTextureSize} px" else "Unknown",
+                        label = stringResource(R.string.gpu_label_max_texture_size),
+                        value = if (gpuInfo.maxTextureSize > 0) {
+                            stringResource(R.string.gpu_max_texture_size_format, gpuInfo.maxTextureSize)
+                        } else {
+                            stringResource(R.string.value_unknown)
+                        },
                         modifier = Modifier.weight(1f),
                     )
                     InfoItem(
-                        label = "Extensions",
+                        label = stringResource(R.string.gpu_label_extensions),
                         value = "${gpuInfo.extensionsCount}",
                         modifier = Modifier.weight(1f),
                     )
@@ -133,7 +138,7 @@ private fun GPUScreenContent(gpuInfo: GPU) {
         item {
             StandardCard {
                 Text(
-                    text = "Vulkan",
+                    text = stringResource(R.string.gpu_vulkan),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
@@ -142,12 +147,12 @@ private fun GPUScreenContent(gpuInfo: GPU) {
 
                 TwoColumnInfoRow(modifier = Modifier.padding(bottom = 16.dp)) {
                     InfoItem(
-                        label = "API Version",
+                        label = stringResource(R.string.gpu_label_api_version),
                         value = gpuInfo.vulkanVersion,
                         modifier = Modifier.weight(1f),
                     )
                     InfoItem(
-                        label = "Driver Version",
+                        label = stringResource(R.string.gpu_label_driver_version),
                         value = gpuInfo.vulkanDriverVersion,
                         modifier = Modifier.weight(1f),
                     )
@@ -155,7 +160,7 @@ private fun GPUScreenContent(gpuInfo: GPU) {
 
                 TwoColumnInfoRow {
                     InfoItem(
-                        label = "Device Type",
+                        label = stringResource(R.string.gpu_label_device_type),
                         value = gpuInfo.deviceType,
                         modifier = Modifier.weight(1f),
                     )
@@ -166,7 +171,7 @@ private fun GPUScreenContent(gpuInfo: GPU) {
         item {
             StandardCard {
                 Text(
-                    text = "Memory Information",
+                    text = stringResource(R.string.gpu_memory_information),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
@@ -175,8 +180,12 @@ private fun GPUScreenContent(gpuInfo: GPU) {
 
                 TwoColumnInfoRow {
                     InfoItem(
-                        label = "Shared Memory",
-                        value = if (gpuInfo.totalMemoryMb > 0) "${gpuInfo.totalMemoryMb} MB" else "Unknown",
+                        label = stringResource(R.string.gpu_label_shared_memory),
+                        value = if (gpuInfo.totalMemoryMb > 0) {
+                            stringResource(R.string.gpu_shared_memory_format, gpuInfo.totalMemoryMb)
+                        } else {
+                            stringResource(R.string.value_unknown)
+                        },
                         modifier = Modifier.weight(1f),
                     )
                 }

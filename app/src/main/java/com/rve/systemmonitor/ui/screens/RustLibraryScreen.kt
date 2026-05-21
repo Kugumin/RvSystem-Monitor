@@ -32,7 +32,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -51,75 +53,76 @@ private data class JniMethod(val name: String, val returnType: String, val param
 fun RustLibraryScreen(onNavigateBack: () -> Unit) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val rustVersion = remember { DeviceUtils.getRustLibraryVersion() }
+    val context = LocalContext.current
 
-    val methods = remember {
+    val methods = remember(context) {
         listOf(
             JniMethod(
                 "getRustLibraryVersionNative",
                 "jstring",
-                description = "Returns the semantic version of the native library defined in Cargo.toml.",
+                description = context.getString(R.string.rust_method_desc_get_version),
             ),
             JniMethod(
                 "getVulkanVersionNative",
                 "jstring",
-                description = "Queries the system Vulkan driver and returns formatted API and Driver versions.",
+                description = context.getString(R.string.rust_method_desc_get_vulkan),
             ),
             JniMethod(
                 "getGpuTemperatureNative",
                 "jdouble",
-                description = "Reads GPU thermal sensors via kernel sysfs nodes.",
+                description = context.getString(R.string.rust_method_desc_get_gpu_temp),
             ),
             JniMethod(
                 "getMemoryDataNative",
                 "jdoubleArray",
-                description = "Fetches a comprehensive batch of RAM and ZRAM metrics in a single JNI call.",
+                description = context.getString(R.string.rust_method_desc_get_memory),
             ),
             JniMethod(
                 "getRamDataNative",
                 "jdoubleArray",
-                description = "Returns detailed RAM statistics (Total, Available, Cached, etc.).",
+                description = context.getString(R.string.rust_method_desc_get_ram),
             ),
             JniMethod(
                 "getZramDataNative",
                 "jdoubleArray",
-                description = "Returns ZRAM specific metrics including compression ratio and swap usage.",
+                description = context.getString(R.string.rust_method_desc_get_zram),
             ),
             JniMethod(
                 "getAllCoreFrequenciesNative",
                 "jlongArray",
-                description = "Retrieves current clock speeds for all online CPU cores.",
+                description = context.getString(R.string.rust_method_desc_get_all_freq),
             ),
             JniMethod(
                 "getCoreCountNative",
                 "jint",
-                description = "Returns the total number of CPU cores detected by the kernel.",
+                description = context.getString(R.string.rust_method_desc_get_core_count),
             ),
             JniMethod(
                 "getCoreFrequencyNative",
                 "jlong",
                 "env, core_id, type",
-                "Returns specific frequency type (cur, min, max) for a given core ID.",
+                context.getString(R.string.rust_method_desc_get_core_freq),
             ),
             JniMethod(
                 "getCoreGovernorNative",
                 "jstring",
                 "env, core_id",
-                "Returns the active CPU scaling governor for the specified core.",
+                context.getString(R.string.rust_method_desc_get_governor),
             ),
             JniMethod(
                 "getCpuTemperatureNative",
                 "jdouble",
-                description = "Retrieves the package/composite CPU temperature.",
+                description = context.getString(R.string.rust_method_desc_get_cpu_temp),
             ),
             JniMethod(
                 "getAllCoreTemperaturesNative",
                 "jdoubleArray",
-                description = "Returns an array of temperatures for each individual CPU core.",
+                description = context.getString(R.string.rust_method_desc_get_all_temps),
             ),
             JniMethod(
                 "getCpuDynamicDataNative",
                 "jdoubleArray",
-                description = "Batched retrieval of temperatures and frequencies for UI synchronization.",
+                description = context.getString(R.string.rust_method_desc_get_dynamic),
             ),
         ).sortedBy { it.name }.toImmutableList()
     }
@@ -128,7 +131,7 @@ fun RustLibraryScreen(onNavigateBack: () -> Unit) {
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             ExitUntilCollapsedMediumTopAppBar(
-                title = "Rust Library",
+                title = stringResource(R.string.title_rust_library),
                 onNavigateBack = onNavigateBack,
                 scrollBehavior = scrollBehavior,
             )
@@ -166,13 +169,13 @@ fun RustLibraryScreen(onNavigateBack: () -> Unit) {
                     }
                     Column {
                         Text(
-                            text = "librvsystem_monitor.so",
+                            text = stringResource(R.string.rust_library_name),
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.Bold,
                         )
                         Text(
-                            text = "Version: v$rustVersion",
+                            text = stringResource(R.string.rust_library_version, rustVersion),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -180,7 +183,7 @@ fun RustLibraryScreen(onNavigateBack: () -> Unit) {
                 }
 
                 Text(
-                    text = "Public methods",
+                    text = stringResource(R.string.rust_public_methods),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                 )
@@ -194,7 +197,7 @@ fun RustLibraryScreen(onNavigateBack: () -> Unit) {
 
             item {
                 Text(
-                    text = "Public method detail",
+                    text = stringResource(R.string.rust_public_method_detail),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                 )

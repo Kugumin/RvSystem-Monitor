@@ -1,7 +1,7 @@
 package com.rve.systemmonitor.utils
 
-import android.graphics.Color
 import android.content.Context
+import android.graphics.Color
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey

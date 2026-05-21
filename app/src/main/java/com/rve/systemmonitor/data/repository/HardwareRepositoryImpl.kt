@@ -32,7 +32,8 @@ class HardwareRepositoryImpl @Inject constructor(private val application: Applic
         OS(
             version = OSUtils.getAndroidVersion(),
             sdk = currentSdk,
-            dessertName = OSUtils.getDessertName(currentSdk),
+            dessertName = "unknown", // We will use dessertNameRes for display
+            dessertNameRes = OSUtils.getDessertNameRes(currentSdk),
             securityPatch = OSUtils.getSecurityPatch(),
         )
     }

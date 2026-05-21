@@ -5,6 +5,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.rve.systemmonitor.R
 import com.rve.systemmonitor.ui.components.haptic.rememberHapticOnClick
 
 /**
@@ -26,7 +28,7 @@ fun InfoDialog(title: String, description: String, onDismiss: () -> Unit) {
         },
         confirmButton = {
             TextButton(onClick = rememberHapticOnClick(onDismiss)) {
-                Text("Close")
+                Text(stringResource(R.string.button_close))
             }
         },
     )

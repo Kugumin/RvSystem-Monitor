@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.shareIn
 @Singleton
 class MemoryRepositoryImpl @Inject constructor(
     private val settingsRepository: SettingsRepository,
-    @param:ApplicationScope private val externalScope: CoroutineScope
+    @param:ApplicationScope private val externalScope: CoroutineScope,
 ) : MemoryRepository {
     private val TAG = "MemoryRepository"
 

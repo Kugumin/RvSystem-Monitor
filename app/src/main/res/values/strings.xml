@@ -1,2 +1,354 @@
 <resources>
+    <!-- App -->
+    <string name="app_title">RvSystem Monitor</string>
+
+    <!-- Common / Shared -->
+    <string name="value_unknown">Unknown</string>
+    <string name="label_by">by %1$s</string>
+    <string name="cd_help">Help</string>
+    <string name="cd_settings">Settings</string>
+    <string name="cd_back">Back</string>
+    <string name="cd_reset_to_default">Reset to default</string>
+    <string name="cd_avatar">Avatar</string>
+    <string name="cd_update_icon">Update Icon</string>
+    <string name="cd_setup_icon">Setup Icon</string>
+    <string name="cd_open_setup_flow">Open setup flow</string>
+    <string name="cd_theme_icon">Theme Icon</string>
+    <string name="cd_amoled_icon">Amoled Icon</string>
+    <string name="cd_haptic_icon">Haptic Icon</string>
+    <string name="cd_metric_icon">%1$s Icon</string>
+    <string name="button_close">Close</string>
+    <string name="button_cancel">Cancel</string>
+    <string name="button_pause">Pause</string>
+    <string name="button_later">Later</string>
+    <string name="button_download">Download</string>
+    <string name="button_install">Install</string>
+    <string name="button_keep">Keep</string>
+
+    <!-- Theme -->
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_system">System</string>
+
+    <!-- Vibration Intensity -->
+    <string name="vibration_light">Light</string>
+    <string name="vibration_medium">Medium</string>
+    <string name="vibration_strong">Strong</string>
+
+    <!-- Bottom Navigation -->
+    <string name="nav_label_home">Home</string>
+    <string name="nav_label_cpu">CPU</string>
+    <string name="nav_label_memory">Memory</string>
+    <string name="nav_label_battery">Battery</string>
+
+    <!-- Home Screen -->
+    <string name="home_title_device">Device</string>
+    <string name="home_title_os">Operating System</string>
+    <string name="home_title_display">Display</string>
+    <string name="home_title_processor">Processor</string>
+    <string name="home_title_graphics">Graphics</string>
+    <string name="home_os_name_version">%1$s %2$s</string>
+    <string name="home_badge_api">API %1$s</string>
+    <string name="home_badge_patch">Patch: %1$s</string>
+    <string name="home_screen_size">%1$s\" Screen Size</string>
+    <string name="home_badge_refresh_rate">%1$sHz</string>
+    <string name="home_badge_density">%1$s dpi</string>
+    <string name="home_badge_hdr">HDR</string>
+    <string name="home_cores_count">%1$s Cores</string>
+    <string name="home_badge_opengl_es">OpenGL ES %1$s</string>
+    <string name="home_badge_vulkan">Vulkan %1$s</string>
+    <!-- Home Screen Help -->
+    <string name="home_help_device_os_title">Device &amp; Operating System</string>
+    <string name="home_help_device_os_desc">Information such as model, manufacturer, and Android version is extracted from the system\'s Build properties and secure patch levels.</string>
+    <string name="home_help_display_title">Display</string>
+    <string name="home_help_display_desc">Screen resolution, refresh rate, and density metrics are obtained via the Android WindowManager and Display APIs.</string>
+    <string name="home_help_processor_title">Processor (CPU)</string>
+    <string name="home_help_processor_desc">Detailed hardware info, including core count and architecture, is parsed from Linux kernel files (/proc/cpuinfo) using the high-performance Rust backend.</string>
+    <string name="home_help_graphics_title">Graphics (GPU)</string>
+    <string name="home_help_graphics_desc">The graphics renderer, vendor, and OpenGL ES version are retrieved directly from the device\'s GPU through the EGL context.</string>
+
+    <!-- CPU Screen -->
+    <string name="cpu_cores_section_title">Cores</string>
+    <string name="cpu_cores_count">%1$d Cores</string>
+    <string name="cpu_peak_frequency">Peak: %1$s</string>
+    <string name="cpu_label_architecture">Architecture</string>
+    <string name="cpu_label_board">Board</string>
+    <string name="cpu_label_hardware">Hardware</string>
+    <string name="cpu_core_label">CPU Core %1$d</string>
+    <string name="cpu_label_minimum">Minimum</string>
+    <string name="cpu_label_maximum">Maximum</string>
+
+    <!-- GPU Screen -->
+    <string name="title_graphics_info">Graphics Info</string>
+    <string name="gpu_opengl_es">OpenGL ES</string>
+    <string name="gpu_label_version">Version</string>
+    <string name="gpu_label_shader_version">Shader Version</string>
+    <string name="gpu_label_max_texture_size">Max Texture Size</string>
+    <string name="gpu_label_extensions">Extensions</string>
+    <string name="gpu_vulkan">Vulkan</string>
+    <string name="gpu_label_api_version">API Version</string>
+    <string name="gpu_label_driver_version">Driver Version</string>
+    <string name="gpu_label_device_type">Device Type</string>
+    <string name="gpu_memory_information">Memory Information</string>
+    <string name="gpu_label_shared_memory">Shared Memory</string>
+    <string name="gpu_max_texture_size_format">%1$d px</string>
+    <string name="gpu_shared_memory_format">%1$d MB</string>
+
+    <!-- Memory Screen -->
+    <string name="memory_label_ram">RAM</string>
+    <string name="memory_label_zram">ZRAM</string>
+    <string name="memory_detailed_breakdown">Detailed Breakdown</string>
+    <string name="memory_internal_storage">Internal Storage</string>
+    <string name="memory_label_cached">Cached</string>
+    <string name="memory_cached_description">Memory used for the file system cache to speed up file access. This memory can be reclaimed by the system if needed.</string>
+    <string name="memory_label_buffers">Buffers</string>
+    <string name="memory_buffers_description">Memory used for raw disk blocks and metadata. Usually very small on Android devices.</string>
+    <string name="memory_label_active">Active</string>
+    <string name="memory_active_description">Memory that is currently being used or has been used very recently. This memory is unlikely to be reclaimed soon.</string>
+    <string name="memory_label_inactive">Inactive</string>
+    <string name="memory_inactive_description">Memory that has not been used for a while. It is a prime candidate for being moved to Swap/ZRAM or reclaimed.</string>
+    <string name="memory_label_slab">Slab</string>
+    <string name="memory_slab_description">Memory used by the kernel\'s internal data structures and objects.</string>
+    <string name="memory_label_mount_path">Mount Path</string>
+    <string name="memory_label_filesystem">Filesystem</string>
+    <string name="memory_storage_used_format">%1$s / %2$s GB</string>
+    <string name="memory_free_format">%1$s GB Free</string>
+
+    <!-- Battery Screen -->
+    <string name="battery_charging_speed">Charging Speed</string>
+    <string name="battery_discharging_speed">Discharging Speed</string>
+    <string name="battery_current_speed">Current Speed</string>
+    <string name="battery_hyper_charging">Hyper Charging</string>
+    <string name="battery_fast_charging">Fast Charging</string>
+    <string name="battery_charging">Charging</string>
+    <string name="battery_details_title">Battery Details</string>
+    <string name="battery_label_voltage">Voltage</string>
+    <string name="battery_label_temperature">Temperature</string>
+    <string name="battery_label_power_source">Power Source</string>
+    <string name="battery_label_cycle_count">Cycle Count</string>
+    <string name="battery_label_design_capacity">Design Capacity</string>
+    <string name="battery_label_uptime">Uptime</string>
+    <string name="battery_label_deep_sleep">Deep Sleep</string>
+    <string name="battery_graph_max">MAX: %1$s mA</string>
+    <string name="battery_graph_min">MIN: %1$s mA</string>
+    <string name="battery_status_charging_label">CHARGING</string>
+    <string name="battery_status_discharging_label">DISCHARGING</string>
+    <!-- Battery Screen Help -->
+    <string name="battery_help_voltage_temp_title">Voltage &amp; Temperature</string>
+    <string name="battery_help_voltage_temp_desc">Sourced from real-time system broadcasts via the Android BatteryManager API.</string>
+    <string name="battery_help_power_source_title">Power Source &amp; Status</string>
+    <string name="battery_help_power_source_desc">Detected from the current charging state (AC, USB, or Wireless) via system intents.</string>
+    <string name="battery_help_charging_speed_title">Charging Speed</string>
+    <string name="battery_help_charging_speed_desc">Estimated based on real-time wattage: Fast Charging (15W+) and Hyper Charging (25W+).</string>
+    <string name="battery_help_wattage_title">Wattage (Power)</string>
+    <string name="battery_help_wattage_desc">Calculated in real-time by multiplying Voltage (V) and Current (A).</string>
+    <string name="battery_help_current_title">Current (mA)</string>
+    <string name="battery_help_current_desc">Direct hardware reading from the battery\'s charge counter property.</string>
+    <string name="battery_help_design_capacity_title">Design Capacity</string>
+    <string name="battery_help_design_capacity_desc">Extracted from Android PowerProfile. Indicates the factory-rated capacity of the battery.</string>
+    <string name="battery_help_cycle_count_title">Cycle Count</string>
+    <string name="battery_help_cycle_count_desc">Native Android 14+ property indicating total charge cycles completed.</string>
+    <string name="battery_help_uptime_title">Uptime &amp; Deep Sleep</string>
+    <string name="battery_help_uptime_desc">Uptime is the total time since boot. Deep Sleep is the time the CPU was in a low-power state.</string>
+
+    <!-- Settings Screen -->
+    <string name="title_settings">Settings</string>
+    <string name="settings_item_app">App</string>
+    <string name="settings_item_app_desc">General application settings</string>
+    <string name="settings_item_appearance">Appearance</string>
+    <string name="settings_item_appearance_desc">Theme, haptics, and visual style</string>
+    <string name="settings_item_overlay">Floating Overlay</string>
+    <string name="settings_item_overlay_desc">Global system monitor floating overlay</string>
+    <string name="settings_item_monitoring">Monitoring</string>
+    <string name="settings_item_monitoring_desc">Update intervals and graph history</string>
+    <string name="settings_item_rust_library">Rust Library</string>
+    <string name="settings_item_rust_library_desc">Native core specifications and API reference</string>
+    <string name="settings_item_about">About</string>
+    <string name="settings_item_about_desc">Developer and project information</string>
+
+    <!-- About Screen -->
+    <string name="title_about">About</string>
+    <string name="label_project_owner">Project Owner</string>
+    <string name="about_owner_name">Radika</string>
+    <string name="about_owner_role">Lead Developer &amp; Architect</string>
+    <string name="label_contributors">Contributors</string>
+    <string name="error_no_internet">No internet connection</string>
+    <string name="action_try_again">Try Again</string>
+    <string name="contributors_empty">No other contributors found yet.</string>
+    <string name="badge_free">Free</string>
+    <string name="badge_open_source">Open Source</string>
+    <string name="badge_rust">Rust</string>
+    <string name="badge_kotlin">Kotlin</string>
+    <string name="badge_material3_expressive">Material 3 Expressive</string>
+    <string name="about_app_description">High-performance system monitoring for Android</string>
+    <string name="contributors_count">%1$d contributions</string>
+    <string name="error_fetch_contributors">No internet connection or failed to fetch contributors</string>
+
+    <!-- App Settings Screen -->
+    <string name="title_app">App</string>
+    <string name="label_updates">Updates</string>
+    <string name="settings_check_for_updates">Check for Updates</string>
+    <string name="settings_check_updates_description">Automatically check for updates on startup</string>
+    <string name="label_testing">Testing</string>
+    <string name="settings_test_setup_flow">Test Setup Flow</string>
+    <string name="settings_test_setup_description">Launch setup without resetting app settings</string>
+
+    <!-- Appearance Settings Screen -->
+    <string name="title_appearance">Appearance</string>
+    <string name="label_visual_style">Visual Style</string>
+    <string name="settings_app_theme">App Theme</string>
+    <string name="settings_app_theme_description">Choose your preferred visual style</string>
+    <string name="settings_amoled_mode">Amoled Mode</string>
+    <string name="settings_amoled_description_enabled">Pure black background for OLED screens</string>
+    <string name="settings_amoled_description_disabled">Dark mode is required to use Amoled mode</string>
+    <string name="settings_haptic_feedback">Haptic Feedback</string>
+    <string name="settings_haptic_description">Subtle vibrations on interaction</string>
+    <string name="settings_vibration_intensity">Vibration Intensity</string>
+    <string name="appearance_hero_subtitle">Make it pretty enough to flex in screenshots.</string>
+
+    <!-- Monitoring Settings Screen -->
+    <string name="title_monitoring">Monitoring</string>
+    <string name="monitoring_refresh_intervals">Refresh Intervals</string>
+    <string name="monitoring_cpu_interval">CPU Update Interval</string>
+    <string name="monitoring_cpu_interval_desc">Adjust how often CPU stats are refreshed</string>
+    <string name="monitoring_gpu_interval">GPU Update Interval</string>
+    <string name="monitoring_gpu_interval_desc">Adjust how often GPU stats are refreshed</string>
+    <string name="monitoring_memory_interval">Memory Update Interval</string>
+    <string name="monitoring_memory_interval_desc">Adjust how often Memory stats are refreshed</string>
+    <string name="monitoring_battery_interval">Battery Update Interval</string>
+    <string name="monitoring_battery_interval_desc">Adjust how often uptime and current (mA) are refreshed</string>
+    <string name="monitoring_battery_graph_history">Battery Graph History</string>
+    <string name="monitoring_battery_graph_desc">Set how much data to show on the graph</string>
+    <string name="monitoring_history_duration">History Duration</string>
+
+    <!-- Overlay Settings Screen -->
+    <string name="title_floating_overlay_settings">Floating Overlay Settings</string>
+    <string name="overlay_enable_title">Enable Floating Overlay</string>
+    <string name="overlay_label_metrics">Metrics</string>
+    <string name="overlay_fps">FPS</string>
+    <string name="overlay_fps_desc">Show real-time frame rate</string>
+    <string name="overlay_ram_gb">RAM Usage (GB)</string>
+    <string name="overlay_ram_gb_desc">Show real-time used and total RAM in GB</string>
+    <string name="overlay_ram_percentage">RAM Percentage</string>
+    <string name="overlay_ram_percentage_desc">Show real-time percentage RAM usage</string>
+    <string name="overlay_battery_temp">Battery Temperature</string>
+    <string name="overlay_battery_temp_desc">Show real-time battery temperature</string>
+    <string name="overlay_cpu_temp">CPU Temperature</string>
+    <string name="overlay_cpu_temp_desc">Show real-time CPU temperature</string>
+    <string name="overlay_label_layout">Layout</string>
+    <string name="overlay_layout_horizontal">Horizontal</string>
+    <string name="overlay_layout_vertical">Vertical</string>
+    <string name="overlay_label_configuration">Configuration</string>
+    <string name="overlay_update_interval">Update Interval</string>
+    <string name="overlay_update_interval_desc">Adjust how often metrics refresh on the floating overlay</string>
+    <string name="overlay_label_appearance">Appearance</string>
+    <string name="overlay_text_color">Text Color</string>
+    <string name="overlay_text_size">Text Size</string>
+    <string name="overlay_bg_opacity">Background Opacity</string>
+    <string name="overlay_padding">Padding</string>
+    <string name="overlay_corner_radius">Corner Radius</string>
+    <string name="overlay_permission_required">Requires \'Draw over other apps\' permission</string>
+
+    <!-- Rust Library Screen -->
+    <string name="title_rust_library">Rust Library</string>
+    <string name="rust_library_name">librvsystem_monitor.so</string>
+    <string name="rust_library_version">Version: v%1$s</string>
+    <string name="rust_public_methods">Public methods</string>
+    <string name="rust_public_method_detail">Public method detail</string>
+    <string name="rust_method_desc_get_version">Returns the semantic version of the native library defined in Cargo.toml.</string>
+    <string name="rust_method_desc_get_vulkan">Queries the system Vulkan driver and returns formatted API and Driver versions.</string>
+    <string name="rust_method_desc_get_gpu_temp">Reads GPU thermal sensors via kernel sysfs nodes.</string>
+    <string name="rust_method_desc_get_memory">Fetches a comprehensive batch of RAM and ZRAM metrics in a single JNI call.</string>
+    <string name="rust_method_desc_get_ram">Returns detailed RAM statistics (Total, Available, Cached, etc.).</string>
+    <string name="rust_method_desc_get_zram">Returns ZRAM specific metrics including compression ratio and swap usage.</string>
+    <string name="rust_method_desc_get_all_freq">Retrieves current clock speeds for all online CPU cores.</string>
+    <string name="rust_method_desc_get_core_count">Returns the total number of CPU cores detected by the kernel.</string>
+    <string name="rust_method_desc_get_core_freq">Returns specific frequency type (cur, min, max) for a given core ID.</string>
+    <string name="rust_method_desc_get_governor">Returns the active CPU scaling governor for the specified core.</string>
+    <string name="rust_method_desc_get_cpu_temp">Retrieves the package/composite CPU temperature.</string>
+    <string name="rust_method_desc_get_all_temps">Returns an array of temperatures for each individual CPU core.</string>
+    <string name="rust_method_desc_get_dynamic">Batched retrieval of temperatures and frequencies for UI synchronization.</string>
+
+    <!-- Setup Screen -->
+    <string name="setup_continue">Continue</string>
+    <string name="setup_grant_permission">Grant Permission</string>
+    <string name="setup_finish">Finish Setup</string>
+    <string name="setup_permission_granted_footer">Permission granted. Continue to the next step.</string>
+    <string name="setup_permission_required_footer">Required to show the monitor overlay</string>
+    <string name="setup_updates_footer">Always stay up to date</string>
+    <string name="setup_theme_footer">You can change this later in Settings</string>
+    <string name="setup_overlay_title">Appear on Top</string>
+    <string name="setup_overlay_description">To show FPS, RAM usage, and temperatures while you use other apps, RvSystem Monitor needs permission to display over them.</string>
+    <string name="setup_updates_title">Check for Updates</string>
+    <string name="setup_updates_description">Automatically check for app updates on startup to stay up to date with the latest features.</string>
+    <string name="setup_auto_update">Auto Update</string>
+    <string name="setup_check_on_startup">Check on startup</string>
+    <string name="setup_theme_title">Choose Theme</string>
+    <string name="setup_theme_description">Select your preferred visual style for the application.</string>
+
+    <!-- Update Dialog -->
+    <string name="update_available_title">Update available</string>
+    <string name="downloading_update_title">Downloading update</string>
+    <string name="downloading_update_subtitle">Keep the app open until the APK is ready.</string>
+    <string name="download_progress_label">Download progress</string>
+    <string name="update_ready_title">Update ready</string>
+    <string name="update_ready_subtitle">The APK has been downloaded and can be installed now.</string>
+    <string name="install_description">Android will open the package installer for this file.</string>
+    <string name="update_failed_title">Update failed</string>
+    <string name="update_failed_subtitle">The update could not be completed.</string>
+    <string name="error_details_title">Error details</string>
+    <string name="cancel_download_dialog_title">Cancel download?</string>
+    <string name="cancel_download_dialog_message">The update download is still running. If you cancel now, you will need to start it again later.</string>
+    <string name="whats_new_title">What\'s new</string>
+    <string name="no_changelog_message">No changelog was provided for this version.</string>
+    <string name="pause_for_dialog_title">Pause for…</string>
+    <string name="pause_3_hours">3 hours</string>
+    <string name="pause_6_hours">6 hours</string>
+    <string name="pause_12_hours">12 hours</string>
+    <string name="pause_24_hours">24 hours</string>
+    <string name="error_no_apk_in_release">No APK found in the latest release</string>
+
+    <!-- SettingsSliderCard -->
+    <string name="default_value_label_refresh_rate">Refresh Rate</string>
+
+    <!-- HelpBottomSheet -->
+    <string name="help_default_title">Data Sources</string>
+
+    <!-- SystemOverlayService -->
+    <string name="notification_channel_overlay">Floating Overlay Service</string>
+    <string name="notification_title_overlay_active">Floating Overlay Active</string>
+    <string name="notification_text_overlay">Monitoring system performance (FPS &amp; RAM)</string>
+    <string name="overlay_format_fps">FPS: %1$d</string>
+    <string name="overlay_format_ram_gb_percent">RAM: %1$.1f/%2$.1f GB (%3$.0f%%)</string>
+    <string name="overlay_format_ram_gb">RAM: %1$.1f/%2$.1f GB</string>
+    <string name="overlay_format_ram_percent">RAM: %1$.0f%%</string>
+    <string name="overlay_format_cpu_temp">CPU: %1$.1f°C</string>
+    <string name="overlay_format_battery_temp">BATT: %1$.1f°C</string>
+
+    <!-- BatteryUtils -->
+    <string name="battery_health_good">Good</string>
+    <string name="battery_health_overheat">Overheat</string>
+    <string name="battery_health_dead">Dead</string>
+    <string name="battery_health_over_voltage">Over Voltage</string>
+    <string name="battery_health_unspecified_failure">Unspecified Failure</string>
+    <string name="battery_health_cold">Cold</string>
+    <string name="battery_status_charging">Charging</string>
+    <string name="battery_status_discharging">Discharging</string>
+    <string name="battery_status_full">Full</string>
+    <string name="battery_status_not_charging">Not Charging</string>
+    <string name="battery_power_source_ac">AC Charger</string>
+    <string name="battery_power_source_usb">USB Port</string>
+    <string name="battery_power_source_wireless">Wireless</string>
+    <string name="battery_power_source_battery">Battery</string>
+
+    <!-- DisplayUtils -->
+    <string name="hdr_type_dolby_vision">Dolby Vision</string>
+    <string name="hdr_type_hdr10">HDR10</string>
+    <string name="hdr_type_hlg">HLG</string>
+    <string name="hdr_type_hdr10_plus">HDR10+</string>
+
+    <!-- OSUtils -->
+    <string name="dessert_name_baklava">Baklava</string>
+    <string name="dessert_name_vanilla_ice_cream">Vanilla Ice Cream</string>
+    <string name="dessert_name_upside_down_cake">Upside Down Cake</string>
 </resources>

@@ -77,7 +77,7 @@ class SystemOverlayService : Service() {
 
                     if (showFps) {
                         val fps = (frameCount * 1_000_000_000L) / elapsedNanos
-                        metrics.add(String.format(Locale.US, "FPS: %d", fps))
+                        metrics.add(getString(R.string.overlay_format_fps, fps))
                     }
 
                     val currentRam = ramText
@@ -221,19 +221,19 @@ class SystemOverlayService : Service() {
                     val ram = MemoryUtils.getRamData()
                     ramText = when {
                         showRamGb && showRamPercentage -> {
-                            String.format(Locale.US, "RAM: %.1f/%.1f GB (%.0f%%)", ram.used, ram.total, ram.usedPercentage)
+                            getString(R.string.overlay_format_ram_gb_percent, ram.used, ram.total, ram.usedPercentage)
                         }
 
                         showRamGb -> {
-                            String.format(Locale.US, "RAM: %.1f/%.1f GB", ram.used, ram.total)
+                            getString(R.string.overlay_format_ram_gb, ram.used, ram.total)
                         }
 
                         showRamPercentage -> {
-                            String.format(Locale.US, "RAM: %.0f%%", ram.usedPercentage)
+                            getString(R.string.overlay_format_ram_percent, ram.usedPercentage)
                         }
 
                         else -> {
-                            String.format(Locale.US, "RAM: %.1f/%.1f GB (%.0f%%)", ram.used, ram.total, ram.usedPercentage)
+                            getString(R.string.overlay_format_ram_gb_percent, ram.used, ram.total, ram.usedPercentage)
                         }
                     }
                 } else {
@@ -244,7 +244,7 @@ class SystemOverlayService : Service() {
                     val cpuData = CpuUtils.getCpuDynamicData()
                     if (cpuData.isNotEmpty()) {
                         val temp = cpuData[0] // overall_temp is at index 0
-                        cpuText = String.format(Locale.US, "CPU: %.1f°C", temp)
+                        cpuText = getString(R.string.overlay_format_cpu_temp, temp)
                     }
                 } else {
                     cpuText = ""
@@ -271,7 +271,7 @@ class SystemOverlayService : Service() {
         val intent = lastBatteryIntent
         if (showBatteryTemp && intent != null) {
             val temp = BatteryUtils.getTemperature(intent)
-            batteryText = String.format(Locale.US, "BATT: %.1f°C", temp)
+            batteryText = getString(R.string.overlay_format_battery_temp, temp)
         } else {
             batteryText = ""
         }
@@ -349,15 +349,15 @@ class SystemOverlayService : Service() {
         val channelId = "system_overlay_channel"
         val channel = NotificationChannel(
             channelId,
-            "Floating Overlay Service",
+            getString(R.string.notification_channel_overlay),
             NotificationManager.IMPORTANCE_LOW,
         )
         val notificationManager = getSystemService(NotificationManager::class.java)
         notificationManager.createNotificationChannel(channel)
 
         return NotificationCompat.Builder(this, channelId)
-            .setContentTitle("Floating Overlay Active")
-            .setContentText("Monitoring system performance (FPS & RAM)")
+            .setContentTitle(getString(R.string.notification_title_overlay_active))
+            .setContentText(getString(R.string.notification_text_overlay))
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()

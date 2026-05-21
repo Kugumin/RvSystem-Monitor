@@ -57,6 +57,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
@@ -213,9 +214,15 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: (
                 Spacer(modifier = Modifier.height(48.dp))
 
                 val buttonText = when (setupStep) {
-                    SetupStep.OverlayPermission -> if (isOverlayPermissionGranted) "Continue" else "Grant Permission"
-                    SetupStep.Updates -> "Continue"
-                    SetupStep.Theme -> "Finish Setup"
+                    SetupStep.OverlayPermission -> if (isOverlayPermissionGranted) {
+                        stringResource(R.string.setup_continue)
+                    } else {
+                        stringResource(R.string.setup_grant_permission)
+                    }
+
+                    SetupStep.Updates -> stringResource(R.string.setup_continue)
+
+                    SetupStep.Theme -> stringResource(R.string.setup_finish)
                 }
 
                 val onButtonClick = when (setupStep) {
@@ -270,14 +277,14 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: (
 
                 val footerText = when (setupStep) {
                     SetupStep.OverlayPermission -> if (isOverlayPermissionGranted) {
-                        "Permission granted. Continue to the next step."
+                        stringResource(R.string.setup_permission_granted_footer)
                     } else {
-                        "Required to show the monitor overlay"
+                        stringResource(R.string.setup_permission_required_footer)
                     }
 
-                    SetupStep.Updates -> "Always stay up to date"
+                    SetupStep.Updates -> stringResource(R.string.setup_updates_footer)
 
-                    SetupStep.Theme -> "You can change this later in Settings"
+                    SetupStep.Theme -> stringResource(R.string.setup_theme_footer)
                 }
 
                 Text(
@@ -328,9 +335,8 @@ private fun StepIndicator(currentStep: Int, totalSteps: Int) {
 @Composable
 private fun OverlayPermissionContent(isOverlayPermissionGranted: Boolean) {
     SetupStepContent(
-        title = "Appear on Top",
-        description = "To show FPS, RAM usage, and temperatures while you use other apps, " +
-            "RvSystem Monitor needs permission to display over them.",
+        title = stringResource(R.string.setup_overlay_title),
+        description = stringResource(R.string.setup_overlay_description),
     )
 }
 
@@ -340,8 +346,8 @@ private fun UpdatesContent(autoUpdateEnabled: Boolean, onAutoUpdateChanged: (Boo
     val interactionSource = remember { MutableInteractionSource() }
 
     SetupStepContent(
-        title = "Check for Updates",
-        description = "Automatically check for app updates on startup to stay up to date with the latest features.",
+        title = stringResource(R.string.setup_updates_title),
+        description = stringResource(R.string.setup_updates_description),
         action = {
             Card(
                 onClick = rememberHapticOnClick { onAutoUpdateChanged(!autoUpdateEnabled) },
@@ -374,20 +380,20 @@ private fun UpdatesContent(autoUpdateEnabled: Boolean, onAutoUpdateChanged: (Boo
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.update_rounded),
-                                contentDescription = "Update Icon",
+                                contentDescription = stringResource(R.string.cd_update_icon),
                                 tint = MaterialTheme.colorScheme.onTertiaryContainer,
                             )
                         }
 
                         Column {
                             Text(
-                                text = "Auto Update",
+                                text = stringResource(R.string.setup_auto_update),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurface,
                             )
                             Text(
-                                text = "Check on startup",
+                                text = stringResource(R.string.setup_check_on_startup),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -458,8 +464,8 @@ private fun SetupStepContent(title: String, description: String, action: (@Compo
 @Composable
 private fun ThemeContent(selectedTheme: ThemeMode, onThemeSelected: (ThemeMode) -> Unit) {
     SetupStepContent(
-        title = "Choose Theme",
-        description = "Select your preferred visual style for the application.",
+        title = stringResource(R.string.setup_theme_title),
+        description = stringResource(R.string.setup_theme_description),
         action = {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -506,9 +512,9 @@ private fun ThemeContent(selectedTheme: ThemeMode, onThemeSelected: (ThemeMode) 
                             Spacer(Modifier.height(8.dp))
                             Text(
                                 text = when (theme) {
-                                    ThemeMode.LIGHT -> "Light"
-                                    ThemeMode.DARK -> "Dark"
-                                    ThemeMode.SYSTEM -> "System"
+                                    ThemeMode.LIGHT -> stringResource(R.string.theme_light)
+                                    ThemeMode.DARK -> stringResource(R.string.theme_dark)
+                                    ThemeMode.SYSTEM -> stringResource(R.string.theme_system)
                                 },
                                 style = MaterialTheme.typography.labelLarge,
                                 fontWeight = FontWeight.SemiBold,

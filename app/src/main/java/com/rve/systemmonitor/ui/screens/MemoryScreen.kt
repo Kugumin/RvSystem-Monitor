@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -107,24 +108,23 @@ private fun DetailedMemoryCard(ram: RAM, onItemClick: (String, String) -> Unit) 
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
-            text = "Detailed Breakdown",
+            text = stringResource(R.string.memory_detailed_breakdown),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
         )
 
         TwoColumnInfoRow(spacing = 12.dp) {
             MemoryDetailItem(
-                label = "Cached",
+                label = stringResource(R.string.memory_label_cached),
                 value = cached,
-                description = "Memory used for the file system cache to speed up file access. " +
-                    "This memory can be reclaimed by the system if needed.",
+                description = stringResource(R.string.memory_cached_description),
                 onItemClick = onItemClick,
                 modifier = Modifier.weight(1f),
             )
             MemoryDetailItem(
-                label = "Buffers",
+                label = stringResource(R.string.memory_label_buffers),
                 value = buffers,
-                description = "Memory used for raw disk blocks and metadata. Usually very small on Android devices.",
+                description = stringResource(R.string.memory_buffers_description),
                 onItemClick = onItemClick,
                 modifier = Modifier.weight(1f),
             )
@@ -132,27 +132,25 @@ private fun DetailedMemoryCard(ram: RAM, onItemClick: (String, String) -> Unit) 
 
         TwoColumnInfoRow(spacing = 12.dp) {
             MemoryDetailItem(
-                label = "Active",
+                label = stringResource(R.string.memory_label_active),
                 value = active,
-                description = "Memory that is currently being used or has been used very recently. " +
-                    "This memory is unlikely to be reclaimed soon.",
+                description = stringResource(R.string.memory_active_description),
                 onItemClick = onItemClick,
                 modifier = Modifier.weight(1f),
             )
             MemoryDetailItem(
-                label = "Inactive",
+                label = stringResource(R.string.memory_label_inactive),
                 value = inactive,
-                description = "Memory that has not been used for a while. " +
-                    "It is a prime candidate for being moved to Swap/ZRAM or reclaimed.",
+                description = stringResource(R.string.memory_inactive_description),
                 onItemClick = onItemClick,
                 modifier = Modifier.weight(1f),
             )
         }
 
         MemoryDetailItem(
-            label = "Slab",
+            label = stringResource(R.string.memory_label_slab),
             value = slab,
-            description = "Memory used by the kernel's internal data structures and objects.",
+            description = stringResource(R.string.memory_slab_description),
             onItemClick = onItemClick,
             modifier = Modifier.fillMaxWidth(),
         )
@@ -166,7 +164,7 @@ private fun StorageCard(storage: Storage) {
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             MemoryStorageProgressRow(
-                label = "Internal Storage",
+                label = stringResource(R.string.memory_internal_storage),
                 usedValue = storage.used.toString(),
                 totalValue = storage.total.toString(),
                 usedPercentage = if (storage.usedPercentage.isNaN()) 0f else storage.usedPercentage.toFloat(),
@@ -183,12 +181,12 @@ private fun StorageCard(storage: Storage) {
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 StorageInfoItem(
-                    label = "Mount Path",
+                    label = stringResource(R.string.memory_label_mount_path),
                     value = storage.mountPath,
                     modifier = Modifier.weight(1.5f),
                 )
                 StorageInfoItem(
-                    label = "Filesystem",
+                    label = stringResource(R.string.memory_label_filesystem),
                     value = storage.fileSystemType,
                     modifier = Modifier.weight(1f),
                 )
@@ -266,7 +264,7 @@ private fun MemoryCard(ram: RAM, zram: ZRAM) {
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
             MemoryStorageProgressRow(
-                label = "RAM",
+                label = stringResource(R.string.memory_label_ram),
                 usedValue = ram.used.toString(),
                 totalValue = ram.total.toString(),
                 usedPercentage = if (ram.usedPercentage.isNaN()) 0f else ram.usedPercentage.toFloat(),
@@ -275,7 +273,7 @@ private fun MemoryCard(ram: RAM, zram: ZRAM) {
 
             if (zram.isActive) {
                 MemoryStorageProgressRow(
-                    label = "ZRAM",
+                    label = stringResource(R.string.memory_label_zram),
                     usedValue = zram.used.toString(),
                     totalValue = zram.total.toString(),
                     usedPercentage = if (zram.usedPercentage.isNaN()) 0f else zram.usedPercentage.toFloat(),

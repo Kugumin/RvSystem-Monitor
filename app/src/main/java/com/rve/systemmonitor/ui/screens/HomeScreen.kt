@@ -11,6 +11,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.rve.systemmonitor.R
@@ -35,6 +37,7 @@ fun HomeScreen(isActive: Boolean, onNavigateToGPU: () -> Unit, viewModel: HomeVi
 private fun HomeScreenContent(uiState: HomeUiState, onNavigateToGPU: () -> Unit) {
     var showHelpSheet by remember { mutableStateOf(false) }
     val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
+    val context = LocalContext.current
 
     if (showHelpSheet) {
         ModalBottomSheet(
@@ -46,55 +49,58 @@ private fun HomeScreenContent(uiState: HomeUiState, onNavigateToGPU: () -> Unit)
         }
     }
 
-    val infoCards = remember(uiState) {
+    val infoCards = remember(uiState, context) {
         listOf(
             InfoCardData(
-                title = "Device",
+                title = context.getString(R.string.home_title_device),
                 headline = uiState.device.model,
-                subhead = "by ${uiState.device.manufacturer}",
+                subhead = context.getString(R.string.label_by, uiState.device.manufacturer),
                 iconRes = R.drawable.mobile_filled,
                 badges = listOf(uiState.device.device).toImmutableList(),
                 onHelpClick = { showHelpSheet = true },
             ),
             InfoCardData(
-                title = "Operating System",
-                headline = "${uiState.os.name} ${uiState.os.version}",
-                subhead = uiState.os.dessertName,
+                title = context.getString(R.string.home_title_os),
+                headline = context.getString(R.string.home_os_name_version, uiState.os.name, uiState.os.version),
+                subhead = context.getString(uiState.os.dessertNameRes),
                 iconRes = R.drawable.android_filled,
                 backgroundIconOffset = 45.dp,
-                badges = listOf("API ${uiState.os.sdk}", "Patch: ${uiState.os.securityPatch}").toImmutableList(),
+                badges = listOf(
+                    context.getString(R.string.home_badge_api, uiState.os.sdk),
+                    context.getString(R.string.home_badge_patch, uiState.os.securityPatch),
+                ).toImmutableList(),
             ),
             InfoCardData(
-                title = "Display",
+                title = context.getString(R.string.home_title_display),
                 headline = uiState.display.resolution,
-                subhead = "${uiState.display.screenSizeInches}\" Screen Size",
+                subhead = context.getString(R.string.home_screen_size, uiState.display.screenSizeInches),
                 iconRes = R.drawable.mobile_3_filled,
                 backgroundIconOffset = 20.dp,
                 badges = buildList {
-                    add("${uiState.display.refreshRate}Hz")
-                    add("${uiState.display.densityDpi} dpi")
+                    add(context.getString(R.string.home_badge_refresh_rate, uiState.display.refreshRate))
+                    add(context.getString(R.string.home_badge_density, uiState.display.densityDpi))
                     if (uiState.display.isHdrSupported) {
-                        add("HDR")
+                        add(context.getString(R.string.home_badge_hdr))
                         addAll(uiState.display.hdrTypes)
                     }
                 }.toImmutableList(),
                 secondaryBadgeIndices = (if (uiState.display.isHdrSupported) listOf(0, 1) else listOf(0)).toImmutableList(),
             ),
             InfoCardData(
-                title = "Processor",
+                title = context.getString(R.string.home_title_processor),
                 headline = uiState.cpu.model,
-                subhead = "by ${uiState.cpu.manufacturer}",
+                subhead = context.getString(R.string.label_by, uiState.cpu.manufacturer),
                 iconRes = R.drawable.memory_filled,
-                badges = listOf("${uiState.cpu.cores} Cores").toImmutableList(),
+                badges = listOf(context.getString(R.string.home_cores_count, uiState.cpu.cores)).toImmutableList(),
             ),
             InfoCardData(
-                title = "Graphics",
+                title = context.getString(R.string.home_title_graphics),
                 headline = uiState.gpu.renderer,
-                subhead = "by ${uiState.gpu.vendor}",
+                subhead = context.getString(R.string.label_by, uiState.gpu.vendor),
                 iconRes = R.drawable.view_in_ar_filled,
                 badges = listOf(
-                    "OpenGL ES ${uiState.gpu.glesVersion}",
-                    "Vulkan ${uiState.gpu.vulkanVersion}",
+                    context.getString(R.string.home_badge_opengl_es, uiState.gpu.glesVersion),
+                    context.getString(R.string.home_badge_vulkan, uiState.gpu.vulkanVersion),
                 ).toImmutableList(),
                 onClick = onNavigateToGPU,
             ),
@@ -114,14 +120,10 @@ private fun HomeScreenContent(uiState: HomeUiState, onNavigateToGPU: () -> Unit)
 @Composable
 private fun HomeHelpContent() {
     val helpItems = persistentListOf(
-        "Device & Operating System" to "Information such as model, manufacturer, and Android version is extracted from " +
-            "the system's Build properties and secure patch levels.",
-        "Display" to "Screen resolution, refresh rate, and density metrics are obtained via the " +
-            "Android WindowManager and Display APIs.",
-        "Processor (CPU)" to "Detailed hardware info, including core count and architecture, is parsed from " +
-            "Linux kernel files (/proc/cpuinfo) using the high-performance Rust backend.",
-        "Graphics (GPU)" to "The graphics renderer, vendor, and OpenGL ES version are retrieved directly " +
-            "from the device's GPU through the EGL context.",
+        stringResource(R.string.home_help_device_os_title) to stringResource(R.string.home_help_device_os_desc),
+        stringResource(R.string.home_help_display_title) to stringResource(R.string.home_help_display_desc),
+        stringResource(R.string.home_help_processor_title) to stringResource(R.string.home_help_processor_desc),
+        stringResource(R.string.home_help_graphics_title) to stringResource(R.string.home_help_graphics_desc),
     )
 
     HelpBottomSheetContent(helpItems = helpItems)

@@ -25,6 +25,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
@@ -82,12 +83,12 @@ fun RvSystemMonitorApp(onNavigateToSettings: () -> Unit, onNavigateToGPU: () -> 
     Scaffold(
         topBar = {
             SimpleTopAppBar(
-                title = "RvSystem Monitor",
+                title = stringResource(R.string.app_title),
                 subtitle = when (pagerState.currentPage) {
-                    0 -> "Home"
-                    1 -> "CPU"
-                    2 -> "Memory"
-                    3 -> "Battery"
+                    0 -> stringResource(R.string.nav_label_home)
+                    1 -> stringResource(R.string.nav_label_cpu)
+                    2 -> stringResource(R.string.nav_label_memory)
+                    3 -> stringResource(R.string.nav_label_battery)
                     else -> ""
                 },
                 onNavigateToSettings = onNavigateToSettings,

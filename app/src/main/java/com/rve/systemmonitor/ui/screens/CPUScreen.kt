@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -59,7 +60,7 @@ private fun CPUScreenContent(cpuInfo: CPU) {
 
         item {
             Text(
-                text = "Cores",
+                text = stringResource(R.string.cpu_cores_section_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(horizontal = 8.dp),
@@ -95,7 +96,7 @@ private fun CPUOverviewCard(cpu: CPU) {
                     fontWeight = FontWeight.Bold,
                 )
                 Text(
-                    text = "by ${cpu.manufacturer}",
+                    text = stringResource(R.string.label_by, cpu.manufacturer),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
@@ -106,12 +107,12 @@ private fun CPUOverviewCard(cpu: CPU) {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 BadgeChip(
-                    text = "${cpu.cores} Cores",
+                    text = stringResource(R.string.cpu_cores_count, cpu.cores),
                     containerColor = MaterialTheme.colorScheme.tertiary,
                     textColor = MaterialTheme.colorScheme.onTertiary,
                 )
                 BadgeChip(
-                    text = "Peak: $peakFrequency",
+                    text = stringResource(R.string.cpu_peak_frequency, peakFrequency),
                     containerColor = MaterialTheme.colorScheme.primary,
                     textColor = MaterialTheme.colorScheme.onPrimary,
                 )
@@ -124,13 +125,13 @@ private fun CPUOverviewCard(cpu: CPU) {
 
             TwoColumnInfoRow {
                 InfoItem(
-                    label = "Architecture",
+                    label = stringResource(R.string.cpu_label_architecture),
                     value = cpu.architecture,
                     valueColor = MaterialTheme.colorScheme.onSecondaryContainer,
                     modifier = Modifier.weight(1f),
                 )
                 InfoItem(
-                    label = "Board",
+                    label = stringResource(R.string.cpu_label_board),
                     value = cpu.board,
                     valueColor = MaterialTheme.colorScheme.onSecondaryContainer,
                     modifier = Modifier.weight(1f),
@@ -139,7 +140,7 @@ private fun CPUOverviewCard(cpu: CPU) {
 
             TwoColumnInfoRow {
                 InfoItem(
-                    label = "Hardware",
+                    label = stringResource(R.string.cpu_label_hardware),
                     value = cpu.hardware,
                     valueColor = MaterialTheme.colorScheme.onSecondaryContainer,
                     modifier = Modifier.weight(1f),
@@ -190,7 +191,7 @@ private fun CoreDetailCard(core: CoreDetail) {
             }
 
             Text(
-                text = "CPU Core ${core.id}",
+                text = stringResource(R.string.cpu_core_label, core.id),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.ExtraBold,
@@ -236,12 +237,12 @@ private fun CoreDetailCard(core: CoreDetail) {
 
         TwoColumnInfoRow(spacing = 12.dp) {
             CompactInfoChip(
-                label = "Minimum",
+                label = stringResource(R.string.cpu_label_minimum),
                 value = core.minFreq,
                 modifier = Modifier.weight(1f),
             )
             CompactInfoChip(
-                label = "Maximum",
+                label = stringResource(R.string.cpu_label_maximum),
                 value = core.maxFreq,
                 modifier = Modifier.weight(1f),
             )

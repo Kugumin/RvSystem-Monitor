@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.rve.systemmonitor.R
@@ -55,7 +56,7 @@ fun SettingsSliderCard(
     onReset: () -> Unit,
     isResetVisible: Boolean,
     modifier: Modifier = Modifier,
-    valueLabel: String = "Refresh Rate",
+    valueLabel: String = stringResource(R.string.default_value_label_refresh_rate),
     enabled: Boolean = true,
     alpha: Float = 1f,
 ) {
@@ -160,7 +161,7 @@ fun SettingsSliderCard(
                                 ) {
                                     Icon(
                                         painter = painterResource(R.drawable.reset_settings_rounded),
-                                        contentDescription = "Reset to default",
+                                        contentDescription = stringResource(R.string.cd_reset_to_default),
                                         modifier = Modifier.size(16.dp),
                                         tint = MaterialTheme.colorScheme.primary,
                                     )
