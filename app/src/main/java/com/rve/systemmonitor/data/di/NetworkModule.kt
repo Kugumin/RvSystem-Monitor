@@ -1,5 +1,6 @@
 package com.rve.systemmonitor.data.di
 
+import android.app.Application
 import com.rve.systemmonitor.data.remote.GitHubService
 import dagger.Module
 import dagger.Provides
@@ -19,8 +20,21 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
+    fun provideOkHttpClient(application: Application): OkHttpClient {
+        val cacheSize = (5 * 1024 * 1024).toLong() // 5 MB
+        val cache = okhttp3.Cache(application.cacheDir, cacheSize)
+
         return OkHttpClient.Builder()
+            .cache(cache)
+            .addInterceptor { chain ->
+                var request = chain.request()
+                if (request.url.host == "api.github.com") {
+                    request = request.newBuilder()
+                        .header("Cache-Control", "public, max-age=86400") // 24 hours
+                        .build()
+                }
+                chain.proceed(request)
+            }
             .addInterceptor(
                 HttpLoggingInterceptor().apply {
                     level = HttpLoggingInterceptor.Level.BASIC

@@ -4,6 +4,7 @@ package com.rve.systemmonitor.data.repository
 
 import android.app.Application
 import android.os.SystemClock
+import com.rve.systemmonitor.data.di.ApplicationScope
 import com.rve.systemmonitor.domain.model.Battery
 import com.rve.systemmonitor.domain.repository.BatteryRepository
 import com.rve.systemmonitor.domain.repository.SettingsRepository
@@ -19,9 +20,14 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-
+import kotlinx.coroutines.flow.shareIn
+@OptIn(ExperimentalCoroutinesApi::class)
 @Singleton
-class BatteryRepositoryImpl @Inject constructor(private val application: Application, private val settingsRepository: SettingsRepository) :
+class BatteryRepositoryImpl @Inject constructor(
+    private val application: Application,
+    private val settingsRepository: SettingsRepository,
+    @param:ApplicationScope private val externalScope: kotlinx.coroutines.CoroutineScope
+) :
     BatteryRepository {
 
     private val staticBatteryInfo by lazy {
@@ -38,6 +44,46 @@ class BatteryRepositoryImpl @Inject constructor(private val application: Applica
         } else {
             BatteryInfo("Unknown", "Unknown", -1.0, deepSleep)
         }
+    }
+
+    private val sharedBatteryStream by lazy {
+        val broadcastFlow = BatteryUtils.getBatteryFlow(application)
+
+        val pollingFlow = settingsRepository.batteryRefreshDelay.flatMapLatest { delayMillis ->
+            flow {
+                delay(400) // Initial delay to avoid startup peak
+                while (true) {
+                    emit(BatteryUtils.getCurrent(application))
+                    delay(delayMillis)
+                }
+            }
+        }
+
+        combine(broadcastFlow, pollingFlow) { intent, currentNow ->
+            val voltage = BatteryUtils.getVoltage(intent)
+            val level = BatteryUtils.getLevel(intent)
+
+            Battery(
+                level = level,
+                health = staticBatteryInfo.health,
+                status = BatteryUtils.getStatus(intent),
+                technology = staticBatteryInfo.technology,
+                voltage = voltage,
+                temperature = BatteryUtils.getTemperature(intent),
+                capacity = staticBatteryInfo.designCapacity,
+                cycleCount = BatteryUtils.getCycleCount(intent),
+                uptime = SystemClock.elapsedRealtime(),
+                deepSleep = staticBatteryInfo.deepSleep,
+                current = currentNow,
+                wattage = calculateWattage(currentNow, voltage),
+                powerSource = BatteryUtils.getPowerSource(intent),
+            )
+        }.flowOn(Dispatchers.IO)
+            .shareIn(
+                scope = externalScope,
+                started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
+                replay = 1,
+            )
     }
 
     private data class BatteryInfo(val health: String, val technology: String, val designCapacity: Double, val deepSleep: Long)
@@ -69,40 +115,7 @@ class BatteryRepositoryImpl @Inject constructor(private val application: Applica
         }
     }
 
-    override fun getBatteryStream(): Flow<Battery> {
-        val broadcastFlow = BatteryUtils.getBatteryFlow(application)
-
-        val pollingFlow = settingsRepository.batteryRefreshDelay.flatMapLatest { delayMillis ->
-            flow {
-                delay(400) // Initial delay to avoid startup peak
-                while (true) {
-                    emit(BatteryUtils.getCurrent(application))
-                    delay(delayMillis)
-                }
-            }
-        }
-
-        return combine(broadcastFlow, pollingFlow) { intent, currentNow ->
-            val voltage = BatteryUtils.getVoltage(intent)
-            val level = BatteryUtils.getLevel(intent)
-
-            Battery(
-                level = level,
-                health = staticBatteryInfo.health,
-                status = BatteryUtils.getStatus(intent),
-                technology = staticBatteryInfo.technology,
-                voltage = voltage,
-                temperature = BatteryUtils.getTemperature(intent),
-                capacity = staticBatteryInfo.designCapacity,
-                cycleCount = BatteryUtils.getCycleCount(intent),
-                uptime = SystemClock.elapsedRealtime(),
-                deepSleep = staticBatteryInfo.deepSleep,
-                current = currentNow,
-                wattage = calculateWattage(currentNow, voltage),
-                powerSource = BatteryUtils.getPowerSource(intent),
-            )
-        }.flowOn(Dispatchers.IO)
-    }
+    override fun getBatteryStream(): Flow<Battery> = sharedBatteryStream
 
     private fun calculateWattage(currentMA: Int, voltageMV: Int): Double {
         // P (W) = I (A) * V (V)

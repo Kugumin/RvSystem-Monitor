@@ -19,17 +19,17 @@ import kotlinx.collections.immutable.toImmutableList
 @Singleton
 class HardwareRepositoryImpl @Inject constructor(private val application: Application) : HardwareRepository {
 
-    override fun getDeviceInfo(): Device {
-        return Device(
+    private val device by lazy {
+        Device(
             manufacturer = DeviceUtils.getManufacturer(),
             model = DeviceUtils.getModel(),
             device = DeviceUtils.getDevice(),
         )
     }
 
-    override fun getOSInfo(): OS {
+    private val os by lazy {
         val currentSdk = OSUtils.getSdkInt()
-        return OS(
+        OS(
             version = OSUtils.getAndroidVersion(),
             sdk = currentSdk,
             dessertName = OSUtils.getDessertName(currentSdk),
@@ -37,9 +37,9 @@ class HardwareRepositoryImpl @Inject constructor(private val application: Applic
         )
     }
 
-    override fun getDisplayInfo(): Display {
+    private val display by lazy {
         val (isHdr, hdrTypes) = DisplayUtils.getHdrCapabilities(application)
-        return Display(
+        Display(
             resolution = DisplayUtils.getResolution(application),
             refreshRate = DisplayUtils.getRefreshRate(application),
             densityDpi = DisplayUtils.getDensityDpi(application),
@@ -49,10 +49,10 @@ class HardwareRepositoryImpl @Inject constructor(private val application: Applic
         )
     }
 
-    override fun getGpuInfo(): GPU {
+    private val gpu by lazy {
         val (renderer, vendor, caps) = GpuUtils.getGpuDetails()
         val (maxTexSize, extCount) = caps
-        return GPU(
+        GPU(
             renderer = renderer,
             vendor = vendor,
             glesVersion = GpuUtils.getGlesVersion(application),
@@ -68,7 +68,17 @@ class HardwareRepositoryImpl @Inject constructor(private val application: Applic
         )
     }
 
-    override fun getStorageInfo(): Storage {
-        return StorageUtils.getStorageData()
+    private val storage by lazy {
+        StorageUtils.getStorageData()
     }
+
+    override fun getDeviceInfo(): Device = device
+
+    override fun getOSInfo(): OS = os
+
+    override fun getDisplayInfo(): Display = display
+
+    override fun getGpuInfo(): GPU = gpu
+
+    override fun getStorageInfo(): Storage = storage
 }
