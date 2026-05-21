@@ -69,11 +69,7 @@ class BatteryRepositoryImpl @Inject constructor(
             Battery(
                 level = level,
                 healthRes = staticBatteryInfo.healthRes,
-                status = if (level == 100 && BatteryUtils.getStatusRes(intent) == R.string.battery_status_charging) {
-                    "Full"
-                } else {
-                    "Unknown"
-                }, // Simplified status for internal logic
+                status = BatteryUtils.getStatus(intent),
                 statusRes = BatteryUtils.getStatusRes(intent),
                 technology = staticBatteryInfo.technology,
                 voltage = voltage,
@@ -106,6 +102,7 @@ class BatteryRepositoryImpl @Inject constructor(
             Battery(
                 level = level,
                 healthRes = staticBatteryInfo.healthRes,
+                status = BatteryUtils.getStatus(intent),
                 statusRes = BatteryUtils.getStatusRes(intent),
                 technology = staticBatteryInfo.technology,
                 voltage = voltage,

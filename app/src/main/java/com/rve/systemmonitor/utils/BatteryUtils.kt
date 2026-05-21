@@ -63,6 +63,16 @@ object BatteryUtils {
         }
     }
 
+    fun getStatus(intent: Intent): String {
+        return when (intent.getIntExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_UNKNOWN)) {
+            BatteryManager.BATTERY_STATUS_CHARGING -> "Charging"
+            BatteryManager.BATTERY_STATUS_DISCHARGING -> "Discharging"
+            BatteryManager.BATTERY_STATUS_FULL -> "Full"
+            BatteryManager.BATTERY_STATUS_NOT_CHARGING -> "Not Charging"
+            else -> "Unknown"
+        }
+    }
+
     fun getPowerSourceRes(intent: Intent): Int {
         return when (intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1)) {
             BatteryManager.BATTERY_PLUGGED_AC -> R.string.battery_power_source_ac
