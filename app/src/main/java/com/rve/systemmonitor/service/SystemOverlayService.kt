@@ -66,43 +66,24 @@ class SystemOverlayService : Service() {
     @Volatile private var ramText: String = ""
     @Volatile private var cpuText: String = ""
     @Volatile private var batteryText: String = ""
+    @Volatile private var lastCalculatedFps: Long = 0L
 
     private val frameCallback = object : Choreographer.FrameCallback {
         override fun doFrame(frameTimeNanos: Long) {
             if (lastFrameTimeNanos != 0L) {
                 frameCount++
-                val elapsedNanos = frameTimeNanos - lastFpsUpdateTime
-                if (elapsedNanos >= updateDelayNanos) {
-                    val metrics = mutableListOf<String>()
+            }
 
-                    if (showFps) {
-                        val fps = (frameCount * 1_000_000_000L) / elapsedNanos
-                        metrics.add(getString(R.string.overlay_format_fps, fps))
-                    }
-
-                    val currentRam = ramText
-                    if ((showRamGb || showRamPercentage) && currentRam.isNotEmpty()) {
-                        metrics.add(currentRam)
-                    }
-
-                    val currentBattery = batteryText
-                    if (showBatteryTemp && currentBattery.isNotEmpty()) {
-                        metrics.add(currentBattery)
-                    }
-
-                    val currentCpu = cpuText
-                    if (showCpuTemp && currentCpu.isNotEmpty()) {
-                        metrics.add(currentCpu)
-                    }
-
-                    val separator = if (isVerticalLayout) "\n" else " | "
-                    metricsTextView?.text = metrics.joinToString(separator)
-                    frameCount = 0
-                    lastFpsUpdateTime = frameTimeNanos
+            val elapsedNanos = frameTimeNanos - lastFpsUpdateTime
+            if (lastFpsUpdateTime == 0L || elapsedNanos >= updateDelayNanos) {
+                if (lastFpsUpdateTime != 0L && elapsedNanos > 0) {
+                    lastCalculatedFps = (frameCount * 1_000_000_000L) / elapsedNanos
                 }
-            } else {
+                updateMetricsDisplay()
+                frameCount = 0
                 lastFpsUpdateTime = frameTimeNanos
             }
+
             lastFrameTimeNanos = frameTimeNanos
             choreographer.postFrameCallback(this)
         }
@@ -111,7 +92,32 @@ class SystemOverlayService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        handleIntent(intent)
         return START_NOT_STICKY
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        intent?.let {
+            showFps = it.getBooleanExtra("show_fps", showFps)
+            showRamPercentage = it.getBooleanExtra("show_ram_percentage", showRamPercentage)
+            showRamGb = it.getBooleanExtra("show_ram_gb", showRamGb)
+            showBatteryTemp = it.getBooleanExtra("show_battery_temp", showBatteryTemp)
+            showCpuTemp = it.getBooleanExtra("show_cpu_temp", showCpuTemp)
+
+            val interval = it.getLongExtra("update_delay", -1L)
+            if (interval != -1L) {
+                updateDelayNanos = interval * 1_000_000L
+            }
+
+            overlayTextSize = it.getFloatExtra("text_size", overlayTextSize)
+            overlayBgOpacity = it.getFloatExtra("bg_opacity", overlayBgOpacity)
+            overlayPadding = it.getIntExtra("padding", overlayPadding)
+            overlayTextColor = it.getIntExtra("text_color", overlayTextColor)
+            isVerticalLayout = it.getBooleanExtra("is_vertical", isVerticalLayout)
+            overlayCornerRadius = it.getIntExtra("corner_radius", overlayCornerRadius)
+
+            applySettings()
+        }
     }
 
     private fun applySettings() {
@@ -129,6 +135,38 @@ class SystemOverlayService : Service() {
 
             setPadding(overlayPadding, overlayPadding / 2, overlayPadding, overlayPadding / 2)
         }
+        updateMetricsDisplay()
+    }
+
+    private fun updateMetricsDisplay() {
+        serviceScope.launch(Dispatchers.Main) {
+            val metrics = mutableListOf<String>()
+
+            if (showFps) {
+                metrics.add(getString(R.string.overlay_format_fps, lastCalculatedFps))
+            }
+
+            val currentRam = ramText
+            if ((showRamGb || showRamPercentage) && currentRam.isNotEmpty()) {
+                metrics.add(currentRam)
+            }
+
+            val currentBattery = batteryText
+            if (showBatteryTemp && currentBattery.isNotEmpty()) {
+                metrics.add(currentBattery)
+            }
+
+            val currentCpu = cpuText
+            if (showCpuTemp && currentCpu.isNotEmpty()) {
+                metrics.add(currentCpu)
+            }
+
+            val separator = if (isVerticalLayout) "\n" else " | "
+            val newText = metrics.joinToString(separator)
+            if (metricsTextView?.text != newText) {
+                metricsTextView?.text = newText
+            }
+        }
     }
 
     override fun onCreate() {
@@ -136,6 +174,12 @@ class SystemOverlayService : Service() {
         isRunning = true
         startForeground(NOTIFICATION_ID, createNotification())
         showOverlay()
+
+        // Initial hardware data
+        refreshHardwareMetrics()
+        lastBatteryIntent = BatteryUtils.getBatteryIntent(this)
+        updateBatteryText()
+
         startSettingsObservation()
         startMetricsPolling()
         startBatteryMonitoring()
@@ -144,26 +188,43 @@ class SystemOverlayService : Service() {
 
     private fun startSettingsObservation() {
         serviceScope.launch {
-            overlayRepository.isFpsEnabled.collect { showFps = it }
+            overlayRepository.isFpsEnabled.collect {
+                showFps = it
+                updateMetricsDisplay()
+            }
         }
         serviceScope.launch {
-            overlayRepository.isRamPercentageEnabled.collect { showRamPercentage = it }
+            overlayRepository.isRamPercentageEnabled.collect {
+                showRamPercentage = it
+                refreshHardwareMetrics()
+                updateMetricsDisplay()
+            }
         }
         serviceScope.launch {
-            overlayRepository.isRamGbEnabled.collect { showRamGb = it }
+            overlayRepository.isRamGbEnabled.collect {
+                showRamGb = it
+                refreshHardwareMetrics()
+                updateMetricsDisplay()
+            }
         }
         serviceScope.launch {
             overlayRepository.isBatteryTempEnabled.collect {
                 showBatteryTemp = it
                 updateBatteryText()
+                updateMetricsDisplay()
             }
         }
         serviceScope.launch {
-            overlayRepository.isCpuTempEnabled.collect { showCpuTemp = it }
+            overlayRepository.isCpuTempEnabled.collect {
+                showCpuTemp = it
+                refreshHardwareMetrics()
+                updateMetricsDisplay()
+            }
         }
         serviceScope.launch {
             overlayRepository.overlayUpdateInterval.collect { delayMillis ->
                 updateDelayNanos = delayMillis * 1_000_000L
+                updateMetricsDisplay()
             }
         }
         serviceScope.launch(Dispatchers.Main) {
@@ -217,42 +278,45 @@ class SystemOverlayService : Service() {
     private fun startMetricsPolling() {
         serviceScope.launch {
             while (isActive) {
-                if (showRamGb || showRamPercentage) {
-                    val ram = MemoryUtils.getRamData()
-                    ramText = when {
-                        showRamGb && showRamPercentage -> {
-                            getString(R.string.overlay_format_ram_gb_percent, ram.used, ram.total, ram.usedPercentage)
-                        }
-
-                        showRamGb -> {
-                            getString(R.string.overlay_format_ram_gb, ram.used, ram.total)
-                        }
-
-                        showRamPercentage -> {
-                            getString(R.string.overlay_format_ram_percent, ram.usedPercentage)
-                        }
-
-                        else -> {
-                            getString(R.string.overlay_format_ram_gb_percent, ram.used, ram.total, ram.usedPercentage)
-                        }
-                    }
-                } else {
-                    ramText = ""
-                }
-
-                if (showCpuTemp) {
-                    val cpuData = CpuUtils.getCpuDynamicData()
-                    if (cpuData.isNotEmpty()) {
-                        val temp = cpuData[0] // overall_temp is at index 0
-                        cpuText = getString(R.string.overlay_format_cpu_temp, temp)
-                    }
-                } else {
-                    cpuText = ""
-                }
-
+                refreshHardwareMetrics()
                 val delayMillis = updateDelayNanos / 1_000_000L
                 delay(if (delayMillis > 0) delayMillis else 1000L)
             }
+        }
+    }
+
+    private fun refreshHardwareMetrics() {
+        if (showRamGb || showRamPercentage) {
+            val ram = MemoryUtils.getRamData()
+            ramText = when {
+                showRamGb && showRamPercentage -> {
+                    getString(R.string.overlay_format_ram_gb_percent, ram.used, ram.total, ram.usedPercentage)
+                }
+
+                showRamGb -> {
+                    getString(R.string.overlay_format_ram_gb, ram.used, ram.total)
+                }
+
+                showRamPercentage -> {
+                    getString(R.string.overlay_format_ram_percent, ram.usedPercentage)
+                }
+
+                else -> {
+                    getString(R.string.overlay_format_ram_gb_percent, ram.used, ram.total, ram.usedPercentage)
+                }
+            }
+        } else {
+            ramText = ""
+        }
+
+        if (showCpuTemp) {
+            val cpuData = CpuUtils.getCpuDynamicData()
+            if (cpuData.isNotEmpty()) {
+                val temp = cpuData[0] // overall_temp is at index 0
+                cpuText = getString(R.string.overlay_format_cpu_temp, temp)
+            }
+        } else {
+            cpuText = ""
         }
     }
 
