@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onCompletion
 
 object FlowUtils {
-    fun <T> pollingFlow(tag: String, delayMillis: Long, fetcher: () -> T): Flow<T> = flow {
+    fun <T> pollingFlow(tag: String, delayMillis: Long, fetcher: suspend () -> T): Flow<T> = flow {
         if (BuildConfig.DEBUG) Log.d(tag, "$tag Stream Started with delay: $delayMillis")
         while (true) {
             if (BuildConfig.DEBUG) Log.d(tag, "$tag Stream Updated")

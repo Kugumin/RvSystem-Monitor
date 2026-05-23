@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.stateIn
 
 @HiltViewModel
 class CPUViewModel @Inject constructor(cpuRepository: CpuRepository) : ViewModel() {
+
     private val cpuStatic = flow {
         emit(cpuRepository.getCpuInfo())
     }.flowOn(Dispatchers.IO)

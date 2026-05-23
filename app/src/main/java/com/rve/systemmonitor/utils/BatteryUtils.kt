@@ -8,8 +8,8 @@ import android.content.IntentFilter
 import android.os.BatteryManager
 import android.util.Log
 import com.rve.systemmonitor.R
-import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 

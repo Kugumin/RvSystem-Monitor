@@ -14,6 +14,8 @@ data class CPU(
     val board: String = "unknown",
     val architecture: String = "unknown",
     val temperature: Double = 0.0,
+    val load: Double = 0.0,
+    val isLoadAvailable: Boolean = false,
     val coreDetails: ImmutableList<CoreDetail> = persistentListOf(),
 )
 
@@ -25,6 +27,7 @@ data class CoreDetail(
     val maxFreqKhz: Long = 0,
     val governor: String = "unknown",
     val temperature: Double = 0.0,
+    val load: Double = 0.0,
 ) {
     // Helper for easy display when needed, but we prefer formatting in UI
     val currentFreq: String get() = formatFrequency(currentFreqKhz)

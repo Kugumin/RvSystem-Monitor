@@ -13,3 +13,12 @@
 
 # 5. Standard Android/Compose attributes
 -keepattributes Signature,InnerClasses,EnclosingMethod,AnnotationDefault,*Annotation*
+
+# 6. Shizuku: Keep service class for name-based instantiation and AIDL bridge
+-keep class com.rve.systemmonitor.shizuku.CommandRunnerService {
+    <init>(android.content.Context);
+}
+-keep class com.rve.systemmonitor.shizuku.ICommandRunner { *; }
+-keep class com.rve.systemmonitor.shizuku.ICommandRunner$Stub { *; }
+-keep class com.rve.systemmonitor.shizuku.ICommandRunner$Stub$Proxy { *; }
+

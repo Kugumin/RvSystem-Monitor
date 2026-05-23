@@ -16,6 +16,7 @@ interface SettingsRepository {
     val batteryRefreshDelay: Flow<Long>
     val batteryGraphHistorySeconds: Flow<Int>
     val autoUpdateEnabled: Flow<Boolean>
+    val useShizuku: Flow<Boolean>
     val updatesPausedUntil: Flow<Long>
     suspend fun setThemeMode(mode: ThemeMode)
     suspend fun setAmoledMode(enabled: Boolean)
@@ -28,5 +29,6 @@ interface SettingsRepository {
     suspend fun setBatteryRefreshDelay(delayMillis: Long)
     suspend fun setBatteryGraphHistorySeconds(seconds: Int)
     suspend fun setAutoUpdateEnabled(enabled: Boolean)
+    suspend fun setUseShizuku(enabled: Boolean)
     suspend fun setUpdatesPausedUntil(timestampMillis: Long)
 }

@@ -25,10 +25,12 @@ class SettingsPreferences(private val context: Context) {
         val HAPTIC_FEEDBACK_ENABLED_KEY = booleanPreferencesKey("haptic_feedback_enabled")
         val VIBRATION_INTENSITY_KEY = stringPreferencesKey("vibration_intensity")
         val AUTO_UPDATE_ENABLED_KEY = booleanPreferencesKey("auto_update_enabled")
+        val USE_SHIZUKU_KEY = booleanPreferencesKey("use_shizuku")
         val UPDATES_PAUSED_UNTIL_KEY = longPreferencesKey("updates_paused_until")
     }
 
     val autoUpdateEnabledFlow: Flow<Boolean> = context.dataStore.getValueFlow(AUTO_UPDATE_ENABLED_KEY, true)
+    val useShizukuFlow: Flow<Boolean> = context.dataStore.getValueFlow(USE_SHIZUKU_KEY, false)
     val updatesPausedUntilFlow: Flow<Long> = context.dataStore.getValueFlow(UPDATES_PAUSED_UNTIL_KEY, 0L)
     val themeModeFlow: Flow<ThemeMode> = context.dataStore.getEnumFlow(THEME_MODE_KEY, ThemeMode.SYSTEM) { ThemeMode.valueOf(it) }
     val amoledModeFlow: Flow<Boolean> = context.dataStore.getValueFlow(AMOLED_MODE_KEY, false)
@@ -55,5 +57,6 @@ class SettingsPreferences(private val context: Context) {
     suspend fun saveHapticFeedbackEnabled(enabled: Boolean) = context.dataStore.setValue(HAPTIC_FEEDBACK_ENABLED_KEY, enabled)
     suspend fun saveVibrationIntensity(intensity: VibrationIntensity) = context.dataStore.setEnum(VIBRATION_INTENSITY_KEY, intensity)
     suspend fun saveAutoUpdateEnabled(enabled: Boolean) = context.dataStore.setValue(AUTO_UPDATE_ENABLED_KEY, enabled)
+    suspend fun saveUseShizuku(enabled: Boolean) = context.dataStore.setValue(USE_SHIZUKU_KEY, enabled)
     suspend fun saveUpdatesPausedUntil(timestamp: Long) = context.dataStore.setValue(UPDATES_PAUSED_UNTIL_KEY, timestamp)
 }

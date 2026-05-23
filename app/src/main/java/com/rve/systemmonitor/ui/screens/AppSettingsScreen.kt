@@ -1,6 +1,13 @@
 package com.rve.systemmonitor.ui.screens
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,13 +16,17 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -24,16 +35,22 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rve.systemmonitor.R
 import com.rve.systemmonitor.ui.components.ExitUntilCollapsedMediumTopAppBar
@@ -43,10 +60,19 @@ import com.rve.systemmonitor.ui.viewmodel.SettingsViewModel
 @Composable
 fun AppSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onNavigateBack: () -> Unit, onNavigateToSetup: () -> Unit) {
     val autoUpdateEnabled by viewModel.autoUpdateEnabled.collectAsStateWithLifecycle()
+    val useShizuku by viewModel.useShizuku.collectAsStateWithLifecycle()
+    val isShizukuAvailable by viewModel.isShizukuAvailable.collectAsStateWithLifecycle()
+    val hasShizukuPermission by viewModel.hasShizukuPermission.collectAsStateWithLifecycle()
 
     AppSettingsScreenContent(
         autoUpdateEnabled = autoUpdateEnabled,
+        useShizuku = useShizuku,
+        isShizukuAvailable = isShizukuAvailable,
+        hasShizukuPermission = hasShizukuPermission,
         onAutoUpdateChange = { viewModel.setAutoUpdateEnabled(it) },
+        onUseShizukuChange = { viewModel.setUseShizuku(it) },
+        onRefreshShizukuStatus = { viewModel.refreshShizukuState() },
+        onRequestShizukuPermission = { viewModel.requestShizukuPermission() },
         onNavigateBack = onNavigateBack,
         onNavigateToSetup = onNavigateToSetup,
     )
@@ -56,10 +82,27 @@ fun AppSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onNavigate
 @Composable
 private fun AppSettingsScreenContent(
     autoUpdateEnabled: Boolean,
+    useShizuku: Boolean,
+    isShizukuAvailable: Boolean,
+    hasShizukuPermission: Boolean,
     onAutoUpdateChange: (Boolean) -> Unit,
+    onUseShizukuChange: (Boolean) -> Unit,
+    onRefreshShizukuStatus: () -> Unit,
+    onRequestShizukuPermission: () -> Unit,
     onNavigateBack: () -> Unit,
     onNavigateToSetup: () -> Unit,
 ) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                onRefreshShizukuStatus()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
@@ -167,6 +210,179 @@ private fun AppSettingsScreenContent(
                                     }
                                 },
                             )
+                        }
+                    }
+                }
+            }
+
+            item {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        text = stringResource(R.string.label_shizuku),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 12.dp, start = 8.dp),
+                    )
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(24.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                    ) {
+                        Column {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .hapticClickable { onUseShizukuChange(!useShizuku) }
+                                    .padding(horizontal = 20.dp, vertical = 20.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                    modifier = Modifier.weight(1f),
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(48.dp)
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(MaterialTheme.colorScheme.primary),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.ic_shizuku),
+                                            contentDescription = stringResource(R.string.cd_shizuku_icon),
+                                            tint = MaterialTheme.colorScheme.onPrimary,
+                                            modifier = Modifier.size(64.dp),
+                                        )
+                                    }
+
+                                    Column {
+                                        Text(
+                                            text = stringResource(R.string.settings_use_shizuku),
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                        )
+                                        Text(
+                                            text = stringResource(R.string.settings_use_shizuku_description),
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
+                                }
+
+                                Switch(
+                                    checked = useShizuku,
+                                    onCheckedChange = onUseShizukuChange,
+                                    colors = SwitchDefaults.colors(
+                                        checkedIconColor = MaterialTheme.colorScheme.primary,
+                                    ),
+                                    thumbContent = {
+                                        Crossfade(
+                                            targetState = useShizuku,
+                                            animationSpec = MaterialTheme.motionScheme.slowEffectsSpec(),
+                                            label = "Shizuku Switch Icon",
+                                        ) { enabled ->
+                                            Icon(
+                                                painter = painterResource(
+                                                    if (enabled) R.drawable.check_rounded else R.drawable.close_rounded,
+                                                ),
+                                                contentDescription = null,
+                                                modifier = Modifier.size(SwitchDefaults.IconSize),
+                                            )
+                                        }
+                                    },
+                                )
+                            }
+
+                            AnimatedVisibility(
+                                visible = useShizuku,
+                                enter = expandVertically() + fadeIn(),
+                                exit = shrinkVertically() + fadeOut(),
+                            ) {
+                                Column {
+                                    HorizontalDivider(
+                                        modifier = Modifier.padding(horizontal = 20.dp),
+                                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                                    )
+
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 20.dp, vertical = 16.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                    ) {
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            val statusText = when {
+                                                isShizukuAvailable && hasShizukuPermission ->
+                                                    stringResource(R.string.shizuku_status_running_authorized)
+
+                                                isShizukuAvailable ->
+                                                    stringResource(R.string.shizuku_status_permission_required)
+
+                                                else -> stringResource(R.string.shizuku_status_not_running)
+                                            }
+                                            val statusColor = when {
+                                                isShizukuAvailable && hasShizukuPermission ->
+                                                    Color(0xFF22C55E)
+
+                                                isShizukuAvailable -> MaterialTheme.colorScheme.error
+
+                                                else -> MaterialTheme.colorScheme.outline
+                                            }
+
+                                            AnimatedContent(
+                                                targetState = statusText to statusColor,
+                                                transitionSpec = {
+                                                    fadeIn() togetherWith fadeOut()
+                                                },
+                                                label = "ShizukuStatusAnimation",
+                                            ) { (text, color) ->
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                                ) {
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .size(8.dp)
+                                                            .clip(CircleShape)
+                                                            .background(color),
+                                                    )
+                                                    Text(
+                                                        text = text,
+                                                        style = MaterialTheme.typography.bodyMedium,
+                                                        color = color,
+                                                        fontWeight = FontWeight.Bold,
+                                                    )
+                                                }
+                                            }
+                                        }
+
+                                        if (isShizukuAvailable && !hasShizukuPermission) {
+                                            Button(
+                                                onClick = onRequestShizukuPermission,
+                                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                                                modifier = Modifier.height(32.dp),
+                                            ) {
+                                                Text(
+                                                    text = stringResource(R.string.button_grant_permission),
+                                                    style = MaterialTheme.typography.labelMedium,
+                                                    fontWeight = FontWeight.Bold,
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }

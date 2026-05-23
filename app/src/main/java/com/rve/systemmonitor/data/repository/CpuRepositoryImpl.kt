@@ -5,6 +5,7 @@ import com.rve.systemmonitor.domain.model.CPU
 import com.rve.systemmonitor.domain.model.CoreDetail
 import com.rve.systemmonitor.domain.repository.CpuRepository
 import com.rve.systemmonitor.domain.repository.SettingsRepository
+import com.rve.systemmonitor.shizuku.ShizukuManager
 import com.rve.systemmonitor.utils.CpuUtils
 import com.rve.systemmonitor.utils.FlowUtils
 import javax.inject.Inject
@@ -21,12 +22,20 @@ import kotlinx.coroutines.flow.shareIn
 @Singleton
 class CpuRepositoryImpl @Inject constructor(
     private val settingsRepository: SettingsRepository,
+    private val shizukuManager: ShizukuManager,
     @param:ApplicationScope private val externalScope: CoroutineScope,
 ) : CpuRepository {
     private val TAG = "CpuRepository"
 
     private val sharedCpuStream by lazy {
-        settingsRepository.cpuRefreshDelay.flatMapLatest { delayMillis ->
+        kotlinx.coroutines.flow.combine(
+            settingsRepository.cpuRefreshDelay,
+            settingsRepository.useShizuku,
+            shizukuManager.isShizukuAvailable,
+            shizukuManager.hasPermission,
+        ) { delayMillis, useShizuku, isAvailable, hasPermission ->
+            Quad(delayMillis, useShizuku, isAvailable, hasPermission)
+        }.flatMapLatest { (delayMillis, useShizuku, isAvailable, hasPermission) ->
             val manufacturer = CpuUtils.getSocManufacturer()
             val model = CpuUtils.getSocModel()
             val cores = CpuUtils.getCoreCount()
@@ -47,9 +56,30 @@ class CpuRepositoryImpl @Inject constructor(
                 val cpuTemperature = dynamicData.getOrElse(0) { 0.0 }
                 val coreDetails = ArrayList<CoreDetail>(cores)
 
+                var isShizukuSuccess = false
+                val cpuLoads = if (useShizuku && isAvailable && hasPermission) {
+                    val procStat = shizukuManager.executeCommand("cat /proc/stat")
+                    if (procStat.isNotEmpty() && !procStat.startsWith("ERROR:")) {
+                        val loads = CpuUtils.calculateCpuLoad(procStat)
+                        if (loads.isNotEmpty()) {
+                            isShizukuSuccess = true
+                            loads
+                        } else {
+                            DoubleArray(0)
+                        }
+                    } else {
+                        DoubleArray(0)
+                    }
+                } else {
+                    DoubleArray(0)
+                }
+
+                val totalLoad = cpuLoads.getOrElse(0) { if (isShizukuSuccess) -1.0 else 0.0 }
+
                 for (i in 0 until cores) {
                     val currentKhz = dynamicData.getOrElse(1 + i * 2) { 0.0 }.toLong()
                     val currentTemp = dynamicData.getOrElse(2 + i * 2) { 0.0 }
+                    val currentLoad = cpuLoads.getOrElse(1 + i) { if (isShizukuSuccess) -1.0 else 0.0 }
                     val static = staticCoreInfo[i]
                     coreDetails.add(
                         CoreDetail(
@@ -59,6 +89,7 @@ class CpuRepositoryImpl @Inject constructor(
                             maxFreqKhz = static.maxFreqKhz,
                             governor = static.governor,
                             temperature = currentTemp,
+                            load = currentLoad,
                         ),
                     )
                 }
@@ -71,6 +102,8 @@ class CpuRepositoryImpl @Inject constructor(
                     board = board,
                     architecture = architecture,
                     temperature = cpuTemperature,
+                    load = totalLoad,
+                    isLoadAvailable = isShizukuSuccess,
                     coreDetails = coreDetails.toImmutableList(),
                 )
             }
@@ -80,6 +113,8 @@ class CpuRepositoryImpl @Inject constructor(
             replay = 1,
         )
     }
+
+    private data class Quad<A, B, C, D>(val a: A, val b: B, val c: C, val d: D)
 
     override fun getCpuInfo(): CPU {
         return CPU(

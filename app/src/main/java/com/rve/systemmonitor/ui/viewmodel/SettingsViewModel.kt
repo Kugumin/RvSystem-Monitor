@@ -13,7 +13,21 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 @HiltViewModel
-class SettingsViewModel @Inject constructor(private val settingsRepository: SettingsRepository) : ViewModel() {
+class SettingsViewModel @Inject constructor(
+    private val settingsRepository: SettingsRepository,
+    private val shizukuManager: com.rve.systemmonitor.shizuku.ShizukuManager,
+) : ViewModel() {
+
+    val isShizukuAvailable: StateFlow<Boolean> = shizukuManager.isShizukuAvailable
+    val hasShizukuPermission: StateFlow<Boolean> = shizukuManager.hasPermission
+
+    fun requestShizukuPermission() {
+        shizukuManager.requestPermission()
+    }
+
+    fun refreshShizukuState() {
+        shizukuManager.refreshState()
+    }
 
     val themeMode: StateFlow<ThemeMode> = settingsRepository.themeMode
         .stateIn(
@@ -85,6 +99,13 @@ class SettingsViewModel @Inject constructor(private val settingsRepository: Sett
             initialValue = true,
         )
 
+    val useShizuku: StateFlow<Boolean> = settingsRepository.useShizuku
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false,
+        )
+
     fun setThemeMode(mode: ThemeMode) {
         viewModelScope.launch {
             settingsRepository.setThemeMode(mode)
@@ -142,6 +163,12 @@ class SettingsViewModel @Inject constructor(private val settingsRepository: Sett
     fun setAutoUpdateEnabled(enabled: Boolean) {
         viewModelScope.launch {
             settingsRepository.setAutoUpdateEnabled(enabled)
+        }
+    }
+
+    fun setUseShizuku(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setUseShizuku(enabled)
         }
     }
 }

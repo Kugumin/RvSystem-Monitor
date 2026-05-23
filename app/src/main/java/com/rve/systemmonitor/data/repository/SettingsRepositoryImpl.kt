@@ -36,6 +36,8 @@ class SettingsRepositoryImpl @Inject constructor(application: Application) : Set
 
     override val autoUpdateEnabled: Flow<Boolean> = settingsPreferences.autoUpdateEnabledFlow
 
+    override val useShizuku: Flow<Boolean> = settingsPreferences.useShizukuFlow
+
     override val updatesPausedUntil: Flow<Long> = settingsPreferences.updatesPausedUntilFlow
 
     override suspend fun setThemeMode(mode: ThemeMode) {
@@ -80,6 +82,10 @@ class SettingsRepositoryImpl @Inject constructor(application: Application) : Set
 
     override suspend fun setAutoUpdateEnabled(enabled: Boolean) {
         settingsPreferences.saveAutoUpdateEnabled(enabled)
+    }
+
+    override suspend fun setUseShizuku(enabled: Boolean) {
+        settingsPreferences.saveUseShizuku(enabled)
     }
 
     override suspend fun setUpdatesPausedUntil(timestampMillis: Long) {

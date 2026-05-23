@@ -47,6 +47,9 @@ object CpuUtils {
     @JvmStatic
     private external fun getCpuDynamicDataNative(): DoubleArray
 
+    @JvmStatic
+    private external fun calculateCpuLoadNative(procStat: String): DoubleArray
+
     fun getCpuTemperature(): Double = runCatching {
         getCpuTemperatureNative()
     }.getOrElse { 0.0 }
@@ -57,6 +60,10 @@ object CpuUtils {
 
     fun getCpuDynamicData(): DoubleArray = runCatching {
         getCpuDynamicDataNative()
+    }.getOrElse { DoubleArray(0) }
+
+    fun calculateCpuLoad(procStat: String): DoubleArray = runCatching {
+        calculateCpuLoadNative(procStat)
     }.getOrElse { DoubleArray(0) }
 
     fun formatFrequency(freqKhz: Long): String {

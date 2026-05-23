@@ -270,3 +270,125 @@ pub fn get_core_temperature(core_id: i32) -> f64 {
     }
     get_cpu_temperature()
 }
+
+#[derive(Default, Clone, Copy)]
+struct CpuTicks {
+    user: u64,
+    nice: u64,
+    system: u64,
+    idle: u64,
+    iowait: u64,
+    irq: u64,
+    softirq: u64,
+    steal: u64,
+}
+
+impl CpuTicks {
+    fn total(&self) -> u64 {
+        self.user
+            + self.nice
+            + self.system
+            + self.idle
+            + self.iowait
+            + self.irq
+            + self.softirq
+            + self.steal
+    }
+
+    fn idle_total(&self) -> u64 {
+        self.idle + self.iowait
+    }
+}
+
+static LAST_CPU_TICKS: OnceCell<Mutex<HashMap<String, CpuTicks>>> = OnceCell::new();
+
+pub fn calculate_cpu_load(proc_stat: &str) -> Vec<f64> {
+    let mut current_ticks = HashMap::new();
+    let mut results = Vec::new();
+
+    if proc_stat.is_empty() {
+        return results;
+    }
+
+    for line in proc_stat.lines() {
+        if line.starts_with("cpu") {
+            let parts: Vec<&str> = line.split_whitespace().collect();
+            if parts.len() >= 5 {
+                let name = parts[0].to_string();
+                let user = parts[1].parse::<u64>().unwrap_or(0);
+                let nice = parts[2].parse::<u64>().unwrap_or(0);
+                let system = parts[3].parse::<u64>().unwrap_or(0);
+                let idle = parts[4].parse::<u64>().unwrap_or(0);
+                let iowait = parts.get(5).and_then(|s| s.parse::<u64>().ok()).unwrap_or(0);
+                let irq = parts.get(6).and_then(|s| s.parse::<u64>().ok()).unwrap_or(0);
+                let softirq = parts.get(7).and_then(|s| s.parse::<u64>().ok()).unwrap_or(0);
+                let steal = parts.get(8).and_then(|s| s.parse::<u64>().ok()).unwrap_or(0);
+
+                current_ticks.insert(
+                    name,
+                    CpuTicks {
+                        user,
+                        nice,
+                        system,
+                        idle,
+                        iowait,
+                        irq,
+                        softirq,
+                        steal,
+                    },
+                );
+            }
+        }
+    }
+
+    if current_ticks.is_empty() {
+        return results;
+    }
+
+    let last_ticks_mutex = LAST_CPU_TICKS.get_or_init(|| Mutex::new(HashMap::new()));
+    let mut last_ticks = last_ticks_mutex.lock().unwrap();
+
+    // Process total CPU first (key "cpu")
+    if let Some(curr) = current_ticks.get("cpu") {
+        if let Some(prev) = last_ticks.get("cpu") {
+            let total_diff = curr.total().saturating_sub(prev.total());
+            let idle_diff = curr.idle_total().saturating_sub(prev.idle_total());
+
+            if total_diff > 0 {
+                let load = (total_diff - idle_diff) as f64 * 100.0 / total_diff as f64;
+                results.push(load.clamp(0.0, 100.0));
+            } else {
+                results.push(0.0);
+            }
+        } else {
+            results.push(-1.0); // Signal: first poll
+        }
+    } else {
+        results.push(0.0);
+    }
+
+    // Process each core (cpu0, cpu1, ...)
+    let cores = get_core_count();
+    for i in 0..cores {
+        let name = format!("cpu{}", i);
+        if let Some(curr) = current_ticks.get(&name) {
+            if let Some(prev) = last_ticks.get(&name) {
+                let total_diff = curr.total().saturating_sub(prev.total());
+                let idle_diff = curr.idle_total().saturating_sub(prev.idle_total());
+                if total_diff > 0 {
+                    let load = (total_diff - idle_diff) as f64 * 100.0 / total_diff as f64;
+                    results.push(load.clamp(0.0, 100.0));
+                } else {
+                    results.push(0.0);
+                }
+            } else {
+                results.push(-1.0);
+            }
+        } else {
+            results.push(0.0); // Core offline
+        }
+    }
+
+    *last_ticks = current_ticks;
+    results
+}

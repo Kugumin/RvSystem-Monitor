@@ -166,3 +166,11 @@ jni_fn! {
         jni_double_array!(env, data)
     }
 }
+
+jni_fn! {
+    fn Java_com_rve_systemmonitor_utils_CpuUtils_calculateCpuLoadNative(env, proc_stat: JString<'local>) -> jdoubleArray {
+        let proc_stat: String = proc_stat.try_to_string(env)?;
+        let results = kernel::cpu::calculate_cpu_load(&proc_stat);
+        jni_double_array!(env, results)
+    }
+}

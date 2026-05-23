@@ -1,6 +1,11 @@
 package com.rve.systemmonitor.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -71,7 +76,7 @@ private fun CPUScreenContent(cpuInfo: CPU) {
             items = cpuInfo.coreDetails,
             key = { core -> core.id },
         ) { core ->
-            CoreDetailCard(core)
+            CoreDetailCard(core, cpuInfo.isLoadAvailable)
         }
     }
 }
@@ -121,6 +126,17 @@ private fun CPUOverviewCard(cpu: CPU) {
                     containerColor = MaterialTheme.colorScheme.primary,
                     textColor = MaterialTheme.colorScheme.onPrimary,
                 )
+                AnimatedVisibility(
+                    visible = cpu.isLoadAvailable && cpu.load >= 0.0,
+                    enter = fadeIn() + scaleIn(),
+                    exit = fadeOut() + scaleOut(),
+                ) {
+                    BadgeChip(
+                        text = String.format(Locale.US, "%.1f%%", cpu.load),
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        textColor = MaterialTheme.colorScheme.onSecondary,
+                    )
+                }
             }
 
             TwoColumnInfoRow {
@@ -153,7 +169,7 @@ private fun CPUOverviewCard(cpu: CPU) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun CoreDetailCard(core: CoreDetail) {
+private fun CoreDetailCard(core: CoreDetail, isLoadAvailable: Boolean) {
     val progress = remember(core.currentFreqKhz, core.minFreqKhz, core.maxFreqKhz) {
         if (core.maxFreqKhz > core.minFreqKhz) {
             ((core.currentFreqKhz - core.minFreqKhz).toFloat() / (core.maxFreqKhz - core.minFreqKhz)).coerceIn(0f, 1f)
@@ -199,6 +215,18 @@ private fun CoreDetailCard(core: CoreDetail) {
                 modifier = Modifier.weight(1f),
             )
 
+            AnimatedVisibility(
+                visible = isLoadAvailable && core.load >= 0.0,
+                enter = fadeIn() + scaleIn(),
+                exit = fadeOut() + scaleOut(),
+            ) {
+                BadgeChip(
+                    text = String.format(Locale.US, "%.1f%%", core.load),
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    textColor = MaterialTheme.colorScheme.onSecondary,
+                )
+            }
+
             BadgeChip(
                 text = String.format(Locale.US, "%.1f °C", core.temperature),
                 containerColor = MaterialTheme.colorScheme.primary,
@@ -215,13 +243,19 @@ private fun CoreDetailCard(core: CoreDetail) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Column(modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = core.currentFreq,
-                style = MaterialTheme.typography.headlineMedium.copy(
-                    fontWeight = FontWeight.Black,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                ),
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom,
+            ) {
+                Text(
+                    text = core.currentFreq,
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.Black,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    ),
+                )
+            }
             Spacer(modifier = Modifier.height(8.dp))
             LinearWavyProgressIndicator(
                 progress = { animatedProgress },

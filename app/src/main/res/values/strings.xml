@@ -70,7 +70,7 @@
     <!-- CPU Screen -->
     <string name="cpu_cores_section_title">Cores</string>
     <string name="cpu_cores_count">%1$d Cores</string>
-    <string name="cpu_peak_frequency">Peak: %1$s</string>
+    <string name="cpu_peak_frequency">%1$s</string>
     <string name="cpu_label_architecture">Architecture</string>
     <string name="cpu_label_board">Board</string>
     <string name="cpu_label_hardware">Hardware</string>
@@ -193,6 +193,16 @@
     <string name="settings_test_setup_flow">Test Setup Flow</string>
     <string name="settings_test_setup_description">Launch setup without resetting app settings</string>
 
+    <!-- Shizuku -->
+    <string name="label_shizuku">Privileged Access</string>
+    <string name="settings_use_shizuku">Shizuku</string>
+    <string name="settings_use_shizuku_description">Unlock deeper system telemetry via Shizuku</string>
+    <string name="shizuku_status_running_authorized">Running &amp; Authorized</string>
+    <string name="shizuku_status_permission_required">Permission required</string>
+    <string name="shizuku_status_not_running">Not running</string>
+    <string name="button_grant_permission">Grant permission</string>
+    <string name="cd_shizuku_icon">Shizuku Icon</string>
+
     <!-- Appearance Settings Screen -->
     <string name="title_appearance">Appearance</string>
     <string name="label_visual_style">Visual Style</string>
@@ -268,6 +278,7 @@
     <string name="rust_method_desc_get_cpu_temp">Retrieves the package/composite CPU temperature.</string>
     <string name="rust_method_desc_get_all_temps">Returns an array of temperatures for each individual CPU core.</string>
     <string name="rust_method_desc_get_dynamic">Batched retrieval of temperatures and frequencies for UI synchronization.</string>
+    <string name="rust_method_desc_calculate_load">Parses /proc/stat string and calculates the load percentage for total CPU and each core by comparing with the previous state.</string>
 
     <!-- Setup Screen -->
     <string name="setup_continue">Continue</string>

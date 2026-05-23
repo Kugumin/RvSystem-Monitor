@@ -124,6 +124,12 @@ fun RustLibraryScreen(onNavigateBack: () -> Unit) {
                 "jdoubleArray",
                 description = context.getString(R.string.rust_method_desc_get_dynamic),
             ),
+            JniMethod(
+                "calculateCpuLoadNative",
+                "jdoubleArray",
+                "env, proc_stat",
+                context.getString(R.string.rust_method_desc_calculate_load),
+            ),
         ).sortedBy { it.name }.toImmutableList()
     }
 
