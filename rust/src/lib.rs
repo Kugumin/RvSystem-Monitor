@@ -6,7 +6,8 @@
 #![allow(non_snake_case)]
 
 use jni::objects::JString;
-use jni::sys::{jdouble, jdoubleArray, jint, jlong, jlongArray, jstring};
+use jni::strings::JNIString;
+use jni::sys::{jdouble, jdoubleArray, jint, jlong, jlongArray, jobjectArray, jstring};
 
 pub mod drivers;
 pub mod kernel;
@@ -94,6 +95,39 @@ jni_fn! {
         ];
 
         jni_double_array!(env, data)
+    }
+}
+
+jni_fn! {
+    fn Java_com_rve_systemmonitor_utils_CpuUtils_getStaticCoreInfoNative(env) -> jlongArray {
+        let cores = kernel::cpu::get_core_count();
+        let mut data = Vec::with_capacity(cores as usize * 2);
+
+        for i in 0..cores {
+            data.push(kernel::cpu::get_core_frequency(i, "min_info"));
+            data.push(kernel::cpu::get_core_frequency(i, "max_info"));
+        }
+
+        jni_long_array!(env, data)
+    }
+}
+
+jni_fn! {
+    fn Java_com_rve_systemmonitor_utils_CpuUtils_getAllCoreGovernorsNative(env) -> jobjectArray {
+        let cores = kernel::cpu::get_core_count();
+        let first_gov = kernel::cpu::get_core_governor(0);
+        let initial_element = env.new_string(first_gov)?;
+
+        let class = env.find_class(JNIString::from("java/lang/String"))?;
+        let array = env.new_object_array(cores, &class, initial_element)?;
+
+        for i in 1..cores {
+            let governor = kernel::cpu::get_core_governor(i as i32);
+            let s = env.new_string(governor)?;
+            array.set_element(env, i as usize, s)?;
+        }
+
+        Ok(array.into_raw())
     }
 }
 

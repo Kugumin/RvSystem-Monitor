@@ -115,9 +115,19 @@ fun RustLibraryScreen(onNavigateBack: () -> Unit) {
                 description = context.getString(R.string.rust_method_desc_get_cpu_temp),
             ),
             JniMethod(
+                "getAllCoreGovernorsNative",
+                "jobjectArray",
+                description = "Retrieves governors for all cores in a single call.",
+            ),
+            JniMethod(
                 "getAllCoreTemperaturesNative",
                 "jdoubleArray",
                 description = context.getString(R.string.rust_method_desc_get_all_temps),
+            ),
+            JniMethod(
+                "getStaticCoreInfoNative",
+                "jlongArray",
+                description = "Retrieves static info (min/max freq) for all cores in a single call.",
             ),
             JniMethod(
                 "getCpuDynamicDataNative",

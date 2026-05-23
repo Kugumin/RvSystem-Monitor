@@ -17,9 +17,9 @@ object StorageUtils {
             val availableBytes = stat.availableBytes
             val usedBytes = totalBytes - availableBytes
 
-            val totalGb = totalBytes.toDouble() / (1024.0 * 1024.0 * 1024.0)
-            val availableGb = availableBytes.toDouble() / (1024.0 * 1024.0 * 1024.0)
-            val usedGb = usedBytes.toDouble() / (1024.0 * 1024.0 * 1024.0)
+            val totalGb = totalBytes.toDouble() / 1_000_000_000.0
+            val availableGb = availableBytes.toDouble() / 1_000_000_000.0
+            val usedGb = usedBytes.toDouble() / 1_000_000_000.0
             val usedPercentage = if (totalGb > 0) (usedGb / totalGb) * 100.0 else 0.0
 
             val fsType = getFsType(mountPath)

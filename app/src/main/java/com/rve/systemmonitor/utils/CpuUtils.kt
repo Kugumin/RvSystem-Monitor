@@ -30,6 +30,12 @@ object CpuUtils {
     }
 
     @JvmStatic
+    private external fun getStaticCoreInfoNative(): LongArray
+
+    @JvmStatic
+    private external fun getAllCoreGovernorsNative(): Array<String>
+
+    @JvmStatic
     private external fun getCoreCountNative(): Int
 
     @JvmStatic
@@ -113,6 +119,14 @@ object CpuUtils {
         Log.e(TAG, "getCoreCount: ${it.message}", it)
         0
     }
+
+    fun getStaticCoreInfo(): LongArray = runCatching {
+        getStaticCoreInfoNative()
+    }.getOrElse { LongArray(0) }
+
+    fun getAllCoreGovernors(): Array<String> = runCatching {
+        getAllCoreGovernorsNative()
+    }.getOrElse { emptyArray() }
 
     fun getCoreFrequencyKhz(coreId: Int, type: String): Long = runCatching {
         getCoreFrequencyNative(coreId, type)

@@ -127,7 +127,13 @@ fn get_cpu_thermal_fd() -> &'static Mutex<Option<File>> {
     CPU_THERMAL_FD.get_or_init(|| {
         get_thermal_fd_from_priority(
             get_thermal_map(),
-            &["cpu-thermal", "soc-thermal", "cpu", "soc", "thermal-cpufreq"],
+            &[
+                "cpu-thermal",
+                "soc-thermal",
+                "cpu",
+                "soc",
+                "thermal-cpufreq",
+            ],
         )
     })
 }
@@ -319,10 +325,22 @@ pub fn calculate_cpu_load(proc_stat: &str) -> Vec<f64> {
                 let nice = parts[2].parse::<u64>().unwrap_or(0);
                 let system = parts[3].parse::<u64>().unwrap_or(0);
                 let idle = parts[4].parse::<u64>().unwrap_or(0);
-                let iowait = parts.get(5).and_then(|s| s.parse::<u64>().ok()).unwrap_or(0);
-                let irq = parts.get(6).and_then(|s| s.parse::<u64>().ok()).unwrap_or(0);
-                let softirq = parts.get(7).and_then(|s| s.parse::<u64>().ok()).unwrap_or(0);
-                let steal = parts.get(8).and_then(|s| s.parse::<u64>().ok()).unwrap_or(0);
+                let iowait = parts
+                    .get(5)
+                    .and_then(|s| s.parse::<u64>().ok())
+                    .unwrap_or(0);
+                let irq = parts
+                    .get(6)
+                    .and_then(|s| s.parse::<u64>().ok())
+                    .unwrap_or(0);
+                let softirq = parts
+                    .get(7)
+                    .and_then(|s| s.parse::<u64>().ok())
+                    .unwrap_or(0);
+                let steal = parts
+                    .get(8)
+                    .and_then(|s| s.parse::<u64>().ok())
+                    .unwrap_or(0);
 
                 current_ticks.insert(
                     name,

@@ -61,13 +61,7 @@ fun RvSystemMonitorApp(onNavigateToSettings: () -> Unit, onNavigateToGPU: () -> 
     BackHandler(enabled = pageHistory.size > 1) {
         coroutineScope.launch {
             isNavigatingBack = true
-
-            if (Build.VERSION.SDK_INT >= 35) {
-                pageHistory.removeLast()
-            } else {
-                pageHistory.removeAt(pageHistory.lastIndex)
-            }
-
+            pageHistory.removeAt(pageHistory.lastIndex)
             val previousPage = pageHistory.last()
             pagerState.animateScrollToPage(previousPage)
         }
@@ -80,17 +74,19 @@ fun RvSystemMonitorApp(onNavigateToSettings: () -> Unit, onNavigateToGPU: () -> 
         drawContent()
     }
 
+    val subtitle = when (pagerState.currentPage) {
+        0 -> stringResource(R.string.nav_label_home)
+        1 -> stringResource(R.string.nav_label_cpu)
+        2 -> stringResource(R.string.nav_label_memory)
+        3 -> stringResource(R.string.nav_label_battery)
+        else -> ""
+    }
+
     Scaffold(
         topBar = {
             SimpleTopAppBar(
                 title = stringResource(R.string.app_title),
-                subtitle = when (pagerState.currentPage) {
-                    0 -> stringResource(R.string.nav_label_home)
-                    1 -> stringResource(R.string.nav_label_cpu)
-                    2 -> stringResource(R.string.nav_label_memory)
-                    3 -> stringResource(R.string.nav_label_battery)
-                    else -> ""
-                },
+                subtitle = subtitle,
                 onNavigateToSettings = onNavigateToSettings,
             )
         },

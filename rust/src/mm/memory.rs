@@ -5,7 +5,7 @@
 use std::fs::File;
 use std::io::{self, BufRead};
 
-/// Factor used to convert bytes to Gigabytes.
+/// Factor used to convert bytes to Gigabytes (GB).
 const GB_FACTOR: f64 = 1_000_000_000.0;
 
 /// Represents RAM usage data.

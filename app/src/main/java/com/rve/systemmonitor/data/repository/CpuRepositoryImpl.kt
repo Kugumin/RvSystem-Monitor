@@ -43,11 +43,14 @@ class CpuRepositoryImpl @Inject constructor(
             val board = CpuUtils.getBoard()
             val architecture = CpuUtils.getArchitecture()
 
+            val staticInfo = CpuUtils.getStaticCoreInfo()
+            val governors = CpuUtils.getAllCoreGovernors()
+
             val staticCoreInfo = (0 until cores).map { i ->
                 CoreStaticInfo(
-                    minFreqKhz = CpuUtils.getCoreFrequencyKhz(i, "min_info"),
-                    maxFreqKhz = CpuUtils.getCoreFrequencyKhz(i, "max_info"),
-                    governor = CpuUtils.getCoreGovernor(i),
+                    minFreqKhz = staticInfo.getOrElse(i * 2) { 0L },
+                    maxFreqKhz = staticInfo.getOrElse(i * 2 + 1) { 0L },
+                    governor = governors.getOrElse(i) { "N/A" },
                 )
             }
 
