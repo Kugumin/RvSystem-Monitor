@@ -1,5 +1,6 @@
 package com.rve.systemmonitor.ui.viewmodel
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rve.systemmonitor.domain.repository.SettingsRepository
@@ -39,6 +40,8 @@ class MainViewModel @Inject constructor(settingsRepository: SettingsRepository) 
 
 sealed interface MainUiState {
     data object Loading : MainUiState
+
+    @Immutable
     data class Success(
         val themeMode: ThemeMode,
         val amoledMode: Boolean,

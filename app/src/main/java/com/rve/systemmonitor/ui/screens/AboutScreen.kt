@@ -37,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -317,13 +318,15 @@ fun ContributorSkeleton(shape: RoundedCornerShape) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun HeroCard() {
-    val badgeItem = listOf(
-        stringResource(R.string.badge_free),
-        stringResource(R.string.badge_open_source),
-        stringResource(R.string.badge_rust),
-        stringResource(R.string.badge_kotlin),
-        stringResource(R.string.badge_material3_expressive),
-    )
+    val badgeIds = remember {
+        listOf(
+            R.string.badge_free,
+            R.string.badge_open_source,
+            R.string.badge_rust,
+            R.string.badge_kotlin,
+            R.string.badge_material3_expressive,
+        )
+    }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -387,7 +390,8 @@ fun HeroCard() {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                badgeItem.forEach { badge ->
+                badgeIds.forEach { resId ->
+                    val badge = stringResource(resId)
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(16.dp))

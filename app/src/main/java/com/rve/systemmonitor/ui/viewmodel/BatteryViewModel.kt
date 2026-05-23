@@ -1,5 +1,8 @@
 package com.rve.systemmonitor.ui.viewmodel
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rve.systemmonitor.domain.model.Battery
@@ -87,10 +90,10 @@ class BatteryViewModel @Inject constructor(private val batteryRepository: Batter
             initialValue = _historyList.toImmutableList(),
         )
 
-    private var _hasAnimated = false
-    val hasAnimated: Boolean get() = _hasAnimated
+    var hasAnimated by mutableStateOf(false)
+        private set
 
     fun markAsAnimated() {
-        _hasAnimated = true
+        hasAnimated = true
     }
 }

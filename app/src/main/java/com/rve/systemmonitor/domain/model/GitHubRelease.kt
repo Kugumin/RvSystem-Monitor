@@ -1,6 +1,7 @@
 package com.rve.systemmonitor.domain.model
 
 import androidx.compose.runtime.Immutable
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -14,5 +15,5 @@ data class GitHubRelease(
     @SerialName("body")
     val body: String,
     @SerialName("assets")
-    val assets: List<GitHubAsset>,
+    val assets: ImmutableList<GitHubAsset>,
 )
