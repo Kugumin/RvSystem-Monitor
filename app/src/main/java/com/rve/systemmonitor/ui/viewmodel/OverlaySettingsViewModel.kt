@@ -12,7 +12,20 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 @HiltViewModel
-class OverlaySettingsViewModel @Inject constructor(private val overlayRepository: OverlayRepository) : ViewModel() {
+class OverlaySettingsViewModel @Inject constructor(
+    private val overlayRepository: OverlayRepository,
+    private val settingsRepository: com.rve.systemmonitor.domain.repository.SettingsRepository,
+    private val shizukuManager: com.rve.systemmonitor.shizuku.ShizukuManager,
+) : ViewModel() {
+
+    val isShizukuAvailable: StateFlow<Boolean> = shizukuManager.isShizukuAvailable
+    val hasShizukuPermission: StateFlow<Boolean> = shizukuManager.hasPermission
+    val useShizuku: StateFlow<Boolean> = settingsRepository.useShizuku
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false,
+        )
 
     val isOverlayEnabled: StateFlow<Boolean> = overlayRepository.isOverlayEnabled
         .stateIn(

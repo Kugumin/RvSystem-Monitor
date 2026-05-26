@@ -9,7 +9,6 @@ import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.drawable.GradientDrawable
 import android.os.IBinder
-import android.view.Choreographer
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -38,6 +37,9 @@ class SystemOverlayService : Service() {
     @Inject
     lateinit var overlayRepository: OverlayRepository
 
+    @Inject
+    lateinit var fpsMonitor: com.rve.systemmonitor.utils.FpsMonitor
+
     private var windowManager: WindowManager? = null
     private var overlayView: View? = null
     private var metricsTextView: TextView? = null
@@ -54,10 +56,6 @@ class SystemOverlayService : Service() {
     private var isVerticalLayout = false
     private var overlayCornerRadius = 8
 
-    private val choreographer = Choreographer.getInstance()
-    private var lastFrameTimeNanos: Long = 0
-    private var frameCount = 0
-    private var lastFpsUpdateTime: Long = 0
     private var updateDelayNanos: Long = 1_000_000_000L // Default 1s
 
     private val serviceJob = SupervisorJob()
@@ -67,27 +65,6 @@ class SystemOverlayService : Service() {
     @Volatile private var cpuText: String = ""
     @Volatile private var batteryText: String = ""
     @Volatile private var lastCalculatedFps: Long = 0L
-
-    private val frameCallback = object : Choreographer.FrameCallback {
-        override fun doFrame(frameTimeNanos: Long) {
-            if (lastFrameTimeNanos != 0L) {
-                frameCount++
-            }
-
-            val elapsedNanos = frameTimeNanos - lastFpsUpdateTime
-            if (lastFpsUpdateTime == 0L || elapsedNanos >= updateDelayNanos) {
-                if (lastFpsUpdateTime != 0L && elapsedNanos > 0) {
-                    lastCalculatedFps = (frameCount * 1_000_000_000L) / elapsedNanos
-                }
-                updateMetricsDisplay()
-                frameCount = 0
-                lastFpsUpdateTime = frameTimeNanos
-            }
-
-            lastFrameTimeNanos = frameTimeNanos
-            choreographer.postFrameCallback(this)
-        }
-    }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -183,7 +160,16 @@ class SystemOverlayService : Service() {
         startSettingsObservation()
         startMetricsPolling()
         startBatteryMonitoring()
-        choreographer.postFrameCallback(frameCallback)
+        startFpsMonitoring()
+    }
+
+    private fun startFpsMonitoring() {
+        serviceScope.launch {
+            fpsMonitor.framesPerSecond.collect { fps ->
+                lastCalculatedFps = fps.toLong()
+                updateMetricsDisplay()
+            }
+        }
     }
 
     private fun startSettingsObservation() {
@@ -269,7 +255,6 @@ class SystemOverlayService : Service() {
         super.onDestroy()
         isRunning = false
         serviceScope.cancel()
-        choreographer.removeFrameCallback(frameCallback)
         if (overlayView != null) {
             windowManager?.removeView(overlayView)
         }

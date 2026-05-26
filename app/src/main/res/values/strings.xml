@@ -257,6 +257,7 @@
     <string name="overlay_bg_opacity">Background Opacity</string>
     <string name="overlay_padding">Padding</string>
     <string name="overlay_corner_radius">Corner Radius</string>
+    <string name="shizuku_status_disabled_in_settings">Disabled in App Settings</string>
     <string name="overlay_permission_required">Requires \'Draw over other apps\' permission</string>
 
     <!-- Rust Library Screen -->

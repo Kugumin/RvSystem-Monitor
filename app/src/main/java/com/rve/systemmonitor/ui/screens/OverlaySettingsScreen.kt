@@ -109,6 +109,10 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
     val isVerticalLayout by viewModel.isVerticalLayout.collectAsStateWithLifecycle()
     val cornerRadius by viewModel.overlayCornerRadius.collectAsStateWithLifecycle()
 
+    val isShizukuAvailable by viewModel.isShizukuAvailable.collectAsStateWithLifecycle()
+    val hasShizukuPermission by viewModel.hasShizukuPermission.collectAsStateWithLifecycle()
+    val useShizuku by viewModel.useShizuku.collectAsStateWithLifecycle()
+
     val isOverlayActive = isOverlayEnabled
 
     val appearanceAlpha by animateFloatAsState(
@@ -258,6 +262,75 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
             ),
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
+            val isShizukuServiceReady = isShizukuAvailable && hasShizukuPermission
+
+            if (!isShizukuServiceReady) {
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(32.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
+                        ),
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .padding(20.dp)
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(56.dp)
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_shizuku),
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(32.dp),
+                                )
+                            }
+
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = stringResource(R.string.label_shizuku),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                val statusText = when {
+                                    !isShizukuAvailable -> stringResource(R.string.shizuku_status_not_running)
+                                    !hasShizukuPermission -> stringResource(R.string.shizuku_status_permission_required)
+                                    else -> ""
+                                }
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(8.dp)
+                                            .clip(CircleShape)
+                                            .background(MaterialTheme.colorScheme.error),
+                                    )
+                                    Text(
+                                        text = statusText,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.error,
+                                        fontWeight = FontWeight.Medium,
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             item {
                 MetricToggleCard(
                     title = stringResource(R.string.overlay_enable_title),
@@ -299,7 +372,7 @@ fun OverlaySettingsScreen(viewModel: OverlaySettingsViewModel = hiltViewModel(),
                         icon = R.drawable.sixty_fps_select_rounded,
                         isEnabled = isFpsEnabled,
                         hasPermission = hasOverlayPermission,
-                        enabled = isOverlayEnabled,
+                        enabled = isOverlayEnabled && useShizuku && isShizukuServiceReady,
                         onClick = rememberHapticOnClick {
                             if (!hasOverlayPermission && !isFpsEnabled) {
                                 val intent = Intent(
