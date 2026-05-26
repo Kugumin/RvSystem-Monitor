@@ -2,7 +2,8 @@ package com.rve.systemmonitor.ui.navigation
 
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -13,36 +14,74 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.unit.IntOffset
 
-const val TRANSITION_DURATION = 350
-private val TRANSITION_EASING = FastOutSlowInEasing
+/**
+ * Public constants for external use.
+ */
+const val TRANSITION_DURATION = NavMotion.StandardDuration
 
-fun enterTransition() = slideInHorizontally(
-    animationSpec = tween(TRANSITION_DURATION, easing = TRANSITION_EASING),
-    initialOffsetX = { it },
-)
+/**
+ * Navigation motion constants for RvSystem-Monitor.
+ * Follows Material 3 Expressive guidelines for emphasized motion.
+ */
+private object NavMotion {
+    const val StandardDuration = 450
+    const val FastDuration = StandardDuration / 2
+    const val BottomNavDuration = 400
 
-fun exitTransition() = slideOutHorizontally(
-    animationSpec = tween(TRANSITION_DURATION, easing = TRANSITION_EASING),
-    targetOffsetX = { -it / 3 },
+    // Custom cubic-bezier curves for expressive navigation
+    val StandardCurve = CubicBezierEasing(0.2f, 0f, 0f, 1f)
+    val EnteringCurve = CubicBezierEasing(0.2f, 0.85f, 0.7f, 1f)
+    val ExitingCurve = CubicBezierEasing(0.3f, 0f, 0.8f, 0.15f)
+}
+
+/**
+ * Creates a [tween] animation spec using the project's default navigation motion.
+ */
+private fun <T> navTween(
+    duration: Int = NavMotion.StandardDuration,
+    easing: Easing = NavMotion.EnteringCurve
+) = tween<T>(durationMillis = duration, easing = easing)
+
+fun enterTransition(): EnterTransition {
+    val spec = navTween<Float>()
+    return slideInHorizontally(
+        animationSpec = navTween(),
+        initialOffsetX = { (it * 0.5f).toInt() }
+    ) + scaleIn(
+        animationSpec = navTween(),
+        initialScale = 0.92f,
+        transformOrigin = TransformOrigin.Center
+    ) + fadeIn(
+        animationSpec = navTween(easing = NavMotion.ExitingCurve)
+    )
+}
+
+fun exitTransition(): ExitTransition = slideOutHorizontally(
+    animationSpec = navTween(easing = NavMotion.ExitingCurve),
+    targetOffsetX = { -(it * 0.25f).toInt() }
 ) + fadeOut(
-    animationSpec = tween(TRANSITION_DURATION, easing = TRANSITION_EASING),
+    animationSpec = navTween(duration = NavMotion.FastDuration, easing = NavMotion.ExitingCurve)
 )
 
-fun popEnterTransition() = slideInHorizontally(
-    animationSpec = tween(TRANSITION_DURATION, easing = TRANSITION_EASING),
-    initialOffsetX = { -it / 3 },
+fun popEnterTransition(): EnterTransition = slideInHorizontally(
+    animationSpec = navTween(),
+    initialOffsetX = { -(it * 0.25f).toInt() }
 ) + scaleIn(
-    animationSpec = tween(TRANSITION_DURATION, easing = TRANSITION_EASING),
-    initialScale = 0.9f,
+    animationSpec = navTween(),
+    initialScale = 0.95f
+) + fadeIn(
+    animationSpec = navTween(duration = NavMotion.FastDuration)
 )
 
-fun popExitTransition() = slideOutHorizontally(
-    animationSpec = tween(TRANSITION_DURATION, easing = TRANSITION_EASING),
-    targetOffsetX = { it },
+fun popExitTransition(): ExitTransition = slideOutHorizontally(
+    animationSpec = navTween(easing = NavMotion.ExitingCurve),
+    targetOffsetX = { (it * 0.5f).toInt() }
 ) + scaleOut(
-    animationSpec = tween(TRANSITION_DURATION, easing = TRANSITION_EASING),
-    targetScale = 0.75f,
-    transformOrigin = TransformOrigin(0.5f, 0.5f),
+    animationSpec = navTween(easing = NavMotion.ExitingCurve),
+    targetScale = 0.92f,
+    transformOrigin = TransformOrigin.Center
+) + fadeOut(
+    animationSpec = navTween(duration = NavMotion.FastDuration, easing = NavMotion.ExitingCurve)
 )
 
 enum class MainRootDirection {
@@ -50,13 +89,11 @@ enum class MainRootDirection {
     BACKWARD,
 }
 
-private const val BOTTOM_NAV_TRANSITION_DURATION = 250
-
 private val MAIN_ROOT_TRANSITION_SPEC =
-    tween<IntOffset>(durationMillis = BOTTOM_NAV_TRANSITION_DURATION, easing = FastOutSlowInEasing)
+    tween<IntOffset>(durationMillis = NavMotion.BottomNavDuration, easing = NavMotion.StandardCurve)
 
 private val MAIN_ROOT_FADE_SPEC =
-    tween<Float>(durationMillis = BOTTOM_NAV_TRANSITION_DURATION, easing = FastOutSlowInEasing)
+    tween<Float>(durationMillis = NavMotion.BottomNavDuration, easing = NavMotion.StandardCurve)
 
 fun mainRootDirection(fromRoute: String?, toRoute: String?): MainRootDirection? {
     val fromIndex = mainRootRouteIndex(fromRoute) ?: return null
