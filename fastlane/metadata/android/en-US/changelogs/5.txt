@@ -1,0 +1,7 @@
+- Monitoring: Migrated to Shizuku-based FPS monitoring.
+- CPU: Added load monitoring and Shizuku integration.
+- GPU: New detailed hardware capabilities and temperature badges.
+- UI: Overhauled setup flow with Material 3 Expressive design.
+- Driver: Added Vulkan and OpenGL ES version reporting.
+- Performance: Optimized Compose stability and navigation.
+- Bug fixes and dependency updates.

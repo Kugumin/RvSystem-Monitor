@@ -1,5 +1,58 @@
 # Changelog
 
+## [0.5-beta] - 2026-05-26
+
+### Feat
+- **overlay**: migrate to shizuku-based surfaceflinger fps monitoring
+- **cpu**: add shizuku integration and cpu load monitoring
+- **ui**: add detailed gpu hardware capabilities and reorganise layout
+- **rust**: add rust library specifications screen
+- **gpu**: display temperature as badge chip in overview
+- **gpu**: add vulkan driver version reporting
+- **gpu**: add detailed opengl es version reporting
+- **gpu**: add gpu temperature monitoring and details screen
+- **ui**: add theme selection step to setup flow
+- **ui**: add exit animation to setup completion
+- **ui**: overhaul SetupScreen with modern M3 Expressive design
+- **ui**: redesign setup screen with dotLottie animations
+
+### Fix
+- **battery**: fix battery status string populating
+- **ui**: migrate deprecated `rememberModalBottomSheetState` to `rememberBottomSheetState`
+- **vulkan**: increase buffer size for `VkPhysicalDeviceProperties`
+- **utils**: specify `Locale.US` in `CpuUtils` frequency formatting
+- **ui**: enforce `Locale.US` in `CPUScreen` string formatting
+- **domain**: specify `Locale` in `CPU` frequency formatting
+
+### Perf
+- **ui**: optimize compose stability and state reactivity
+- **jni**: batch cpu static info retrieval and switch to decimal units
+- **data**: cache github contributors in memory
+- **data**: implement multi-tiered caching for performance optimization
+- **ui**: optimize compose stability across models and screens
+- **ui**: optimize viewmodel initialization and navigation smoothness
+- **ui**: optimize lottie animation in `SetupScreen`
+- **ui**: optimize jetpack compose stability and skippability
+
+### Refactor
+- **overlay**: improve reactivity and structural organization of `SystemOverlayService`
+- **data**: improve flow and channel emission safety
+- **ui**: externalize hardcoded strings to `strings.xml`
+- **imports**: replace fully qualified names with explicit imports
+- **rust**: consolidate native monitoring logic and reduce JNI boilerplate
+- **ui**: consolidate settings components and improve accessibility
+- **ui**: separate state collection from stateless content in screens
+- **ui**: use `mutableIntStateOf` for `selectedOption` in `UpdateDialog`
+
+### Build
+- **deps**: bump log, material3, compose-bom, and spotless
+- **config**: remove redundant backdrop and jna proguard rules
+- **deps**: migrate from dotlottie to lottie-compose
+
+### Other Changes
+- Release v0.5-beta
+- Update screenshots from v0.4-beta
+
 ## [0.4-beta] - 2026-05-16
 
 ### Feat
