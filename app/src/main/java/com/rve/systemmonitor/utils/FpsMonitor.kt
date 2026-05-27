@@ -3,10 +3,12 @@ package com.rve.systemmonitor.utils
 import com.rve.systemmonitor.shizuku.ShizukuManager
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 
 @Singleton
 class FpsMonitor @Inject constructor(
@@ -52,14 +54,10 @@ class FpsMonitor @Inject constructor(
                         }
                     }
                 } catch (e: Exception) {
-                    emit(lastKnownFps)
+                    initialized = false
                 }
-            } else {
-                initialized = false
-                lastKnownFps = 0
-                emit(0)
             }
             delay(1000)
         }
-    }
+    }.flowOn(Dispatchers.IO)
 }
