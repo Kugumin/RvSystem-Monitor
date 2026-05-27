@@ -1,5 +1,8 @@
 package com.rve.systemmonitor.ui.screens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
@@ -30,6 +33,8 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -37,6 +42,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,9 +63,13 @@ import com.rve.systemmonitor.R
 import com.rve.systemmonitor.ui.components.ExitUntilCollapsedMediumTopAppBar
 import com.rve.systemmonitor.ui.components.haptic.hapticClickable
 import com.rve.systemmonitor.ui.viewmodel.SettingsViewModel
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import kotlinx.coroutines.launch
 
 @Composable
 fun AppSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onNavigateBack: () -> Unit, onNavigateToSetup: () -> Unit) {
+    val context = LocalContext.current
     val autoUpdateEnabled by viewModel.autoUpdateEnabled.collectAsStateWithLifecycle()
     val useShizuku by viewModel.useShizuku.collectAsStateWithLifecycle()
     val isShizukuAvailable by viewModel.isShizukuAvailable.collectAsStateWithLifecycle()
@@ -73,6 +84,8 @@ fun AppSettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), onNavigate
         onUseShizukuChange = { viewModel.setUseShizuku(it) },
         onRefreshShizukuStatus = { viewModel.refreshShizukuState() },
         onRequestShizukuPermission = { viewModel.requestShizukuPermission() },
+        onExportSettings = { uri, callback -> viewModel.exportSettingsToFile(context, uri, callback) },
+        onImportSettings = { uri, callback -> viewModel.importSettingsFromFile(context, uri, callback) },
         onNavigateBack = onNavigateBack,
         onNavigateToSetup = onNavigateToSetup,
     )
@@ -89,6 +102,8 @@ private fun AppSettingsScreenContent(
     onUseShizukuChange: (Boolean) -> Unit,
     onRefreshShizukuStatus: () -> Unit,
     onRequestShizukuPermission: () -> Unit,
+    onExportSettings: (Uri, (Boolean) -> Unit) -> Unit,
+    onImportSettings: (Uri, (Boolean) -> Unit) -> Unit,
     onNavigateBack: () -> Unit,
     onNavigateToSetup: () -> Unit,
 ) {
@@ -104,6 +119,40 @@ private fun AppSettingsScreenContent(
     }
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    val exportSuccessMessage = stringResource(R.string.backup_export_success)
+    val exportErrorMessage = stringResource(R.string.backup_export_failed)
+    val importSuccessMessage = stringResource(R.string.backup_import_success)
+    val importErrorMessage = stringResource(R.string.backup_import_failed)
+
+    val exportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/json"),
+    ) { uri ->
+        if (uri != null) {
+            onExportSettings(uri) { success ->
+                scope.launch {
+                    snackbarHostState.showSnackbar(if (success) exportSuccessMessage else exportErrorMessage)
+                }
+            }
+        }
+    }
+
+    val importLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        if (uri != null) {
+            onImportSettings(uri) { success ->
+                scope.launch {
+                    snackbarHostState.showSnackbar(if (success) importSuccessMessage else importErrorMessage)
+                }
+            }
+        }
+    }
+
+    val currentDate = remember { LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE) }
+    val backupFileName = "RvSystem-Monitor-$currentDate-backup-settings.json"
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -114,6 +163,7 @@ private fun AppSettingsScreenContent(
                 scrollBehavior = scrollBehavior,
             )
         },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         containerColor = MaterialTheme.colorScheme.background,
     ) { innerPadding ->
         LazyColumn(
@@ -381,6 +431,110 @@ private fun AppSettingsScreenContent(
                                             }
                                         }
                                     }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            item {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        text = stringResource(R.string.label_backup),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 12.dp, start = 8.dp),
+                    )
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(24.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                    ) {
+                        Column {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .hapticClickable { exportLauncher.launch(backupFileName) }
+                                    .padding(horizontal = 20.dp, vertical = 20.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(MaterialTheme.colorScheme.primary),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.backup_filled),
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onPrimary,
+                                    )
+                                }
+
+                                Column {
+                                    Text(
+                                        text = stringResource(R.string.settings_export_title),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                    )
+                                    Text(
+                                        text = stringResource(R.string.settings_export_description),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                            }
+
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 20.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                            )
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .hapticClickable { importLauncher.launch(arrayOf("application/json", "*/*")) }
+                                    .padding(horizontal = 20.dp, vertical = 20.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(MaterialTheme.colorScheme.primary),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.restore_page_filled),
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onPrimary,
+                                    )
+                                }
+
+                                Column {
+                                    Text(
+                                        text = stringResource(R.string.settings_import_title),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                    )
+                                    Text(
+                                        text = stringResource(R.string.settings_import_description),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
                                 }
                             }
                         }

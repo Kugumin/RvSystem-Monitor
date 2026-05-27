@@ -37,51 +37,49 @@ private object NavMotion {
 /**
  * Creates a [tween] animation spec using the project's default navigation motion.
  */
-private fun <T> navTween(
-    duration: Int = NavMotion.StandardDuration,
-    easing: Easing = NavMotion.EnteringCurve
-) = tween<T>(durationMillis = duration, easing = easing)
+private fun <T> navTween(duration: Int = NavMotion.StandardDuration, easing: Easing = NavMotion.EnteringCurve) =
+    tween<T>(durationMillis = duration, easing = easing)
 
 fun enterTransition(): EnterTransition {
     val spec = navTween<Float>()
     return slideInHorizontally(
         animationSpec = navTween(),
-        initialOffsetX = { (it * 0.5f).toInt() }
+        initialOffsetX = { (it * 0.5f).toInt() },
     ) + scaleIn(
         animationSpec = navTween(),
         initialScale = 0.92f,
-        transformOrigin = TransformOrigin.Center
+        transformOrigin = TransformOrigin.Center,
     ) + fadeIn(
-        animationSpec = navTween(easing = NavMotion.ExitingCurve)
+        animationSpec = navTween(easing = NavMotion.ExitingCurve),
     )
 }
 
 fun exitTransition(): ExitTransition = slideOutHorizontally(
     animationSpec = navTween(easing = NavMotion.ExitingCurve),
-    targetOffsetX = { -(it * 0.25f).toInt() }
+    targetOffsetX = { -(it * 0.25f).toInt() },
 ) + fadeOut(
-    animationSpec = navTween(duration = NavMotion.FastDuration, easing = NavMotion.ExitingCurve)
+    animationSpec = navTween(duration = NavMotion.FastDuration, easing = NavMotion.ExitingCurve),
 )
 
 fun popEnterTransition(): EnterTransition = slideInHorizontally(
     animationSpec = navTween(),
-    initialOffsetX = { -(it * 0.25f).toInt() }
+    initialOffsetX = { -(it * 0.25f).toInt() },
 ) + scaleIn(
     animationSpec = navTween(),
-    initialScale = 0.95f
+    initialScale = 0.95f,
 ) + fadeIn(
-    animationSpec = navTween(duration = NavMotion.FastDuration)
+    animationSpec = navTween(duration = NavMotion.FastDuration),
 )
 
 fun popExitTransition(): ExitTransition = slideOutHorizontally(
     animationSpec = navTween(easing = NavMotion.ExitingCurve),
-    targetOffsetX = { (it * 0.5f).toInt() }
+    targetOffsetX = { (it * 0.5f).toInt() },
 ) + scaleOut(
     animationSpec = navTween(easing = NavMotion.ExitingCurve),
     targetScale = 0.92f,
-    transformOrigin = TransformOrigin.Center
+    transformOrigin = TransformOrigin.Center,
 ) + fadeOut(
-    animationSpec = navTween(duration = NavMotion.FastDuration, easing = NavMotion.ExitingCurve)
+    animationSpec = navTween(duration = NavMotion.FastDuration, easing = NavMotion.ExitingCurve),
 )
 
 enum class MainRootDirection {

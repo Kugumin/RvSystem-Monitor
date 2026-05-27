@@ -1,5 +1,7 @@
 package com.rve.systemmonitor.ui.viewmodel
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rve.systemmonitor.domain.repository.SettingsRepository
@@ -7,10 +9,12 @@ import com.rve.systemmonitor.utils.ThemeMode
 import com.rve.systemmonitor.utils.VibrationIntensity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
@@ -169,6 +173,36 @@ class SettingsViewModel @Inject constructor(
     fun setUseShizuku(enabled: Boolean) {
         viewModelScope.launch {
             settingsRepository.setUseShizuku(enabled)
+        }
+    }
+
+    fun exportSettingsToFile(context: Context, uri: Uri, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val success = withContext(Dispatchers.IO) {
+                runCatching {
+                    val json = settingsRepository.exportSettings()
+                    context.contentResolver.openOutputStream(uri)?.bufferedWriter()?.use { it.write(json) }
+                    true
+                }.getOrDefault(false)
+            }
+            onResult(success)
+        }
+    }
+
+    fun importSettingsFromFile(context: Context, uri: Uri, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val success = withContext(Dispatchers.IO) {
+                runCatching {
+                    val json = context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
+                    if (json != null) {
+                        settingsRepository.importSettings(json)
+                        true
+                    } else {
+                        false
+                    }
+                }.getOrDefault(false)
+            }
+            onResult(success)
         }
     }
 }

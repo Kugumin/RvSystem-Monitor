@@ -31,4 +31,6 @@ interface SettingsRepository {
     suspend fun setAutoUpdateEnabled(enabled: Boolean)
     suspend fun setUseShizuku(enabled: Boolean)
     suspend fun setUpdatesPausedUntil(timestampMillis: Long)
+    suspend fun exportSettings(): String
+    suspend fun importSettings(json: String)
 }
