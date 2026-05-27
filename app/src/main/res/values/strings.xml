@@ -111,8 +111,7 @@
     <string name="memory_slab_description">Memory used by the kernel\'s internal data structures and objects.</string>
     <string name="memory_label_mount_path">Mount Path</string>
     <string name="memory_label_filesystem">Filesystem</string>
-    <string name="memory_storage_used_format">%1$s / %2$s GB</string>
-    <string name="memory_free_format">%1$s GB Free</string>
+
 
     <!-- Battery Screen -->
     <string name="battery_charging_speed">Charging Speed</string>
@@ -182,7 +181,7 @@
     <string name="badge_material3_expressive">Material 3 Expressive</string>
     <string name="about_app_description">High-performance system monitoring for Android</string>
     <string name="contributors_count">%1$d contributions</string>
-    <string name="error_fetch_contributors">No internet connection or failed to fetch contributors</string>
+
 
     <!-- App Settings Screen -->
     <string name="title_app">App</string>
@@ -266,7 +265,7 @@
     <string name="overlay_bg_opacity">Background Opacity</string>
     <string name="overlay_padding">Padding</string>
     <string name="overlay_corner_radius">Corner Radius</string>
-    <string name="shizuku_status_disabled_in_settings">Disabled in App Settings</string>
+
     <string name="overlay_permission_required">Requires \'Draw over other apps\' permission</string>
 
     <!-- Rust Library Screen -->
@@ -327,7 +326,7 @@
     <string name="pause_6_hours">6 hours</string>
     <string name="pause_12_hours">12 hours</string>
     <string name="pause_24_hours">24 hours</string>
-    <string name="error_no_apk_in_release">No APK found in the latest release</string>
+
 
     <!-- SettingsSliderCard -->
     <string name="default_value_label_refresh_rate">Refresh Rate</string>

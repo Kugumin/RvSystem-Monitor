@@ -122,7 +122,7 @@ jni_fn! {
         let array = env.new_object_array(cores, &class, initial_element)?;
 
         for i in 1..cores {
-            let governor = kernel::cpu::get_core_governor(i as i32);
+            let governor = kernel::cpu::get_core_governor(i);
             let s = env.new_string(governor)?;
             array.set_element(env, i as usize, s)?;
         }
