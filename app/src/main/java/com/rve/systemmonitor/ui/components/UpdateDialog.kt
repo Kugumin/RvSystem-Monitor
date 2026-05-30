@@ -56,7 +56,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.FileProvider
-import com.rve.systemmonitor.BuildConfig
 import com.rve.systemmonitor.R
 import com.rve.systemmonitor.domain.model.GitHubRelease
 import com.rve.systemmonitor.ui.components.haptic.rememberHapticOnClick
@@ -489,9 +488,7 @@ private fun StatusMessage(title: String, description: String, isError: Boolean =
 }
 
 private fun selectedApkName(release: GitHubRelease): String? {
-    val targetApkName = if (BuildConfig.DEBUG) "app-debug.apk" else "app-release.apk"
-    return release.assets.find { it.name == targetApkName }?.name
-        ?: release.assets.find { it.name.endsWith(".apk") }?.name
+    return release.assets.find { it.name.endsWith(".apk") }?.name
 }
 
 fun installApk(context: Context, file: File) {

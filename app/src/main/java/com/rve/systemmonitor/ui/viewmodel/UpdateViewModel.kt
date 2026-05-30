@@ -64,9 +64,7 @@ class UpdateViewModel @Inject constructor(
     }
 
     fun downloadAndInstall(release: GitHubRelease) {
-        val targetApkName = if (BuildConfig.DEBUG) "app-debug.apk" else "app-release.apk"
-        val apkAsset = release.assets.find { it.name == targetApkName }
-            ?: release.assets.find { it.name.endsWith(".apk") }
+        val apkAsset = release.assets.find { it.name.endsWith(".apk") }
 
         if (apkAsset == null) {
             _uiState.value = UpdateUiState.Error("No APK found in the latest release")
