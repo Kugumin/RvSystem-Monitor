@@ -77,119 +77,141 @@ fun InfoOverviewCard(data: InfoCardData, modifier: Modifier = Modifier) {
     } else {
         null
     }
-    Card(
-        onClick = { hapticOnClick?.invoke() },
-        enabled = data.onClick != null,
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-            contentColor = MaterialTheme.colorScheme.onSurface,
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-    ) {
-        Box(modifier = Modifier.fillMaxWidth()) {
-            Icon(
-                painter = painterResource(data.backgroundIconRes),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .size(160.dp)
-                    .offset(y = data.backgroundIconOffset)
-                    .alpha(0.30f),
-            )
+    val cardColors = CardDefaults.cardColors(
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        disabledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+        disabledContentColor = MaterialTheme.colorScheme.onSurface,
+    )
+    val cardElevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    val cardShape = RoundedCornerShape(24.dp)
 
-            Column(
-                modifier = Modifier.padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+    if (data.onClick != null) {
+        Card(
+            onClick = { hapticOnClick?.invoke() },
+            modifier = modifier.fillMaxWidth(),
+            shape = cardShape,
+            colors = cardColors,
+            elevation = cardElevation,
+        ) {
+            CardContent(data)
+        }
+    } else {
+        Card(
+            modifier = modifier.fillMaxWidth(),
+            shape = cardShape,
+            colors = cardColors,
+            elevation = cardElevation,
+        ) {
+            CardContent(data)
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun CardContent(data: InfoCardData) {
+    Box(modifier = Modifier.fillMaxWidth()) {
+        Icon(
+            painter = painterResource(data.backgroundIconRes),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .size(160.dp)
+                .offset(y = data.backgroundIconOffset)
+                .alpha(0.30f),
+        )
+
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.primary)
+                            .padding(8.dp),
+                        contentAlignment = Alignment.Center,
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(MaterialTheme.colorScheme.primary)
-                                .padding(8.dp),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Icon(
-                                painter = painterResource(data.iconRes),
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimary,
-                            )
-                        }
-
-                        Text(
-                            text = data.title,
-                            style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.SemiBold,
+                        Icon(
+                            painter = painterResource(data.iconRes),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary,
                         )
                     }
 
-                    if (data.onHelpClick != null) {
-                        IconButton(
-                            onClick = rememberHapticOnClick(data.onHelpClick),
-                            modifier = Modifier.size(24.dp),
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.help_filled),
-                                contentDescription = stringResource(R.string.cd_help),
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(20.dp),
-                            )
-                        }
+                    Text(
+                        text = data.title,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+
+                if (data.onHelpClick != null) {
+                    IconButton(
+                        onClick = rememberHapticOnClick(data.onHelpClick),
+                        modifier = Modifier.size(24.dp),
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.help_filled),
+                            contentDescription = stringResource(R.string.cd_help),
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp),
+                        )
                     }
                 }
+            }
 
-                Column {
-                    Text(
-                        text = data.headline,
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = data.subhead,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
+            Column {
+                Text(
+                    text = data.headline,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = data.subhead,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
 
-                if (data.badges.isNotEmpty()) {
-                    FlowRow(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        data.badges.forEachIndexed { index, badge ->
-                            val isSecondary = data.secondaryBadgeIndices.contains(index)
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(
-                                        if (isSecondary) MaterialTheme.colorScheme.secondary
-                                        else MaterialTheme.colorScheme.tertiary,
-                                    )
-                                    .padding(horizontal = 12.dp, vertical = 6.dp),
-                            ) {
-                                Text(
-                                    text = badge,
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = if (isSecondary) MaterialTheme.colorScheme.onSecondary
-                                    else MaterialTheme.colorScheme.onTertiary,
-                                    fontWeight = FontWeight.Bold,
+            if (data.badges.isNotEmpty()) {
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    data.badges.forEachIndexed { index, badge ->
+                        val isSecondary = data.secondaryBadgeIndices.contains(index)
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(
+                                    if (isSecondary) MaterialTheme.colorScheme.secondary
+                                    else MaterialTheme.colorScheme.tertiary,
                                 )
-                            }
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                        ) {
+                            Text(
+                                text = badge,
+                                style = MaterialTheme.typography.labelLarge,
+                                color = if (isSecondary) MaterialTheme.colorScheme.onSecondary
+                                else MaterialTheme.colorScheme.onTertiary,
+                                fontWeight = FontWeight.Bold,
+                            )
                         }
                     }
                 }
