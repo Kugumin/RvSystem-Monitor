@@ -14,6 +14,30 @@ pub mod kernel;
 pub mod macros;
 pub mod mm;
 
+fn map_ram_data(ram: &mm::memory::RamData) -> [f64; 9] {
+    [
+        ram.total,
+        ram.available,
+        ram.used,
+        ram.used_percentage,
+        ram.cached,
+        ram.buffers,
+        ram.active,
+        ram.inactive,
+        ram.slab,
+    ]
+}
+
+fn map_zram_data(zram: &mm::memory::ZramData) -> [f64; 5] {
+    [
+        if zram.is_active { 1.0 } else { 0.0 },
+        zram.total,
+        zram.available,
+        zram.used,
+        zram.used_percentage,
+    ]
+}
+
 jni_fn! {
     fn Java_com_rve_systemmonitor_utils_DeviceUtils_getRustLibraryVersionNative(env) -> jstring {
         let version = env!("CARGO_PKG_VERSION");
@@ -39,23 +63,12 @@ jni_fn! {
     fn Java_com_rve_systemmonitor_utils_MemoryUtils_getMemoryDataNative(env) -> jdoubleArray {
         let (ram, zram) = mm::memory::get_memory_data();
 
-        let is_active = if zram.is_active { 1.0 } else { 0.0 };
-        let data = [
-            ram.total,
-            ram.available,
-            ram.used,
-            ram.used_percentage,
-            ram.cached,
-            ram.buffers,
-            ram.active,
-            ram.inactive,
-            ram.slab,
-            is_active,
-            zram.total,
-            zram.available,
-            zram.used,
-            zram.used_percentage,
-        ];
+        let ram_data = map_ram_data(&ram);
+        let zram_data = map_zram_data(&zram);
+
+        let mut data = [0.0; 14];
+        data[..9].copy_from_slice(&ram_data);
+        data[9..].copy_from_slice(&zram_data);
 
         jni_double_array!(env, data)
     }
@@ -64,37 +77,14 @@ jni_fn! {
 jni_fn! {
     fn Java_com_rve_systemmonitor_utils_MemoryUtils_getRamDataNative(env) -> jdoubleArray {
         let (ram, _) = mm::memory::get_memory_data();
-
-        let data = [
-            ram.total,
-            ram.available,
-            ram.used,
-            ram.used_percentage,
-            ram.cached,
-            ram.buffers,
-            ram.active,
-            ram.inactive,
-            ram.slab,
-        ];
-
-        jni_double_array!(env, data)
+        jni_double_array!(env, map_ram_data(&ram))
     }
 }
 
 jni_fn! {
     fn Java_com_rve_systemmonitor_utils_MemoryUtils_getZramDataNative(env) -> jdoubleArray {
         let (_, zram) = mm::memory::get_memory_data();
-
-        let is_active = if zram.is_active { 1.0 } else { 0.0 };
-        let data = [
-            is_active,
-            zram.total,
-            zram.available,
-            zram.used,
-            zram.used_percentage,
-        ];
-
-        jni_double_array!(env, data)
+        jni_double_array!(env, map_zram_data(&zram))
     }
 }
 
