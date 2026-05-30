@@ -31,6 +31,18 @@ android {
         }
     }
 
+    flavorDimensions += "distribution"
+    productFlavors {
+        create("github") {
+            dimension = "distribution"
+            buildConfigField("boolean", "ENABLE_UPDATER", "true")
+        }
+        create("fdroid") {
+            dimension = "distribution"
+            buildConfigField("boolean", "ENABLE_UPDATER", "false")
+        }
+    }
+
     val signingPropertiesFile = rootProject.file("signing.properties")
     val signingProperties = Properties()
     if (signingPropertiesFile.exists()) {

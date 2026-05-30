@@ -59,6 +59,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.rve.systemmonitor.BuildConfig
 import com.rve.systemmonitor.R
 import com.rve.systemmonitor.ui.components.ExitUntilCollapsedMediumTopAppBar
 import com.rve.systemmonitor.ui.components.haptic.hapticClickable
@@ -176,90 +177,92 @@ private fun AppSettingsScreenContent(
             ),
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
-            item {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        text = stringResource(R.string.label_updates),
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 12.dp, start = 8.dp),
-                    )
-
-                    Card(
+            if (BuildConfig.ENABLE_UPDATER) {
+                item {
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
-                        ),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .hapticClickable { onAutoUpdateChange(!autoUpdateEnabled) }
-                                .padding(horizontal = 20.dp, vertical = 20.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
+                        Text(
+                            text = stringResource(R.string.label_updates),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 12.dp, start = 8.dp),
+                        )
+
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(24.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
+                            ),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                         ) {
                             Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .hapticClickable { onAutoUpdateChange(!autoUpdateEnabled) }
+                                    .padding(horizontal = 20.dp, vertical = 20.dp),
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                modifier = Modifier.weight(1f),
+                                horizontalArrangement = Arrangement.SpaceBetween,
                             ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(MaterialTheme.colorScheme.primary),
-                                    contentAlignment = Alignment.Center,
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                    modifier = Modifier.weight(1f),
                                 ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.update_rounded),
-                                        contentDescription = stringResource(R.string.cd_update_icon),
-                                        tint = MaterialTheme.colorScheme.onSecondary,
-                                    )
-                                }
-
-                                Column {
-                                    Text(
-                                        text = stringResource(R.string.settings_check_for_updates),
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                    )
-                                    Text(
-                                        text = stringResource(R.string.settings_check_updates_description),
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
-                            }
-
-                            Switch(
-                                checked = autoUpdateEnabled,
-                                onCheckedChange = onAutoUpdateChange,
-                                colors = SwitchDefaults.colors(
-                                    checkedIconColor = MaterialTheme.colorScheme.primary,
-                                ),
-                                thumbContent = {
-                                    Crossfade(
-                                        targetState = autoUpdateEnabled,
-                                        animationSpec = MaterialTheme.motionScheme.slowEffectsSpec(),
-                                        label = "Auto Update Switch Icon",
-                                    ) { enabled ->
+                                    Box(
+                                        modifier = Modifier
+                                            .size(48.dp)
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(MaterialTheme.colorScheme.primary),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
                                         Icon(
-                                            painter = painterResource(
-                                                if (enabled) R.drawable.check_rounded else R.drawable.close_rounded,
-                                            ),
-                                            contentDescription = null,
-                                            modifier = Modifier.size(SwitchDefaults.IconSize),
+                                            painter = painterResource(R.drawable.update_rounded),
+                                            contentDescription = stringResource(R.string.cd_update_icon),
+                                            tint = MaterialTheme.colorScheme.onSecondary,
                                         )
                                     }
-                                },
-                            )
+
+                                    Column {
+                                        Text(
+                                            text = stringResource(R.string.settings_check_for_updates),
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                        )
+                                        Text(
+                                            text = stringResource(R.string.settings_check_updates_description),
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
+                                }
+
+                                Switch(
+                                    checked = autoUpdateEnabled,
+                                    onCheckedChange = onAutoUpdateChange,
+                                    colors = SwitchDefaults.colors(
+                                        checkedIconColor = MaterialTheme.colorScheme.primary,
+                                    ),
+                                    thumbContent = {
+                                        Crossfade(
+                                            targetState = autoUpdateEnabled,
+                                            animationSpec = MaterialTheme.motionScheme.slowEffectsSpec(),
+                                            label = "Auto Update Switch Icon",
+                                        ) { enabled ->
+                                            Icon(
+                                                painter = painterResource(
+                                                    if (enabled) R.drawable.check_rounded else R.drawable.close_rounded,
+                                                ),
+                                                contentDescription = null,
+                                                modifier = Modifier.size(SwitchDefaults.IconSize),
+                                            )
+                                        }
+                                    },
+                                )
+                            }
                         }
                     }
                 }

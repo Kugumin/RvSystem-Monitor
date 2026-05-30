@@ -47,7 +47,7 @@ class MainActivity : ComponentActivity() {
                 val successState = uiState as MainUiState.Success
 
                 LaunchedEffect(Unit) {
-                    if (successState.autoUpdateEnabled) {
+                    if (BuildConfig.ENABLE_UPDATER && successState.autoUpdateEnabled) {
                         updateViewModel.checkForUpdates()
                     }
                 }
@@ -64,15 +64,17 @@ class MainActivity : ComponentActivity() {
                 }
 
                 RvSystemMonitorTheme(darkTheme, amoledMode, hapticEnabled, vibrationIntensity) {
-                    val updateUiState by updateViewModel.uiState.collectAsStateWithLifecycle()
+                    if (BuildConfig.ENABLE_UPDATER) {
+                        val updateUiState by updateViewModel.uiState.collectAsStateWithLifecycle()
 
-                    UpdateDialog(
-                        uiState = updateUiState,
-                        onDownload = { updateViewModel.downloadAndInstall(it) },
-                        onCancelDownload = { updateViewModel.cancelDownload() },
-                        onDismiss = { updateViewModel.resetState() },
-                        onPauseUpdates = { updateViewModel.pauseUpdates(it) },
-                    )
+                        UpdateDialog(
+                            uiState = updateUiState,
+                            onDownload = { updateViewModel.downloadAndInstall(it) },
+                            onCancelDownload = { updateViewModel.cancelDownload() },
+                            onDismiss = { updateViewModel.resetState() },
+                            onPauseUpdates = { updateViewModel.pauseUpdates(it) },
+                        )
+                    }
 
                     AppNavigation(isSetupCompleted)
                 }

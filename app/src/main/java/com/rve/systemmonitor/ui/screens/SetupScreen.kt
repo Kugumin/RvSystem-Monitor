@@ -74,6 +74,7 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
+import com.rve.systemmonitor.BuildConfig
 import com.rve.systemmonitor.R
 import com.rve.systemmonitor.ui.components.haptic.rememberHapticOnClick
 import com.rve.systemmonitor.ui.viewmodel.SetupViewModel
@@ -95,7 +96,16 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: (
     val scope = rememberCoroutineScope()
     val autoUpdateEnabled by viewModel.autoUpdateEnabled.collectAsStateWithLifecycle()
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
-    var setupStep by remember { mutableStateOf(SetupStep.OverlayPermission) }
+    val setupSteps = remember {
+        buildList {
+            add(SetupStep.OverlayPermission)
+            if (BuildConfig.ENABLE_UPDATER) {
+                add(SetupStep.Updates)
+            }
+            add(SetupStep.Theme)
+        }
+    }
+    var setupStep by remember { mutableStateOf(setupSteps.first()) }
     var isOverlayPermissionGranted by remember { mutableStateOf(Settings.canDrawOverlays(context)) }
 
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.cat))
@@ -114,11 +124,10 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: (
         isPlaying = true
     }
 
-    BackHandler(enabled = setupStep != SetupStep.OverlayPermission) {
-        setupStep = when (setupStep) {
-            SetupStep.Updates -> SetupStep.OverlayPermission
-            SetupStep.Theme -> SetupStep.Updates
-            SetupStep.OverlayPermission -> SetupStep.OverlayPermission
+    BackHandler(enabled = setupStep != setupSteps.first()) {
+        val currentIndex = setupSteps.indexOf(setupStep)
+        if (currentIndex > 0) {
+            setupStep = setupSteps[currentIndex - 1]
         }
     }
 
@@ -166,8 +175,8 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: (
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 StepIndicator(
-                    currentStep = setupStep.ordinal,
-                    totalSteps = SetupStep.entries.size,
+                    currentStep = setupSteps.indexOf(setupStep),
+                    totalSteps = setupSteps.size,
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -175,7 +184,9 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: (
                 AnimatedContent(
                     targetState = setupStep,
                     transitionSpec = {
-                        if (targetState.ordinal > initialState.ordinal) {
+                        val initialIndex = setupSteps.indexOf(initialState)
+                        val targetIndex = setupSteps.indexOf(targetState)
+                        if (targetIndex > initialIndex) {
                             (slideInHorizontally(animationSpec = slowSpatialSpec) { it } + fadeIn(animationSpec = slowEffectsSpec))
                                 .togetherWith(
                                     slideOutHorizontally(animationSpec = slowSpatialSpec) {
@@ -229,7 +240,7 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: (
                     SetupStep.OverlayPermission -> {
                         {
                             if (isOverlayPermissionGranted) {
-                                setupStep = SetupStep.Updates
+                                setupStep = if (BuildConfig.ENABLE_UPDATER) SetupStep.Updates else SetupStep.Theme
                             } else {
                                 val intent = Intent(
                                     Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
