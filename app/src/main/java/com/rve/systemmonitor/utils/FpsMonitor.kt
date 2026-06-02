@@ -18,6 +18,7 @@ class FpsMonitor @Inject constructor(
     val framesPerSecond: Flow<Int> = flow {
         var initialized = false
         var lastKnownFps = 0
+        emit(0)
 
         while (true) {
             val useShizuku = settingsRepository.useShizuku.first()
@@ -55,7 +56,10 @@ class FpsMonitor @Inject constructor(
                     }
                 } catch (e: Exception) {
                     initialized = false
+                    emit(0)
                 }
+            } else {
+                emit(0)
             }
             delay(1000)
         }

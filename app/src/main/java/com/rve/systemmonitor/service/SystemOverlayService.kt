@@ -21,16 +21,23 @@ import com.rve.systemmonitor.utils.BatteryUtils
 import com.rve.systemmonitor.utils.CpuUtils
 import com.rve.systemmonitor.utils.MemoryUtils
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @AndroidEntryPoint
 class SystemOverlayService : Service() {
 
@@ -44,210 +51,151 @@ class SystemOverlayService : Service() {
     private var overlayView: View? = null
     private var metricsTextView: TextView? = null
 
-    private var showFps = true
-    private var showRamPercentage = false
-    private var showRamGb = false
-    private var showBatteryTemp = false
-    private var showCpuTemp = false
-    private var overlayTextSize = 14f
-    private var overlayBgOpacity = 0.5f
-    private var overlayPadding = 16
-    private var overlayTextColor = Color.GREEN
-    private var isVerticalLayout = false
-    private var overlayCornerRadius = 8
-
-    private var updateDelayNanos: Long = 1_000_000_000L // Default 1s
-
     private val serviceJob = SupervisorJob()
-    private val serviceScope = CoroutineScope(Dispatchers.Default + serviceJob)
-
-    @Volatile private var ramText: String = ""
-    @Volatile private var cpuText: String = ""
-    @Volatile private var batteryText: String = ""
-    @Volatile private var lastCalculatedFps: Long = 0L
+    private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
 
     override fun onBind(intent: Intent?): IBinder? = null
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        handleIntent(intent)
-        return START_NOT_STICKY
-    }
-
-    private fun handleIntent(intent: Intent?) {
-        intent?.let {
-            showFps = it.getBooleanExtra("show_fps", showFps)
-            showRamPercentage = it.getBooleanExtra("show_ram_percentage", showRamPercentage)
-            showRamGb = it.getBooleanExtra("show_ram_gb", showRamGb)
-            showBatteryTemp = it.getBooleanExtra("show_battery_temp", showBatteryTemp)
-            showCpuTemp = it.getBooleanExtra("show_cpu_temp", showCpuTemp)
-
-            val interval = it.getLongExtra("update_delay", -1L)
-            if (interval != -1L) {
-                updateDelayNanos = interval * 1_000_000L
-            }
-
-            overlayTextSize = it.getFloatExtra("text_size", overlayTextSize)
-            overlayBgOpacity = it.getFloatExtra("bg_opacity", overlayBgOpacity)
-            overlayPadding = it.getIntExtra("padding", overlayPadding)
-            overlayTextColor = it.getIntExtra("text_color", overlayTextColor)
-            isVerticalLayout = it.getBooleanExtra("is_vertical", isVerticalLayout)
-            overlayCornerRadius = it.getIntExtra("corner_radius", overlayCornerRadius)
-
-            applySettings()
-        }
-    }
-
-    private fun applySettings() {
-        metricsTextView?.apply {
-            textSize = overlayTextSize
-            setTextColor(overlayTextColor)
-            val alphaInt = (overlayBgOpacity * 255).toInt()
-
-            val shape = GradientDrawable().apply {
-                shape = GradientDrawable.RECTANGLE
-                setColor(Color.argb(alphaInt, 0, 0, 0))
-                cornerRadius = overlayCornerRadius.toFloat()
-            }
-            background = shape
-
-            setPadding(overlayPadding, overlayPadding / 2, overlayPadding, overlayPadding / 2)
-        }
-        updateMetricsDisplay()
-    }
-
-    private fun updateMetricsDisplay() {
-        serviceScope.launch(Dispatchers.Main) {
-            val metrics = mutableListOf<String>()
-
-            if (showFps) {
-                metrics.add(getString(R.string.overlay_format_fps, lastCalculatedFps))
-            }
-
-            val currentRam = ramText
-            if ((showRamGb || showRamPercentage) && currentRam.isNotEmpty()) {
-                metrics.add(currentRam)
-            }
-
-            val currentBattery = batteryText
-            if (showBatteryTemp && currentBattery.isNotEmpty()) {
-                metrics.add(currentBattery)
-            }
-
-            val currentCpu = cpuText
-            if (showCpuTemp && currentCpu.isNotEmpty()) {
-                metrics.add(currentCpu)
-            }
-
-            val separator = if (isVerticalLayout) "\n" else " | "
-            val newText = metrics.joinToString(separator)
-            if (metricsTextView?.text != newText) {
-                metricsTextView?.text = newText
-            }
-        }
-    }
 
     override fun onCreate() {
         super.onCreate()
         isRunning = true
         startForeground(NOTIFICATION_ID, createNotification())
         showOverlay()
-
-        // Initial hardware data
-        refreshHardwareMetrics()
-        lastBatteryIntent = BatteryUtils.getBatteryIntent(this)
-        updateBatteryText()
-
-        startSettingsObservation()
-        startMetricsPolling()
-        startBatteryMonitoring()
-        startFpsMonitoring()
+        startDataPipeline()
+        startStylePipeline()
     }
 
-    private fun startFpsMonitoring() {
-        serviceScope.launch {
-            fpsMonitor.framesPerSecond.collect { fps ->
-                lastCalculatedFps = fps.toLong()
-                updateMetricsDisplay()
+    private data class VisibilitySettings(
+        val showFps: Boolean = true,
+        val showRamPercent: Boolean = false,
+        val showRamGb: Boolean = false,
+        val showBatTemp: Boolean = false,
+        val showCpuTemp: Boolean = false,
+        val isVertical: Boolean = false
+    )
+
+    private fun startDataPipeline() {
+        val tickerFlow = overlayRepository.overlayUpdateInterval
+            .flatMapLatest { interval ->
+                flow {
+                    while (true) {
+                        emit(Unit)
+                        delay(interval)
+                    }
+                }
             }
+            .flowOn(Dispatchers.Default)
+
+        val hardwareFlow = tickerFlow.onEach {
         }
+
+        val visibilityFlow = combine(
+            overlayRepository.isFpsEnabled,
+            overlayRepository.isRamPercentageEnabled,
+            overlayRepository.isRamGbEnabled,
+            overlayRepository.isBatteryTempEnabled,
+            overlayRepository.isCpuTempEnabled,
+            overlayRepository.isVerticalLayout
+        ) { values ->
+            VisibilitySettings(
+                showFps = values[0],
+                showRamPercent = values[1],
+                showRamGb = values[2],
+                showBatTemp = values[3],
+                showCpuTemp = values[4],
+                isVertical = values[5]
+            )
+        }.onStart {
+            emit(VisibilitySettings())
+        }
+
+        combine(
+            hardwareFlow,
+            fpsMonitor.framesPerSecond,
+            BatteryUtils.getBatteryFlow(this).onStart { 
+                BatteryUtils.getBatteryIntent(this@SystemOverlayService)?.let { emit(it) }
+            },
+            visibilityFlow
+        ) { _, fps, batteryIntent, vis ->
+            
+            val metrics = mutableListOf<String>()
+
+            if (vis.showFps) {
+                metrics.add(getString(R.string.overlay_format_fps, fps.toLong()))
+            }
+
+            if (vis.showRamGb || vis.showRamPercent) {
+                val ram = MemoryUtils.getRamData()
+                val ramText = when {
+                    vis.showRamGb && vis.showRamPercent -> getString(R.string.overlay_format_ram_gb_percent, ram.used, ram.total, ram.usedPercentage)
+                    vis.showRamGb -> getString(R.string.overlay_format_ram_gb, ram.used, ram.total)
+                    vis.showRamPercent -> getString(R.string.overlay_format_ram_percent, ram.usedPercentage)
+                    else -> ""
+                }
+                if (ramText.isNotEmpty()) metrics.add(ramText)
+            }
+
+            if (vis.showBatTemp) {
+                val temp = BatteryUtils.getTemperature(batteryIntent)
+                metrics.add(getString(R.string.overlay_format_battery_temp, temp))
+            }
+
+            if (vis.showCpuTemp) {
+                val cpuData = CpuUtils.getCpuDynamicData()
+                if (cpuData.isNotEmpty()) {
+                    metrics.add(getString(R.string.overlay_format_cpu_temp, cpuData[0]))
+                }
+            }
+
+            val separator = if (vis.isVertical) "\n" else " | "
+            metrics.joinToString(separator)
+        }
+        .flowOn(Dispatchers.Default)
+        .distinctUntilChanged()
+        .onEach { formattedText ->
+            metricsTextView?.text = formattedText
+        }
+        .launchIn(serviceScope)
     }
 
-    private fun startSettingsObservation() {
-        serviceScope.launch {
-            overlayRepository.isFpsEnabled.collect {
-                showFps = it
-                updateMetricsDisplay()
-            }
+    private fun startStylePipeline() {
+        combine(
+            overlayRepository.overlayTextSize,
+            overlayRepository.overlayBgOpacity,
+            overlayRepository.overlayPadding,
+            overlayRepository.overlayTextColor,
+            overlayRepository.overlayCornerRadius
+        ) { size, opacity, padding, color, radius ->
+            OverlayStyle(size, opacity, padding, color, radius)
         }
-        serviceScope.launch {
-            overlayRepository.isRamPercentageEnabled.collect {
-                showRamPercentage = it
-                refreshHardwareMetrics()
-                updateMetricsDisplay()
-            }
+        .distinctUntilChanged()
+        .onEach { style ->
+            applyStyle(style)
         }
-        serviceScope.launch {
-            overlayRepository.isRamGbEnabled.collect {
-                showRamGb = it
-                refreshHardwareMetrics()
-                updateMetricsDisplay()
+        .launchIn(serviceScope)
+    }
+
+    private data class OverlayStyle(
+        val size: Float,
+        val opacity: Float,
+        val padding: Int,
+        val color: Int,
+        val radius: Int
+    )
+
+    private fun applyStyle(style: OverlayStyle) {
+        metricsTextView?.apply {
+            textSize = style.size
+            setTextColor(style.color)
+            val alphaInt = (style.opacity * 255).toInt()
+
+            val shape = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                setColor(Color.argb(alphaInt, 0, 0, 0))
+                cornerRadius = style.radius.toFloat()
             }
-        }
-        serviceScope.launch {
-            overlayRepository.isBatteryTempEnabled.collect {
-                showBatteryTemp = it
-                updateBatteryText()
-                updateMetricsDisplay()
-            }
-        }
-        serviceScope.launch {
-            overlayRepository.isCpuTempEnabled.collect {
-                showCpuTemp = it
-                refreshHardwareMetrics()
-                updateMetricsDisplay()
-            }
-        }
-        serviceScope.launch {
-            overlayRepository.overlayUpdateInterval.collect { delayMillis ->
-                updateDelayNanos = delayMillis * 1_000_000L
-                updateMetricsDisplay()
-            }
-        }
-        serviceScope.launch(Dispatchers.Main) {
-            overlayRepository.overlayTextSize.collect {
-                overlayTextSize = it
-                applySettings()
-            }
-        }
-        serviceScope.launch(Dispatchers.Main) {
-            overlayRepository.overlayBgOpacity.collect {
-                overlayBgOpacity = it
-                applySettings()
-            }
-        }
-        serviceScope.launch(Dispatchers.Main) {
-            overlayRepository.overlayPadding.collect {
-                overlayPadding = it
-                applySettings()
-            }
-        }
-        serviceScope.launch(Dispatchers.Main) {
-            overlayRepository.overlayTextColor.collect {
-                overlayTextColor = it
-                applySettings()
-            }
-        }
-        serviceScope.launch(Dispatchers.Main) {
-            overlayRepository.isVerticalLayout.collect {
-                isVerticalLayout = it
-                applySettings()
-            }
-        }
-        serviceScope.launch(Dispatchers.Main) {
-            overlayRepository.overlayCornerRadius.collect {
-                overlayCornerRadius = it
-                applySettings()
-            }
+            background = shape
+            setPadding(style.padding, style.padding / 2, style.padding, style.padding / 2)
         }
     }
 
@@ -257,72 +205,6 @@ class SystemOverlayService : Service() {
         serviceScope.cancel()
         if (overlayView != null) {
             windowManager?.removeView(overlayView)
-        }
-    }
-
-    private fun startMetricsPolling() {
-        serviceScope.launch {
-            while (isActive) {
-                refreshHardwareMetrics()
-                val delayMillis = updateDelayNanos / 1_000_000L
-                delay(if (delayMillis > 0) delayMillis else 1000L)
-            }
-        }
-    }
-
-    private fun refreshHardwareMetrics() {
-        if (showRamGb || showRamPercentage) {
-            val ram = MemoryUtils.getRamData()
-            ramText = when {
-                showRamGb && showRamPercentage -> {
-                    getString(R.string.overlay_format_ram_gb_percent, ram.used, ram.total, ram.usedPercentage)
-                }
-
-                showRamGb -> {
-                    getString(R.string.overlay_format_ram_gb, ram.used, ram.total)
-                }
-
-                showRamPercentage -> {
-                    getString(R.string.overlay_format_ram_percent, ram.usedPercentage)
-                }
-
-                else -> {
-                    getString(R.string.overlay_format_ram_gb_percent, ram.used, ram.total, ram.usedPercentage)
-                }
-            }
-        } else {
-            ramText = ""
-        }
-
-        if (showCpuTemp) {
-            val cpuData = CpuUtils.getCpuDynamicData()
-            if (cpuData.isNotEmpty()) {
-                val temp = cpuData[0] // overall_temp is at index 0
-                cpuText = getString(R.string.overlay_format_cpu_temp, temp)
-            }
-        } else {
-            cpuText = ""
-        }
-    }
-
-    private var lastBatteryIntent: Intent? = null
-
-    private fun startBatteryMonitoring() {
-        serviceScope.launch {
-            BatteryUtils.getBatteryFlow(this@SystemOverlayService).collect { intent ->
-                lastBatteryIntent = intent
-                updateBatteryText()
-            }
-        }
-    }
-
-    private fun updateBatteryText() {
-        val intent = lastBatteryIntent
-        if (showBatteryTemp && intent != null) {
-            val temp = BatteryUtils.getTemperature(intent)
-            batteryText = getString(R.string.overlay_format_battery_temp, temp)
-        } else {
-            batteryText = ""
         }
     }
 
@@ -343,18 +225,6 @@ class SystemOverlayService : Service() {
 
         val textView = TextView(this).apply {
             text = ""
-            textSize = overlayTextSize
-            setTextColor(overlayTextColor)
-
-            val alphaInt = (overlayBgOpacity * 255).toInt()
-            val shape = GradientDrawable().apply {
-                shape = GradientDrawable.RECTANGLE
-                setColor(Color.argb(alphaInt, 0, 0, 0))
-                cornerRadius = overlayCornerRadius.toFloat()
-            }
-            background = shape
-
-            setPadding(overlayPadding, overlayPadding / 2, overlayPadding, overlayPadding / 2)
         }
 
         textView.setOnTouchListener(object : View.OnTouchListener {
@@ -372,14 +242,12 @@ class SystemOverlayService : Service() {
                         initialTouchY = event.rawY
                         return true
                     }
-
                     MotionEvent.ACTION_MOVE -> {
                         params.x = initialX + (event.rawX - initialTouchX).toInt()
                         params.y = initialY + (event.rawY - initialTouchY).toInt()
                         windowManager?.updateViewLayout(v, params)
                         return true
                     }
-
                     MotionEvent.ACTION_UP -> {
                         v.performClick()
                         return true
