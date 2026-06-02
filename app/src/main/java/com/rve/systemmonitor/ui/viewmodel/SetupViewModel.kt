@@ -1,15 +1,19 @@
 package com.rve.systemmonitor.ui.viewmodel
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rve.systemmonitor.domain.repository.SettingsRepository
 import com.rve.systemmonitor.utils.ThemeMode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @HiltViewModel
 class SetupViewModel @Inject constructor(private val settingsRepository: SettingsRepository) : ViewModel() {
@@ -43,6 +47,23 @@ class SetupViewModel @Inject constructor(private val settingsRepository: Setting
     fun setThemeMode(mode: ThemeMode) {
         viewModelScope.launch {
             settingsRepository.setThemeMode(mode)
+        }
+    }
+
+    fun importSettingsFromFile(context: Context, uri: Uri, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val success = withContext(Dispatchers.IO) {
+                runCatching {
+                    val json = context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
+                    if (json != null) {
+                        settingsRepository.importSettings(json)
+                        true
+                    } else {
+                        false
+                    }
+                }.getOrDefault(false)
+            }
+            onResult(success)
         }
     }
 }

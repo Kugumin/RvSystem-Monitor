@@ -305,6 +305,11 @@
     <string name="setup_check_on_startup">Check on startup</string>
     <string name="setup_theme_title">Choose Theme</string>
     <string name="setup_theme_description">Select your preferred visual style for the application.</string>
+    <string name="setup_backup_title">Restore Settings</string>
+    <string name="setup_backup_description">Import a previously exported backup file to restore your configuration.</string>
+    <string name="setup_skip">Skip</string>
+    <string name="setup_restore">Restore Backup</string>
+    <string name="setup_backup_footer">You can also import backups later in App Settings</string>
 
     <!-- Update Dialog -->
     <string name="update_available_title">Update available</string>

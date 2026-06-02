@@ -3,6 +3,8 @@ package com.rve.systemmonitor.ui.screens
 import android.content.Intent
 import android.provider.Settings
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
@@ -40,6 +42,9 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -86,6 +91,7 @@ private enum class SetupStep {
     OverlayPermission,
     Updates,
     Theme,
+    BackupRestore,
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -103,10 +109,31 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: (
                 add(SetupStep.Updates)
             }
             add(SetupStep.Theme)
+            add(SetupStep.BackupRestore)
         }
     }
     var setupStep by remember { mutableStateOf(setupSteps.first()) }
     var isOverlayPermissionGranted by remember { mutableStateOf(Settings.canDrawOverlays(context)) }
+    var hasImportedBackup by remember { mutableStateOf(false) }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val importSuccessMessage = stringResource(R.string.backup_import_success)
+    val importErrorMessage = stringResource(R.string.backup_import_failed)
+
+    val importLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        if (uri != null) {
+            viewModel.importSettingsFromFile(context, uri) { success ->
+                if (success) {
+                    hasImportedBackup = true
+                }
+                scope.launch {
+                    snackbarHostState.showSnackbar(if (success) importSuccessMessage else importErrorMessage)
+                }
+            }
+        }
+    }
 
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.cat))
     var isPlaying by remember { mutableStateOf(false) }
@@ -143,167 +170,191 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel(), onSetupCompleted: (
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-    ) {
-        Box(
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        containerColor = MaterialTheme.colorScheme.background,
+    ) { padding ->
+        Column(
             modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
-            contentAlignment = Alignment.Center,
+                .fillMaxSize()
+                .padding(padding),
         ) {
-            LottieAnimation(
-                composition = composition,
-                progress = { progress },
-                modifier = Modifier.size(280.dp),
-            )
-        }
-
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
-            color = MaterialTheme.colorScheme.surfaceContainerLow,
-            tonalElevation = 8.dp,
-        ) {
-            Column(
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-                    .padding(top = 16.dp, bottom = 32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center,
             ) {
-                StepIndicator(
-                    currentStep = setupSteps.indexOf(setupStep),
-                    totalSteps = setupSteps.size,
+                LottieAnimation(
+                    composition = composition,
+                    progress = { progress },
+                    modifier = Modifier.size(280.dp),
                 )
+            }
 
-                Spacer(modifier = Modifier.height(24.dp))
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerLow,
+                tonalElevation = 8.dp,
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                        .padding(top = 16.dp, bottom = 32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    StepIndicator(
+                        currentStep = setupSteps.indexOf(setupStep),
+                        totalSteps = setupSteps.size,
+                    )
 
-                AnimatedContent(
-                    targetState = setupStep,
-                    transitionSpec = {
-                        val initialIndex = setupSteps.indexOf(initialState)
-                        val targetIndex = setupSteps.indexOf(targetState)
-                        if (targetIndex > initialIndex) {
-                            (slideInHorizontally(animationSpec = slowSpatialSpec) { it } + fadeIn(animationSpec = slowEffectsSpec))
-                                .togetherWith(
-                                    slideOutHorizontally(animationSpec = slowSpatialSpec) {
-                                        -it
-                                    } + fadeOut(animationSpec = slowEffectsSpec),
-                                )
-                        } else {
-                            (slideInHorizontally(animationSpec = slowSpatialSpec) { -it } + fadeIn(animationSpec = slowEffectsSpec))
-                                .togetherWith(
-                                    slideOutHorizontally(animationSpec = slowSpatialSpec) {
-                                        it
-                                    } + fadeOut(animationSpec = slowEffectsSpec),
-                                )
-                        }
-                    },
-                    label = "Setup Step Content",
-                    modifier = Modifier.fillMaxWidth(),
-                ) { step ->
-                    when (step) {
-                        SetupStep.OverlayPermission -> OverlayPermissionContent(
-                            isOverlayPermissionGranted = isOverlayPermissionGranted,
-                        )
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                        SetupStep.Updates -> UpdatesContent(
-                            autoUpdateEnabled = autoUpdateEnabled,
-                            onAutoUpdateChanged = viewModel::setAutoUpdateEnabled,
-                        )
-
-                        SetupStep.Theme -> ThemeContent(
-                            selectedTheme = themeMode,
-                            onThemeSelected = viewModel::setThemeMode,
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(48.dp))
-
-                val buttonText = when (setupStep) {
-                    SetupStep.OverlayPermission -> if (isOverlayPermissionGranted) {
-                        stringResource(R.string.setup_continue)
-                    } else {
-                        stringResource(R.string.setup_grant_permission)
-                    }
-
-                    SetupStep.Updates -> stringResource(R.string.setup_continue)
-
-                    SetupStep.Theme -> stringResource(R.string.setup_finish)
-                }
-
-                val onButtonClick = when (setupStep) {
-                    SetupStep.OverlayPermission -> {
-                        {
-                            if (isOverlayPermissionGranted) {
-                                setupStep = if (BuildConfig.ENABLE_UPDATER) SetupStep.Updates else SetupStep.Theme
+                    AnimatedContent(
+                        targetState = setupStep,
+                        transitionSpec = {
+                            val initialIndex = setupSteps.indexOf(initialState)
+                            val targetIndex = setupSteps.indexOf(targetState)
+                            if (targetIndex > initialIndex) {
+                                (slideInHorizontally(animationSpec = slowSpatialSpec) { it } + fadeIn(animationSpec = slowEffectsSpec))
+                                    .togetherWith(
+                                        slideOutHorizontally(animationSpec = slowSpatialSpec) {
+                                            -it
+                                        } + fadeOut(animationSpec = slowEffectsSpec),
+                                    )
                             } else {
-                                val intent = Intent(
-                                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                    "package:${context.packageName}".toUri(),
-                                )
-                                context.startActivity(intent)
+                                (slideInHorizontally(animationSpec = slowSpatialSpec) { -it } + fadeIn(animationSpec = slowEffectsSpec))
+                                    .togetherWith(
+                                        slideOutHorizontally(animationSpec = slowSpatialSpec) {
+                                            it
+                                        } + fadeOut(animationSpec = slowEffectsSpec),
+                                    )
+                            }
+                        },
+                        label = "Setup Step Content",
+                        modifier = Modifier.fillMaxWidth(),
+                    ) { step ->
+                        when (step) {
+                            SetupStep.OverlayPermission -> OverlayPermissionContent(
+                                isOverlayPermissionGranted = isOverlayPermissionGranted,
+                            )
+
+                            SetupStep.Updates -> UpdatesContent(
+                                autoUpdateEnabled = autoUpdateEnabled,
+                                onAutoUpdateChanged = viewModel::setAutoUpdateEnabled,
+                            )
+
+                            SetupStep.Theme -> ThemeContent(
+                                selectedTheme = themeMode,
+                                onThemeSelected = viewModel::setThemeMode,
+                            )
+
+                            SetupStep.BackupRestore -> BackupRestoreContent(
+                                onRestoreClick = { importLauncher.launch(arrayOf("application/json", "*/*")) },
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(48.dp))
+
+                    val buttonText = when (setupStep) {
+                        SetupStep.OverlayPermission -> if (isOverlayPermissionGranted) {
+                            stringResource(R.string.setup_continue)
+                        } else {
+                            stringResource(R.string.setup_grant_permission)
+                        }
+
+                        SetupStep.Updates -> stringResource(R.string.setup_continue)
+
+                        SetupStep.Theme -> stringResource(R.string.setup_continue)
+
+                        SetupStep.BackupRestore -> if (hasImportedBackup) {
+                            stringResource(R.string.setup_finish)
+                        } else {
+                            stringResource(R.string.setup_skip)
+                        }
+                    }
+
+                    val onButtonClick = when (setupStep) {
+                        SetupStep.OverlayPermission -> {
+                            {
+                                if (isOverlayPermissionGranted) {
+                                    setupStep = if (BuildConfig.ENABLE_UPDATER) SetupStep.Updates else SetupStep.Theme
+                                } else {
+                                    val intent = Intent(
+                                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                        "package:${context.packageName}".toUri(),
+                                    )
+                                    context.startActivity(intent)
+                                }
+                            }
+                        }
+
+                        SetupStep.Updates -> {
+                            {
+                                setupStep = SetupStep.Theme
+                            }
+                        }
+
+                        SetupStep.Theme -> {
+                            {
+                                setupStep = SetupStep.BackupRestore
+                            }
+                        }
+
+                        SetupStep.BackupRestore -> {
+                            {
+                                isPlaying = false
+                                viewModel.completeSetup()
+                                onSetupCompleted()
                             }
                         }
                     }
 
-                    SetupStep.Updates -> {
-                        {
-                            setupStep = SetupStep.Theme
-                        }
+                    Button(
+                        onClick = rememberHapticOnClick(onButtonClick),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                        ),
+                    ) {
+                        Text(
+                            text = buttonText,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                        )
                     }
 
-                    SetupStep.Theme -> {
-                        {
-                            isPlaying = false
-                            viewModel.completeSetup()
-                            onSetupCompleted()
-                        }
-                    }
-                }
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                Button(
-                    onClick = rememberHapticOnClick(onButtonClick),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
-                    ),
-                ) {
+                    val footerText = when (setupStep) {
+                        SetupStep.OverlayPermission -> if (isOverlayPermissionGranted) {
+                            stringResource(R.string.setup_permission_granted_footer)
+                        } else {
+                            stringResource(R.string.setup_permission_required_footer)
+                        }
+
+                        SetupStep.Updates -> stringResource(R.string.setup_updates_footer)
+
+                        SetupStep.Theme -> stringResource(R.string.setup_theme_footer)
+
+                        SetupStep.BackupRestore -> stringResource(R.string.setup_backup_footer)
+                    }
+
                     Text(
-                        text = buttonText,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
+                        text = footerText,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        textAlign = TextAlign.Center,
                     )
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                val footerText = when (setupStep) {
-                    SetupStep.OverlayPermission -> if (isOverlayPermissionGranted) {
-                        stringResource(R.string.setup_permission_granted_footer)
-                    } else {
-                        stringResource(R.string.setup_permission_required_footer)
-                    }
-
-                    SetupStep.Updates -> stringResource(R.string.setup_updates_footer)
-
-                    SetupStep.Theme -> stringResource(R.string.setup_theme_footer)
-                }
-
-                Text(
-                    text = footerText,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                    textAlign = TextAlign.Center,
-                )
             }
         }
     }
@@ -537,6 +588,55 @@ private fun ThemeContent(selectedTheme: ThemeMode, onThemeSelected: (ThemeMode) 
                             )
                         }
                     }
+                }
+            }
+        },
+    )
+}
+
+@Composable
+private fun BackupRestoreContent(onRestoreClick: () -> Unit) {
+    SetupStepContent(
+        title = stringResource(R.string.setup_backup_title),
+        description = stringResource(R.string.setup_backup_description),
+        action = {
+            Card(
+                onClick = rememberHapticOnClick(onRestoreClick),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 24.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.primary),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.restore_page_filled),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                        )
+                    }
+                    Text(
+                        text = stringResource(R.string.setup_restore),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
                 }
             }
         },
