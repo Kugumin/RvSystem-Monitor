@@ -1,23 +1,38 @@
 package com.rve.systemmonitor.data.repository
 
 import android.app.Application
+import com.rve.systemmonitor.data.di.ApplicationScope
 import com.rve.systemmonitor.domain.model.Device
 import com.rve.systemmonitor.domain.model.Display
 import com.rve.systemmonitor.domain.model.GPU
 import com.rve.systemmonitor.domain.model.OS
 import com.rve.systemmonitor.domain.model.Storage
 import com.rve.systemmonitor.domain.repository.HardwareRepository
+import com.rve.systemmonitor.domain.repository.SettingsRepository
 import com.rve.systemmonitor.utils.DeviceUtils
 import com.rve.systemmonitor.utils.DisplayUtils
+import com.rve.systemmonitor.utils.FlowUtils
 import com.rve.systemmonitor.utils.GpuUtils
 import com.rve.systemmonitor.utils.OSUtils
 import com.rve.systemmonitor.utils.StorageUtils
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.shareIn
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @Singleton
-class HardwareRepositoryImpl @Inject constructor(private val application: Application) : HardwareRepository {
+class HardwareRepositoryImpl @Inject constructor(
+    private val application: Application,
+    private val settingsRepository: SettingsRepository,
+    @param:ApplicationScope private val externalScope: CoroutineScope,
+) : HardwareRepository {
+    private val TAG = "HardwareRepository"
 
     private val device by lazy {
         Device(
@@ -50,7 +65,7 @@ class HardwareRepositoryImpl @Inject constructor(private val application: Applic
         )
     }
 
-    private val gpu by lazy {
+    private val gpuStaticInfo by lazy {
         val (renderer, vendor, caps) = GpuUtils.getGpuDetails()
         val (maxTexSize, extCount) = caps
         GPU(
@@ -60,7 +75,6 @@ class HardwareRepositoryImpl @Inject constructor(private val application: Applic
             detailedGlesVersion = GpuUtils.getDetailedGlesVersion(),
             vulkanVersion = GpuUtils.getVulkanVersion(application),
             vulkanDriverVersion = GpuUtils.getVulkanDriverVersion(),
-            temperature = GpuUtils.getGpuTemperature(),
             maxTextureSize = maxTexSize,
             extensionsCount = extCount,
             deviceType = GpuUtils.getVulkanDeviceType(),
@@ -69,8 +83,16 @@ class HardwareRepositoryImpl @Inject constructor(private val application: Applic
         )
     }
 
-    private val storage by lazy {
-        StorageUtils.getStorageData()
+    private val sharedGpuStream by lazy {
+        settingsRepository.gpuRefreshDelay.flatMapLatest { delayMillis ->
+            FlowUtils.pollingFlow(TAG, delayMillis) {
+                getGpuInfo()
+            }
+        }.shareIn(
+            scope = externalScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            replay = 1,
+        )
     }
 
     override fun getDeviceInfo(): Device = device
@@ -79,7 +101,11 @@ class HardwareRepositoryImpl @Inject constructor(private val application: Applic
 
     override fun getDisplayInfo(): Display = display
 
-    override fun getGpuInfo(): GPU = gpu
+    override fun getGpuInfo(): GPU = gpuStaticInfo.copy(
+        temperature = GpuUtils.getGpuTemperature(),
+    )
 
-    override fun getStorageInfo(): Storage = storage
+    override fun getGpuStream(): Flow<GPU> = sharedGpuStream
+
+    override fun getStorageInfo(): Storage = StorageUtils.getStorageData()
 }
