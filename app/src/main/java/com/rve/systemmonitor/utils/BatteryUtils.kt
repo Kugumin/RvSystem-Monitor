@@ -6,12 +6,14 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
+import android.os.Build
 import android.util.Log
 import com.rve.systemmonitor.R
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlin.math.abs
 
 object BatteryUtils {
     fun getBatteryIntent(context: Context): Intent? {
@@ -116,8 +118,35 @@ object BatteryUtils {
 
     fun getCurrent(context: Context): Int {
         val batteryManager = context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
-        // CURRENT_NOW is in microamperes
-        val currentMicroAmps = batteryManager.getLongProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
-        return if (currentMicroAmps != Long.MIN_VALUE) (currentMicroAmps / 1000).toInt() else 0
+        
+        var current = batteryManager.getLongProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
+        
+        if (current == 0L || current == Long.MIN_VALUE) {
+            val oldCurrent = current
+            current = batteryManager.getLongProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE)
+            
+            if (com.rve.systemmonitor.BuildConfig.DEBUG && current != oldCurrent) {
+                Log.d("BatteryUtils", "Fallback to CURRENT_AVERAGE: $current (NOW was $oldCurrent)")
+            }
+        }
+        
+        if (current == Long.MIN_VALUE) return 0
+        
+        val manufacturer = Build.MANUFACTURER.lowercase()
+        val isBBK = manufacturer.contains("oneplus") || 
+                    manufacturer.contains("oppo") || 
+                    manufacturer.contains("realme")
+                           
+        val result = if (isBBK && abs(current) > 0 && abs(current) < 20000) {
+            current.toInt()
+        } else {
+            (current / 1000).toInt()
+        }
+
+        if (com.rve.systemmonitor.BuildConfig.DEBUG && result == 0 && current != 0L) {
+             Log.d("BatteryUtils", "Current truncated to 0 mA from $current uA")
+        }
+
+        return result
     }
 }
