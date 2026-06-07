@@ -1,3 +1,5 @@
+import com.diffplug.gradle.spotless.SpotlessExtension
+
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.compose) apply false
@@ -8,7 +10,7 @@ plugins {
 
 subprojects {
     apply(plugin = "com.diffplug.spotless")
-    configure<com.diffplug.gradle.spotless.SpotlessExtension> {
+    configure<SpotlessExtension> {
         kotlin {
             target("**/*.kt")
             targetExclude("**/build/**/*.kt")

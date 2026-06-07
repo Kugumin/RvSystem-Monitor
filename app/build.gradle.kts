@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.Properties
 
 plugins {
@@ -105,6 +106,15 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
+
+    tasks.withType<KotlinCompile>().configureEach {
+        compilerOptions {
+            freeCompilerArgs.add("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
+            freeCompilerArgs.add("-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi")
+            freeCompilerArgs.add("-opt-in=androidx.compose.foundation.ExperimentalFoundationApi")
+        }
+    }
+
     buildFeatures {
         compose = true
         buildConfig = true
@@ -112,8 +122,7 @@ android {
     }
 
     composeCompiler {
-        enableStrongSkippingMode = true
-        stabilityConfigurationFile = rootProject.file("compose_stability.conf")
+        stabilityConfigurationFiles.add(layout.projectDirectory.file("../compose_stability.conf"))
     }
 }
 
@@ -132,6 +141,7 @@ dependencies {
     implementation(libs.lottie.compose)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+    ksp(libs.kotlin.metadata.jvm)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.backdrop)
     implementation(libs.coil.compose)

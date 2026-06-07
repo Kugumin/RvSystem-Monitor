@@ -11,9 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 
 @HiltViewModel
-class GPUViewModel @Inject constructor(
-    private val hardwareRepository: HardwareRepository,
-) : ViewModel() {
+class GPUViewModel @Inject constructor(private val hardwareRepository: HardwareRepository) : ViewModel() {
 
     val gpuInfo: StateFlow<GPU> = hardwareRepository.getGpuStream()
         .stateIn(

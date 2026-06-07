@@ -19,6 +19,7 @@ import com.rve.systemmonitor.R
 import com.rve.systemmonitor.domain.repository.OverlayRepository
 import com.rve.systemmonitor.utils.BatteryUtils
 import com.rve.systemmonitor.utils.CpuUtils
+import com.rve.systemmonitor.utils.FpsMonitor
 import com.rve.systemmonitor.utils.MemoryUtils
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -45,7 +46,7 @@ class SystemOverlayService : Service() {
     lateinit var overlayRepository: OverlayRepository
 
     @Inject
-    lateinit var fpsMonitor: com.rve.systemmonitor.utils.FpsMonitor
+    lateinit var fpsMonitor: FpsMonitor
 
     private var windowManager: WindowManager? = null
     private var overlayView: View? = null
@@ -71,7 +72,7 @@ class SystemOverlayService : Service() {
         val showRamGb: Boolean = false,
         val showBatTemp: Boolean = false,
         val showCpuTemp: Boolean = false,
-        val isVertical: Boolean = false
+        val isVertical: Boolean = false,
     )
 
     private fun startDataPipeline() {
@@ -95,7 +96,7 @@ class SystemOverlayService : Service() {
             overlayRepository.isRamGbEnabled,
             overlayRepository.isBatteryTempEnabled,
             overlayRepository.isCpuTempEnabled,
-            overlayRepository.isVerticalLayout
+            overlayRepository.isVerticalLayout,
         ) { values ->
             VisibilitySettings(
                 showFps = values[0],
@@ -103,7 +104,7 @@ class SystemOverlayService : Service() {
                 showRamGb = values[2],
                 showBatTemp = values[3],
                 showCpuTemp = values[4],
-                isVertical = values[5]
+                isVertical = values[5],
             )
         }.onStart {
             emit(VisibilitySettings())
@@ -112,12 +113,12 @@ class SystemOverlayService : Service() {
         combine(
             hardwareFlow,
             fpsMonitor.framesPerSecond,
-            BatteryUtils.getBatteryFlow(this).onStart { 
+            BatteryUtils.getBatteryFlow(this).onStart {
                 BatteryUtils.getBatteryIntent(this@SystemOverlayService)?.let { emit(it) }
             },
-            visibilityFlow
+            visibilityFlow,
         ) { _, fps, batteryIntent, vis ->
-            
+
             val metrics = mutableListOf<String>()
 
             if (vis.showFps) {
@@ -127,9 +128,17 @@ class SystemOverlayService : Service() {
             if (vis.showRamGb || vis.showRamPercent) {
                 val ram = MemoryUtils.getRamData()
                 val ramText = when {
-                    vis.showRamGb && vis.showRamPercent -> getString(R.string.overlay_format_ram_gb_percent, ram.used, ram.total, ram.usedPercentage)
+                    vis.showRamGb && vis.showRamPercent -> getString(
+                        R.string.overlay_format_ram_gb_percent,
+                        ram.used,
+                        ram.total,
+                        ram.usedPercentage,
+                    )
+
                     vis.showRamGb -> getString(R.string.overlay_format_ram_gb, ram.used, ram.total)
+
                     vis.showRamPercent -> getString(R.string.overlay_format_ram_percent, ram.usedPercentage)
+
                     else -> ""
                 }
                 if (ramText.isNotEmpty()) metrics.add(ramText)
@@ -150,12 +159,12 @@ class SystemOverlayService : Service() {
             val separator = if (vis.isVertical) "\n" else " | "
             metrics.joinToString(separator)
         }
-        .flowOn(Dispatchers.Default)
-        .distinctUntilChanged()
-        .onEach { formattedText ->
-            metricsTextView?.text = formattedText
-        }
-        .launchIn(serviceScope)
+            .flowOn(Dispatchers.Default)
+            .distinctUntilChanged()
+            .onEach { formattedText ->
+                metricsTextView?.text = formattedText
+            }
+            .launchIn(serviceScope)
     }
 
     private fun startStylePipeline() {
@@ -164,24 +173,18 @@ class SystemOverlayService : Service() {
             overlayRepository.overlayBgOpacity,
             overlayRepository.overlayPadding,
             overlayRepository.overlayTextColor,
-            overlayRepository.overlayCornerRadius
+            overlayRepository.overlayCornerRadius,
         ) { size, opacity, padding, color, radius ->
             OverlayStyle(size, opacity, padding, color, radius)
         }
-        .distinctUntilChanged()
-        .onEach { style ->
-            applyStyle(style)
-        }
-        .launchIn(serviceScope)
+            .distinctUntilChanged()
+            .onEach { style ->
+                applyStyle(style)
+            }
+            .launchIn(serviceScope)
     }
 
-    private data class OverlayStyle(
-        val size: Float,
-        val opacity: Float,
-        val padding: Int,
-        val color: Int,
-        val radius: Int
-    )
+    private data class OverlayStyle(val size: Float, val opacity: Float, val padding: Int, val color: Int, val radius: Int)
 
     private fun applyStyle(style: OverlayStyle) {
         metricsTextView?.apply {
@@ -242,12 +245,14 @@ class SystemOverlayService : Service() {
                         initialTouchY = event.rawY
                         return true
                     }
+
                     MotionEvent.ACTION_MOVE -> {
                         params.x = initialX + (event.rawX - initialTouchX).toInt()
                         params.y = initialY + (event.rawY - initialTouchY).toInt()
                         windowManager?.updateViewLayout(v, params)
                         return true
                     }
+
                     MotionEvent.ACTION_UP -> {
                         v.performClick()
                         return true
