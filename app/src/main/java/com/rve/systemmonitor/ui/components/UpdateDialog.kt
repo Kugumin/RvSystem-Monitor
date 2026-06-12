@@ -488,7 +488,7 @@ private fun StatusMessage(title: String, description: String, isError: Boolean =
 }
 
 private fun selectedApkName(release: GitHubRelease): String? {
-    return release.assets.find { it.name.endsWith(".apk") }?.name
+    return release.assets.find { it.name == "app-github-release.apk" }?.name
 }
 
 fun installApk(context: Context, file: File) {

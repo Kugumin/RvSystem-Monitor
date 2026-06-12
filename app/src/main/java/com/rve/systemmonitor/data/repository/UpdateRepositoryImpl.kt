@@ -67,7 +67,7 @@ class UpdateRepositoryImpl @Inject constructor(private val gitHubService: GitHub
         if (response.isSuccessful) {
             val body = response.body()
             if (body != null) {
-                val file = File(application.cacheDir, "update.apk")
+                val file = File(application.cacheDir, "app-github-release.apk")
                 val totalBytes = body.contentLength()
 
                 body.byteStream().use { input ->
