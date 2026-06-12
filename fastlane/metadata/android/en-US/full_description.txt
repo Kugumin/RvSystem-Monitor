@@ -6,5 +6,6 @@ Key Features:
 - GPU & Graphics: Retrieval of GPU renderer, vendor, and supported OpenGL ES & Vulkan versions.
 - CPU Dynamics: Detailed per-core monitoring including frequencies and scaling governors.
 - Memory & ZRAM: High-precision tracking of RAM and ZRAM usage.
+- Backup & Restore: Easily export and import your app settings and overlay configurations.
 - Native Performance: Optimized Rust backend that parses kernel files directly.
 - Expressive UI: Built with Material 3 Expressive, featuring adaptive layouts and sophisticated transitions.

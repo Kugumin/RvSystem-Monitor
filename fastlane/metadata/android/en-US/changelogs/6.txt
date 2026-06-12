@@ -1,0 +1,7 @@
+• Added backup and restore functionality for settings.
+• New backup restore step in the setup flow.
+• Modernized navigation transitions with MD3 Expressive.
+• Added distribution flavors (GitHub/F-Droid) and toggleable updater.
+• Improved floating overlay performance and fixed metric updates.
+• Fixed GPU temperature polling and consistency issues.
+• Updated internal dependencies and improved build stability.

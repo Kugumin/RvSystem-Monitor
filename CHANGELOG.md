@@ -1,5 +1,46 @@
 # Changelog
 
+## [0.6-beta] - 2026-06-12
+
+### Feat
+- **updater**: strictly require 'app-github-release.apk' for updates
+- **ui**: add backup restore step to setup flow
+- **dist**: add distribution flavors and toggleable updater
+- **metadata**: add icon for fastlane
+- **settings**: implement backup and restore functionality
+- **ui**: update navigation transitions to MD3 Expressive
+
+### Fix
+- **overlay**: fix metrics not updating in floating overlay
+- **gpu**: implement reactive polling for temperature updates
+- **ui**: ensure card color consistency across screens
+
+### Perf
+- **flow**: optimize flow collection and threading
+
+### Refactor
+- **core**: optimize memory data mapping and cleanup UI
+- **update**: remove variant-specific apk check
+- **dead code**: remove dead code and unused resources
+
+### Style
+- **ui**: improve selected nav item glass effect with BlendMode.Hue
+
+### Build
+- **deps**: bump okhttp from 5.3.2 to 5.4.0
+- **deps**: bump org.jetbrains.kotlinx:kotlinx-collections-immutable
+- **kotlin**: fix build errors after kotlin 2.4.0 update
+- **deps**: bump log from 0.4.30 to 0.4.32 in /rust
+- **deps**: bump androidx.core:core-ktx from 1.18.0 to 1.19.0
+- **deps**: bump androidx.compose.material3:material3
+- **deps**: bump kotlin from 2.3.21 to 2.4.0
+- **deps**: bump io.github.kyant0:backdrop from 2.0.0-rc01 to 2.0.0
+- **deps**: bump com.diffplug.spotless from 8.5.1 to 8.6.0
+- **deps**: bump com.google.devtools.ksp from 2.3.8 to 2.3.9
+
+### Other Changes
+- Release v0.6-beta
+
 ## [0.5-beta] - 2026-05-26
 
 ### Feat

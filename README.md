@@ -58,18 +58,20 @@ Built with **Material 3 Expressive**, the application offers a visually rich exp
 - **🎮 GPU & Graphics**: Retrieval of GPU renderer, vendor, and supported OpenGL ES & Vulkan versions directly through the EGL context and native drivers.
 - **⚙️ CPU Dynamics**: Detailed per-core monitoring including current, minimum, and maximum frequencies and scaling governors.
 - **🧠 Memory & ZRAM**: High-precision tracking of RAM and ZRAM usage, including cached, buffers, and kernel slab memory.
+- **💾 Backup & Restore**: Easily export and import your app settings and overlay configurations to keep your setup safe.
 - **⚡ Native Performance**: Optimized Rust backend that parses kernel files and interacts with hardware drivers directly with efficient JNI batching.
-- **🎨 Expressive UI**: Built with Material 3 Expressive, featuring adaptive layouts, sophisticated screen transitions, and optimized recomposition.
+- **🎨 Expressive UI**: Built with Material 3 Expressive, featuring adaptive layouts, sophisticated screen transitions (MD3 Expressive), and optimized recomposition.
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Languages**: Kotlin 2.3.21, Rust (Edition 2024), C (via `libc`).
+- **Languages**: Kotlin 2.4.0, Rust (Edition 2024), C (via `libc`).
 - **Frameworks**: Jetpack Compose (BOM 2026.05.00), Material 3 Expressive, Hilt DI.
 - **Native Bridge**: JNI via `jni-rs`, `cargo-ndk`.
 - **Infrastructure**: Gradle Kotlin DSL, Android NDK 30.0, Fastlane.
-- **Libraries**: Retrofit 3.0, OkHttp 5.3, Coil 3.4, Jetpack DataStore.
+- **Distribution**: Multiple flavors (GitHub, F-Droid) with toggleable update mechanisms.
+- **Libraries**: Retrofit 3.0, OkHttp 5.4, Coil 3.4, Jetpack DataStore.
 
 ---
 
