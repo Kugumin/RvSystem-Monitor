@@ -124,10 +124,20 @@ The project adheres to **Clean Architecture** principles, ensuring a strict sepa
    ```bash
    ./gradlew :app:buildRustLibraries
    ```
-3. **Run the application**:
+3. **Build the application**:
+   Choose the variant you want to build:
+   - **GitHub Variant** (Includes auto-updater):
+     ```bash
+     ./gradlew assembleGithubRelease
+     ```
+   - **F-Droid Variant** (No updater):
+     ```bash
+     ./gradlew assembleFdroidRelease
+     ```
+4. **Install and run (Debug)**:
    Connect an Android device (API 34+) and run:
    ```bash
-   ./gradlew installDebug
+   ./gradlew installGithubDebug
    ```
 
 ---
