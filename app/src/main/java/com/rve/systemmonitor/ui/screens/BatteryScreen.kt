@@ -479,6 +479,11 @@ private fun BatteryOverviewCard(battery: Battery) {
                     containerColor = MaterialTheme.colorScheme.tertiary,
                     textColor = MaterialTheme.colorScheme.onTertiary,
                 )
+                BadgeChip(
+                    text = if (battery.capacity > 0) "${battery.capacity.toInt()} mAh" else stringResource(R.string.value_unknown),
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    textColor = MaterialTheme.colorScheme.onSecondary,
+                )
             }
         }
     }
@@ -569,24 +574,15 @@ private fun BatteryDetailsCard(battery: Battery, onHelpClick: () -> Unit) {
 
             TwoColumnInfoRow {
                 InfoItem(
-                    label = stringResource(R.string.battery_label_design_capacity),
-                    value = if (battery.capacity > 0) "${battery.capacity.toInt()} mAh" else stringResource(R.string.value_unknown),
-                    modifier = Modifier.weight(1f),
-                )
-                InfoItem(
                     label = stringResource(R.string.battery_label_uptime),
                     value = formatUptime(battery.uptime),
                     modifier = Modifier.weight(1f),
                 )
-            }
-
-            TwoColumnInfoRow {
                 InfoItem(
                     label = stringResource(R.string.battery_label_deep_sleep),
                     value = formatUptime(battery.deepSleep),
                     modifier = Modifier.weight(1f),
                 )
-                Spacer(modifier = Modifier.weight(1f))
             }
         }
     }
