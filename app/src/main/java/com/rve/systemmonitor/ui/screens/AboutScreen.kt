@@ -1,6 +1,8 @@
 package com.rve.systemmonitor.ui.screens
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -89,8 +91,12 @@ private fun AboutScreenContent(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     val openUrl = { url: String ->
-        val intent = Intent(Intent.ACTION_VIEW, url.toUri())
-        context.startActivity(intent)
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+            context.startActivity(intent)
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(context, context.getString(R.string.error_no_browser), Toast.LENGTH_SHORT).show()
+        }
     }
 
     Scaffold(
@@ -412,6 +418,13 @@ fun HeroCard() {
 
 @Composable
 fun ProfileCard(name: String, role: String, githubUsername: String, onClick: () -> Unit) {
+    val avatarModel = remember(githubUsername) {
+        when (githubUsername.lowercase()) {
+            "rve27" -> R.drawable.avatar_rve27
+            else -> "https://github.com/$githubUsername.png"
+        }
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = CircleShape,
@@ -428,7 +441,7 @@ fun ProfileCard(name: String, role: String, githubUsername: String, onClick: () 
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             AsyncImage(
-                model = "https://github.com/$githubUsername.png",
+                model = avatarModel,
                 contentDescription = stringResource(R.string.cd_avatar),
                 modifier = Modifier
                     .size(64.dp)
@@ -465,6 +478,14 @@ fun ProfileCard(name: String, role: String, githubUsername: String, onClick: () 
 
 @Composable
 fun ContributorRow(contributor: GitHubContributor, onClick: () -> Unit) {
+    val avatarModel = remember(contributor.login) {
+        when (contributor.login.lowercase()) {
+            "rve27" -> R.drawable.avatar_rve27
+            "pavelc4" -> R.drawable.avatar_pavelc4
+            else -> contributor.avatarUrl
+        }
+    }
+
     Row(
         modifier = Modifier
             .hapticClickable(onClick = onClick)
@@ -474,7 +495,7 @@ fun ContributorRow(contributor: GitHubContributor, onClick: () -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         AsyncImage(
-            model = contributor.avatarUrl,
+            model = avatarModel,
             contentDescription = contributor.login,
             modifier = Modifier
                 .size(40.dp)
