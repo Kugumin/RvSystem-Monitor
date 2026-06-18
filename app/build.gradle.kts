@@ -12,7 +12,9 @@ plugins {
 android {
     namespace = "com.rve.systemmonitor"
     compileSdk {
-        version = release(37)
+        version = release(37) {
+            minorApiLevel = 0
+        }
     }
 
     defaultConfig {

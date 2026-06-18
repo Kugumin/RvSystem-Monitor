@@ -110,7 +110,8 @@ The project adheres to **Clean Architecture** principles, ensuring a strict sepa
 
 ### Prerequisites
 - **Android Studio** (Ladybug 2024.2.1 or newer)
-- **Rust Toolchain** ([rustup.rs](https://rustup.rs/))
+- **Rust Toolchain** ([rustup.rs](https://rustup.rs/)): Edition 2024 (Stable 1.85+ recommended).
+  - Add Android targets: `rustup target add aarch64-linux-android armv7-linux-androideabi`
 - **Android NDK** (Version `30.0.14904198` configured)
 - **cargo-ndk**: `cargo install cargo-ndk`
 
