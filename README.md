@@ -67,7 +67,7 @@ Built with **Material 3 Expressive**, the application offers a visually rich exp
 ## 🛠️ Tech Stack
 
 - **Languages**: Kotlin 2.4.0, Rust (Edition 2024), C (via `libc`).
-- **Frameworks**: Jetpack Compose (BOM 2026.05.01), Material 3 Expressive, Hilt DI.
+- **Frameworks**: Jetpack Compose (BOM 2026.06.00), Material 3 Expressive, Hilt DI.
 - **Native Bridge**: JNI via `jni-rs`, `cargo-ndk`.
 - **Infrastructure**: Gradle Kotlin DSL, Android NDK 30.0, Fastlane.
 - **Distribution**: Multiple flavors (GitHub, F-Droid) with toggleable update mechanisms.
