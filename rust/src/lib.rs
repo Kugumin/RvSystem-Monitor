@@ -143,8 +143,9 @@ jni_fn! {
 
 jni_fn! {
     fn Java_com_rve_systemmonitor_utils_CpuUtils_getCoreFrequencyNative(env, core_id: jint, freq_type: JString<'local>) -> jlong {
-        let freq_type: String = freq_type.try_to_string(env)?;
-        Ok(kernel::cpu::get_core_frequency(core_id, &freq_type))
+        let freq_type_jstr = env.get_string(&freq_type).unwrap();
+        let freq_type_cow = freq_type_jstr.to_str();
+        Ok(kernel::cpu::get_core_frequency(core_id, freq_type_cow.as_ref()))
     }
 }
 
@@ -193,8 +194,9 @@ jni_fn! {
 
 jni_fn! {
     fn Java_com_rve_systemmonitor_utils_CpuUtils_calculateCpuLoadNative(env, proc_stat: JString<'local>) -> jdoubleArray {
-        let proc_stat: String = proc_stat.try_to_string(env)?;
-        let results = kernel::cpu::calculate_cpu_load(&proc_stat);
+        let proc_stat_jstr = env.get_string(&proc_stat).unwrap();
+        let proc_stat_cow = proc_stat_jstr.to_str();
+        let results = kernel::cpu::calculate_cpu_load(proc_stat_cow.as_ref());
         jni_double_array!(env, results)
     }
 }
