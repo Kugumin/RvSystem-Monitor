@@ -9,7 +9,12 @@ class CommandRunnerService(private val context: Context) : ICommandRunner.Stub()
 
     override fun executeCommand(command: String): String {
         return try {
-            val process = Runtime.getRuntime().exec(arrayOf("sh", "-c", command))
+            if (command.startsWith("cat ")) {
+                val file = command.substring(4).trim()
+                return java.io.File(file).readText().trim()
+            }
+
+            val process = Runtime.getRuntime().exec(command.split(" ").toTypedArray())
             val output = StringBuilder()
 
             val reader = BufferedReader(InputStreamReader(process.inputStream))
