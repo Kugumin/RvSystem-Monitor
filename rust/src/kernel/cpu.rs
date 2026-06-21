@@ -306,11 +306,12 @@ impl CpuTicks {
     }
 }
 
-static LAST_CPU_TICKS: OnceCell<Mutex<HashMap<String, CpuTicks>>> = OnceCell::new();
+static LAST_CPU_TICKS: OnceCell<Mutex<Vec<Option<CpuTicks>>>> = OnceCell::new();
 
 pub fn calculate_cpu_load(proc_stat: &str) -> Vec<f64> {
-    let mut current_ticks = HashMap::new();
-    let mut results = Vec::new();
+    let cores = get_core_count() as usize;
+    let mut current_ticks = vec![None; cores + 1];
+    let mut results = Vec::with_capacity(cores + 1);
 
     if proc_stat.is_empty() {
         return results;
@@ -320,7 +321,20 @@ pub fn calculate_cpu_load(proc_stat: &str) -> Vec<f64> {
         if line.starts_with("cpu") {
             let parts: Vec<&str> = line.split_whitespace().collect();
             if parts.len() >= 5 {
-                let name = parts[0].to_string();
+                let name = parts[0];
+
+                let idx = if name == "cpu" {
+                    0
+                } else if let Ok(core_id) = name[3..].parse::<usize>() {
+                    core_id + 1
+                } else {
+                    continue;
+                };
+
+                if idx > cores {
+                    continue;
+                }
+
                 let user = parts[1].parse::<u64>().unwrap_or(0);
                 let nice = parts[2].parse::<u64>().unwrap_or(0);
                 let system = parts[3].parse::<u64>().unwrap_or(0);
@@ -342,57 +356,30 @@ pub fn calculate_cpu_load(proc_stat: &str) -> Vec<f64> {
                     .and_then(|s| s.parse::<u64>().ok())
                     .unwrap_or(0);
 
-                current_ticks.insert(
-                    name,
-                    CpuTicks {
-                        user,
-                        nice,
-                        system,
-                        idle,
-                        iowait,
-                        irq,
-                        softirq,
-                        steal,
-                    },
-                );
+                current_ticks[idx] = Some(CpuTicks {
+                    user,
+                    nice,
+                    system,
+                    idle,
+                    iowait,
+                    irq,
+                    softirq,
+                    steal,
+                });
             }
         }
     }
 
-    if current_ticks.is_empty() {
-        return results;
-    }
-
-    let last_ticks_mutex = LAST_CPU_TICKS.get_or_init(|| Mutex::new(HashMap::new()));
+    let last_ticks_mutex = LAST_CPU_TICKS.get_or_init(|| Mutex::new(vec![None; cores + 1]));
     let mut last_ticks = last_ticks_mutex.lock().unwrap();
 
-    // Process total CPU first (key "cpu")
-    if let Some(curr) = current_ticks.get("cpu") {
-        if let Some(prev) = last_ticks.get("cpu") {
-            let total_diff = curr.total().saturating_sub(prev.total());
-            let idle_diff = curr.idle_total().saturating_sub(prev.idle_total());
-
-            if total_diff > 0 {
-                let load = (total_diff - idle_diff) as f64 * 100.0 / total_diff as f64;
-                results.push(load.clamp(0.0, 100.0));
-            } else {
-                results.push(0.0);
-            }
-        } else {
-            results.push(-1.0); // Signal: first poll
-        }
-    } else {
-        results.push(0.0);
-    }
-
-    // Process each core (cpu0, cpu1, ...)
-    let cores = get_core_count();
-    for i in 0..cores {
-        let name = format!("cpu{}", i);
-        if let Some(curr) = current_ticks.get(&name) {
-            if let Some(prev) = last_ticks.get(&name) {
+    // Process each entry (0 is total, 1..=cores are individual cores)
+    for i in 0..=cores {
+        if let Some(curr) = current_ticks[i] {
+            if let Some(prev) = last_ticks.get(i).and_then(|x| *x) {
                 let total_diff = curr.total().saturating_sub(prev.total());
                 let idle_diff = curr.idle_total().saturating_sub(prev.idle_total());
+
                 if total_diff > 0 {
                     let load = (total_diff - idle_diff) as f64 * 100.0 / total_diff as f64;
                     results.push(load.clamp(0.0, 100.0));
@@ -400,10 +387,10 @@ pub fn calculate_cpu_load(proc_stat: &str) -> Vec<f64> {
                     results.push(0.0);
                 }
             } else {
-                results.push(-1.0);
+                results.push(-1.0); // Signal: first poll
             }
         } else {
-            results.push(0.0); // Core offline
+            results.push(0.0); // Core offline or total missing
         }
     }
 
