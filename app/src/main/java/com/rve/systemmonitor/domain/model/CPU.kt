@@ -29,10 +29,10 @@ data class CoreDetail(
     val temperature: Double = 0.0,
     val load: Double = 0.0,
 ) {
-    // Helper for easy display when needed, but we prefer formatting in UI
-    val currentFreq: String get() = formatFrequency(currentFreqKhz)
-    val minFreq: String get() = formatFrequency(minFreqKhz)
-    val maxFreq: String get() = formatFrequency(maxFreqKhz)
+    // Computed once upon initialization to prevent allocations during Compose recomposition
+    val currentFreq: String = formatFrequency(currentFreqKhz)
+    val minFreq: String = formatFrequency(minFreqKhz)
+    val maxFreq: String = formatFrequency(maxFreqKhz)
 
     private fun formatFrequency(freqKhz: Long): String {
         return if (freqKhz >= 1_000_000) {
