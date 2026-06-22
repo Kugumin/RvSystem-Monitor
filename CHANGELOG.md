@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.7.1-alpha] - 2026-06-22
+
+### Feat
+- **ui**: move design capacity to overview card
+
+### Fix
+- **about**: resolve link crash and remove github api dependency
+- **battery**: fix current detection on OnePlus and BBK devices
+
+### Perf
+- **ui**: optimize UI string allocations in CoreDetail
+- **rust**: optimize rust calculate_cpu_load allocations
+- **rust**: optimize JNI string parsing
+- **shizuku**: optimize Shizuku command execution
+
+### Docs
+- **readme**: update tech stack versions
+- **metadata**: update build instructions and metadata descriptions
+
+### Build
+- **config**: make release signing optional for F-Droid
+- **config**: remove foojay, secure wrapper, and adjust sdk 37
+- **rust**: pin toolchain to 1.96.0 for reproducible builds
+- **manifest**: restrict REQUEST_INSTALL_PACKAGES to github variant
+- **deps**: bump coil from 3.4.0 to 3.5.0
+- **deps**: bump com.diffplug.spotless from 8.6.0 to 8.7.0
+- **deps**: bump androidx.compose:compose-bom
+- **deps**: bump lifecycleRuntimeKtx from 2.10.0 to 2.11.0
+- **deps**: bump androidx.compose.material3:material3
+
 ## [0.6-beta] - 2026-06-12
 
 ### Feat

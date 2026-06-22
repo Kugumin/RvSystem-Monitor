@@ -1,0 +1,6 @@
+• Made release signing configuration optional to fix F-Droid build issues.
+• Optimized JNI string parsing and Rust memory allocations.
+• Optimized UI string allocations and Shizuku command execution.
+• Resolved GitHub API link crash and removed dependency.
+• Fixed battery current detection on OnePlus and BBK devices.
+• Moved battery design capacity to overview card.
